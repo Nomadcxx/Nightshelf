@@ -37,6 +37,9 @@ Vue.prototype.$applyTheme = async function (theme) {
   document.documentElement.dataset.theme = migratedTheme
   await this.$localStore?.setTheme(migratedTheme)
   await applyNativeChrome(migratedTheme)
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('nightshelf-theme-change', { detail: migratedTheme }))
+  }
   return migratedTheme
 }
 

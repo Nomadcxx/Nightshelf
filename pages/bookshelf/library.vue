@@ -8,7 +8,7 @@
       <template v-for="(shelf, index) in shelves">
         <bookshelf-shelf :key="shelf.id" :label="getShelfLabel(shelf)" :entities="shelf.entities" :type="shelf.type" :style="{ zIndex: shelves.length - index }" />
       </template>
-      <div v-if="!isLoading && !shelves.length" class="px-6 py-12 text-center text-fg-muted">
+      <div v-if="!isLoading && !shelves.length" class="px-6 py-12 text-center font-mono text-sm uppercase tracking-widest text-fg-muted">
         {{ $strings.MessageBookshelfEmpty }}
       </div>
     </div>
@@ -56,9 +56,23 @@ export default {
       if (shelf.labelStringKey && this.$strings[shelf.labelStringKey]) return this.$strings[shelf.labelStringKey]
       return shelf.label
     },
+    countUniqueShelfEntities(shelves) {
+      const ids = new Set()
+      for (const shelf of shelves) {
+        for (const entity of shelf.entities || []) {
+          const id = entity.id || entity.recentEpisode?.id
+          if (id) ids.add(id)
+        }
+      }
+      return ids.size
+    },
+    emitTotalEntities() {
+      this.$eventBus.$emit('bookshelf-total-entities', this.countUniqueShelfEntities(this.shelves))
+    },
     async fetchRails() {
       if (!this.currentLibraryId) {
         this.shelves = []
+        this.emitTotalEntities()
         return
       }
       this.isLoading = true
@@ -66,6 +80,7 @@ export default {
       this.isLoading = false
       if (!Array.isArray(categories)) {
         this.shelves = []
+        this.emitTotalEntities()
         return
       }
       let shelves = categories.filter((c) => c.entities?.length)
@@ -77,6 +92,7 @@ export default {
         if (filtered.length) shelves = filtered
       }
       this.shelves = shelves
+      this.emitTotalEntities()
     }
   },
   async mounted() {

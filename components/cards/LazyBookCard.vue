@@ -1,6 +1,13 @@
 <template>
-  <div ref="card" tabindex="0" :id="`book-card-${index}`" :style="{ minWidth: width + 'px', maxWidth: width + 'px', height: height + 'px' }" class="rounded-sm z-10 bg-primary cursor-pointer box-shadow-book" @click="clickCard">
-    <!-- When cover image does not fill -->
+  <div
+    ref="card"
+    tabindex="0"
+    :id="`book-card-${index}`"
+    :style="{ minWidth: width + 'px', maxWidth: width + 'px', height: height + 'px' }"
+    class="rounded-sm z-10 bg-primary cursor-pointer box-shadow-book"
+    :class="{ 'rail-item': isAltViewEnabled }"
+    @click="clickCard"
+  >    <!-- When cover image does not fill -->
     <div v-show="showCoverBg" class="absolute top-0 left-0 w-full h-full overflow-hidden rounded-sm bg-primary">
       <div class="absolute cover-bg" ref="coverBg" />
     </div>
@@ -58,8 +65,27 @@
       </div>
     </div>
 
-    <!-- No progress shown for collapsed series in library -->
-    <div v-if="!collapsedSeries && (!isPodcast || recentEpisode)" class="absolute bottom-0 left-0 w-full h-1 z-10 overflow-hidden rounded-b bg-track">
+    <!-- Progress -->
+    <!-- Terminal rail progress: bracketed synthwave track -->
+    <div
+      v-if="isAltViewEnabled && !collapsedSeries && (!isPodcast || recentEpisode) && showRailProgress"
+      class="absolute bottom-0 left-0 right-0 z-20 rail-progress"
+    >
+      <div class="rail-progress__inner">
+        <span class="rail-progress__bracket" aria-hidden="true">[</span>
+        <div class="rail-progress__track">
+          <div
+            class="rail-progress__fill"
+            :class="{ 'rail-progress__fill--done': itemIsFinished }"
+            :style="{ width: Math.round(userProgressPercent * 100) + '%' }"
+          />
+        </div>
+        <span class="rail-progress__bracket" aria-hidden="true">]</span>
+        <span v-if="userProgressPercent > 0" class="rail-progress__pct">{{ Math.round(userProgressPercent * 100) }}</span>
+      </div>
+    </div>
+    <!-- Legacy progress bar (non-rail views) -->
+    <div v-else-if="!collapsedSeries && (!isPodcast || recentEpisode)" class="absolute bottom-0 left-0 w-full h-1 z-10 overflow-hidden rounded-b bg-track">
       <div class="h-full box-shadow-progressbar" :class="itemIsFinished ? 'bg-success' : 'bg-accent'" :style="{ width: width * userProgressPercent + 'px' }" />
     </div>
 
@@ -306,6 +332,10 @@ export default {
     userProgressPercent() {
       if (this.useEBookProgress) return Math.max(Math.min(1, this.userProgress.ebookProgress), 0)
       return Math.max(Math.min(1, this.userProgress?.progress || 0), 0) || 0
+    },
+    showRailProgress() {
+      // Always show terminal chrome on rails; empty track when unread
+      return true
     },
     itemIsFinished() {
       return !!this.userProgress?.isFinished
@@ -571,3 +601,63 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.rail-item {
+  border: 1px solid rgb(var(--color-fg) / 0.28);
+  border-radius: 2px;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.rail-progress {
+  pointer-events: none;
+}
+
+.rail-progress__inner {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 4px 4px;
+  background: linear-gradient(to top, rgb(var(--color-bg) / 0.92), rgb(var(--color-bg) / 0.55));
+  border-top: 1px solid rgb(var(--color-fg) / 0.22);
+}
+
+.rail-progress__bracket {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  line-height: 1;
+  color: rgb(var(--color-success));
+  flex: none;
+}
+
+.rail-progress__track {
+  flex: 1;
+  height: 3px;
+  background: rgb(var(--color-border));
+  overflow: hidden;
+  border-radius: 1px;
+}
+
+.rail-progress__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #37f499 0%, #04d1f9 55%, #a48cf2 100%);
+  box-shadow: 0 0 6px rgb(55 244 153 / 0.45);
+  transition: width 200ms ease-out;
+}
+
+.rail-progress__fill--done {
+  background: rgb(var(--color-success));
+  box-shadow: 0 0 6px rgb(55 244 153 / 0.55);
+}
+
+.rail-progress__pct {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  line-height: 1;
+  color: rgb(var(--color-fg) / 0.75);
+  min-width: 1.1rem;
+  text-align: right;
+  flex: none;
+}
+</style>

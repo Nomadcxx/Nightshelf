@@ -1,40 +1,44 @@
 <template>
   <div v-if="playbackSession" id="streamContainer" class="fixed top-0 left-0 layout-wrapper right-0 z-50 pointer-events-none" :class="{ fullscreen: showFullscreen, 'ios-player': $platform === 'ios', 'web-player': $platform === 'web' }">
-    <div v-if="showFullscreen" class="w-full h-full z-10 absolute top-0 left-0 pointer-events-auto" :style="{ backgroundColor: coverRgb }">
+    <div v-if="showFullscreen" class="w-full h-full z-10 absolute top-0 left-0 pointer-events-auto terminal-player-bg" :style="{ backgroundColor: coverRgb }">
       <div class="w-full h-full absolute top-0 left-0 pointer-events-none" style="background: var(--gradient-audio-player)" />
 
-      <div class="top-4 left-4 absolute cursor-pointer">
-        <span class="material-symbols text-5xl" :class="{ 'text-black text-opacity-75': coverBgIsLight && theme !== 'black' }" @click="collapseFullscreen">keyboard_arrow_down</span>
+      <div class="top-4 left-4 absolute cursor-pointer z-20" :class="coverFgClass" @click="collapseFullscreen">
+        <ui-ph-icon name="keyboard_arrow_down" :size="36" />
       </div>
-      <div v-show="showCastBtn" class="top-6 right-16 absolute cursor-pointer">
-        <span class="material-symbols text-3xl" :class="coverBgIsLight && theme !== 'black' ? 'text-black' : ''" @click="castClick">{{ isCasting ? 'cast_connected' : 'cast' }}</span>
+      <div v-show="showCastBtn" class="top-5 right-14 absolute cursor-pointer z-20" :class="coverFgClass" @click="castClick">
+        <ui-ph-icon :name="isCasting ? 'cast_connected' : 'cast'" :size="26" />
       </div>
-      <div class="top-6 right-4 absolute cursor-pointer">
-        <span class="material-symbols text-3xl" :class="{ 'text-black text-opacity-75': coverBgIsLight && theme !== 'black' }" @click="showMoreMenuDialog = true">more_vert</span>
+      <div class="top-5 right-4 absolute cursor-pointer z-20" :class="coverFgClass" @click="showMoreMenuDialog = true">
+        <ui-ph-icon name="more_vert" :size="26" />
       </div>
-      <p class="top-4 absolute left-0 right-0 mx-auto text-center uppercase tracking-widest text-opacity-75" :class="{ 'text-black text-opacity-75': coverBgIsLight && theme !== 'black' }" style="font-size: 10px">{{ isDirectPlayMethod ? $strings.LabelPlaybackDirect : isLocalPlayMethod ? $strings.LabelPlaybackLocal : $strings.LabelPlaybackTranscode }}</p>
+      <p class="top-5 absolute left-0 right-0 mx-auto text-center font-mono uppercase tracking-[0.22em] text-success" style="font-size: 10px">
+        {{ isDirectPlayMethod ? $strings.LabelPlaybackDirect : isLocalPlayMethod ? $strings.LabelPlaybackLocal : $strings.LabelPlaybackTranscode }}
+      </p>
     </div>
 
     <div v-if="playerSettings.useChapterTrack && playerSettings.useTotalTrack && showFullscreen" class="absolute total-track w-full z-30 px-6">
-      <div class="flex">
-        <p class="font-mono text-fg" style="font-size: 0.8rem">{{ currentTimePretty }}</p>
+      <div class="flex items-center gap-2 font-mono text-fg" style="font-size: 0.75rem">
+        <span class="text-success">[</span>
+        <p>{{ currentTimePretty }}</p>
         <div class="flex-grow" />
-        <p class="font-mono text-fg" style="font-size: 0.8rem">{{ totalTimeRemainingPretty }}</p>
+        <p>{{ totalTimeRemainingPretty }}</p>
+        <span class="text-success">]</span>
       </div>
-      <div class="w-full">
-        <div class="h-1 w-full bg-track/50 relative rounded-full">
+      <div class="w-full mt-1">
+        <div class="h-1 w-full bg-track/50 relative" style="border-radius: 1px">
           <ui-synthwave-progress :progress="totalTrackProgress" :buffered="totalTrackBufferedProgress" :playing="isProgressAnimating" variant="full" />
         </div>
       </div>
     </div>
 
-    <div class="cover-wrapper absolute z-30 pointer-events-auto" @click="clickContainer">
+    <div class="cover-wrapper absolute z-30 pointer-events-auto" :class="{ 'terminal-cover': showFullscreen }" @click="clickContainer">
       <div class="w-full h-full flex justify-center">
         <covers-book-cover v-if="libraryItem || localLibraryItemCoverSrc" ref="cover" :library-item="libraryItem" :download-cover="localLibraryItemCoverSrc" :width="bookCoverWidth" :book-cover-aspect-ratio="bookCoverAspectRatio" raw @imageLoaded="coverImageLoaded" />
       </div>
 
       <div v-if="syncStatus === $constants.SyncStatus.FAILED" class="absolute top-0 left-0 w-full h-full flex items-center justify-center z-30" @click.stop="showSyncsFailedDialog">
-        <span class="material-symbols text-error text-3xl">error</span>
+        <ui-ph-icon name="error" :size="32" class="text-error" />
       </div>
     </div>
 
@@ -42,63 +46,68 @@
       <div ref="titlewrapper" class="overflow-hidden relative">
         <p class="title-text whitespace-nowrap"></p>
       </div>
-      <p class="author-text text-fg text-opacity-75 truncate">{{ authorName }}</p>
+      <p class="author-text text-fg text-opacity-75 truncate font-mono" :class="{ 'text-xxs uppercase tracking-widest': showFullscreen }">{{ authorName }}</p>
     </div>
 
-    <div id="playerContent" class="playerContainer w-full z-20 absolute bottom-0 left-0 right-0 p-2 pointer-events-auto transition-all" :style="{ backgroundColor: showFullscreen ? '' : coverRgb }" @click="clickContainer">
+    <div id="playerContent" class="playerContainer w-full z-20 absolute bottom-0 left-0 right-0 p-2 pointer-events-auto transition-all" :class="{ 'terminal-mini-strip': !showFullscreen }" :style="{ backgroundColor: showFullscreen ? '' : 'rgb(var(--color-bg) / 0.96)' }" @click="clickContainer">
       <div v-if="showFullscreen" class="absolute bottom-4 left-0 right-0 w-full pb-4 pt-2 mx-auto px-6" style="max-width: 414px">
         <div class="flex items-center justify-between pointer-events-auto">
-          <span v-if="!isPodcast && serverLibraryItemId && socketConnected" class="material-symbols text-3xl text-fg-muted cursor-pointer" :class="{ fill: bookmarks.length }" @click="$emit('showBookmarks')">bookmark</span>
-          <!-- hidden for podcasts but still using this as a placeholder -->
-          <span v-else class="material-symbols text-3xl text-white text-opacity-0">bookmark</span>
+          <ui-ph-icon
+            v-if="!isPodcast && serverLibraryItemId && socketConnected"
+            name="bookmark"
+            :size="28"
+            class="text-fg-muted cursor-pointer"
+            :weight="bookmarks.length ? 'fill' : 'regular'"
+            @click.native="$emit('showBookmarks')"
+          />
+          <span v-else class="inline-block" style="width: 28px; height: 28px; opacity: 0" aria-hidden="true" />
 
-          <span class="font-mono text-fg-muted cursor-pointer" style="font-size: 1.35rem" @click="$emit('selectPlaybackSpeed')">{{ currentPlaybackRate }}x</span>
-          <svg v-if="!sleepTimerRunning" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-fg-muted cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" @click.stop="$emit('showSleepTimer')">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-          </svg>
-          <div v-else class="h-7 w-7 flex items-center justify-around cursor-pointer" @click.stop="$emit('showSleepTimer')">
-            <p class="text-xl font-mono text-success">{{ sleepTimeRemainingPretty }}</p>
+          <span class="font-mono text-fg-muted cursor-pointer tracking-wider" style="font-size: 1.15rem" @click="$emit('selectPlaybackSpeed')">{{ currentPlaybackRate }}x</span>
+          <ui-ph-icon v-if="!sleepTimerRunning" name="moon" :size="26" class="text-fg-muted cursor-pointer" @click.native.stop="$emit('showSleepTimer')" />
+          <div v-else class="h-7 min-w-7 flex items-center justify-around cursor-pointer" @click.stop="$emit('showSleepTimer')">
+            <p class="text-sm font-mono text-success">{{ sleepTimeRemainingPretty }}</p>
           </div>
 
-          <span class="material-symbols text-3xl text-fg cursor-pointer" :class="chapters.length ? 'text-opacity-75' : 'text-opacity-10'" @click="clickChaptersBtn">format_list_bulleted</span>
+          <ui-ph-icon name="format_list_bulleted" :size="28" class="text-fg cursor-pointer" :class="chapters.length ? 'text-opacity-75' : 'text-opacity-10'" @click.native="clickChaptersBtn" />
         </div>
       </div>
-      <div v-else class="w-full h-full absolute top-0 left-0 pointer-events-none" style="background: var(--gradient-minimized-audio-player)" />
+      <div v-else class="terminal-mini-border absolute top-0 left-0 right-0 h-px bg-border pointer-events-none" />
 
       <div id="playerControls" class="absolute right-0 bottom-0 mx-auto" style="max-width: 414px">
         <div class="flex items-center max-w-full" :class="playerSettings.lockUi ? 'justify-center' : 'justify-between'">
           <ui-icon-btn v-show="showFullscreen && !playerSettings.lockUi" class="next-icon text-fg cursor-pointer" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" icon="skip_previous" borderless @click="jumpChapterStart" />
           <div v-show="!playerSettings.lockUi" class="jump-icon text-fg cursor-pointer flex flex-col items-center" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" @click.stop="jumpBackwards">
-            <span class="material-symbols text-3xl leading-none">replay</span>
-            <span v-if="showFullscreen" class="jump-label text-[10px] font-semibold leading-tight">{{ jumpBackwardsLabel }}</span>
+            <ui-ph-icon name="replay" :size="showFullscreen ? 32 : 24" />
+            <span v-if="showFullscreen" class="jump-label text-[10px] font-mono uppercase tracking-wider leading-tight">{{ jumpBackwardsLabel }}</span>
           </div>
           <ui-icon-btn
-            class="play-btn rounded-full cursor-pointer shadow-sm text-primary mx-4 relative overflow-hidden"
-            :style="{ backgroundColor: coverRgb }"
-            :class="{ 'animate-spin': seekLoading, 'text-white': coverRgb && !coverBgIsLight }"
+            class="play-btn cursor-pointer text-success mx-4 relative overflow-hidden terminal-play-btn"
+            :class="{ 'animate-spin': seekLoading }"
             :icon="seekLoading ? 'autorenew' : !isPlaying ? 'play_arrow' : 'pause'"
             :loading="showLoadingState"
             borderless
             @click="playPauseClick"
           />
           <div v-show="!playerSettings.lockUi" class="jump-icon text-fg cursor-pointer flex flex-col items-center" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" @click.stop="jumpForward">
-            <span class="material-symbols text-3xl leading-none">forward_media</span>
-            <span v-if="showFullscreen" class="jump-label text-[10px] font-semibold leading-tight">{{ jumpForwardLabel }}</span>
+            <ui-ph-icon name="forward_media" :size="showFullscreen ? 32 : 24" />
+            <span v-if="showFullscreen" class="jump-label text-[10px] font-mono uppercase tracking-wider leading-tight">{{ jumpForwardLabel }}</span>
           </div>
           <ui-icon-btn v-show="showFullscreen && !playerSettings.lockUi" class="next-icon text-fg cursor-pointer" :class="nextChapter && !showLoadingState ? 'text-opacity-75' : 'text-opacity-10'" icon="skip_next" borderless @click="jumpNextChapter" />
         </div>
       </div>
 
       <div id="playerTrack" class="absolute left-0 w-full px-6">
-        <div class="flex pointer-events-none">
-          <p class="font-mono text-fg" style="font-size: 0.8rem" ref="currentTimestamp">0:00</p>
+        <div class="flex pointer-events-none items-center gap-1.5">
+          <span v-if="showFullscreen" class="font-mono text-success" style="font-size: 0.75rem">[</span>
+          <p class="font-mono text-fg" style="font-size: 0.75rem" ref="currentTimestamp">0:00</p>
           <div class="flex-grow" />
-          <p class="font-mono text-fg" style="font-size: 0.8rem">{{ timeRemainingPretty }}</p>
+          <p class="font-mono text-fg" style="font-size: 0.75rem">{{ timeRemainingPretty }}</p>
+          <span v-if="showFullscreen" class="font-mono text-success" style="font-size: 0.75rem">]</span>
         </div>
-        <div ref="track" class="h-1.5 w-full relative rounded-full" :class="{ 'animate-pulse': showLoadingState }" @click.stop>
+        <div ref="track" class="h-1.5 w-full relative" style="border-radius: 1px" :class="{ 'animate-pulse': showLoadingState }" @click.stop>
           <ui-synthwave-progress :progress="trackProgress" :buffered="trackBufferedProgress" :playing="isProgressAnimating" :variant="showFullscreen ? 'full' : 'mini'" />
-          <div ref="trackCursor" class="h-7 w-7 rounded-full absolute pointer-events-auto flex items-center justify-center" :style="{ top: '-11px', left: `${trackCursorLeft}px` }" :class="{ 'opacity-0': playerSettings.lockUi || !showFullscreen }" @touchstart="touchstartCursor">
-            <div class="rounded-full w-3.5 h-3.5 pointer-events-none" style="background: #04d1f9; box-shadow: 0 0 8px rgb(4 209 249 / 0.75)" />
+          <div ref="trackCursor" class="h-7 w-7 absolute pointer-events-auto flex items-center justify-center" :style="{ top: '-11px', left: `${trackCursorLeft}px` }" :class="{ 'opacity-0': playerSettings.lockUi || !showFullscreen }" @touchstart="touchstartCursor">
+            <div class="w-3 h-3 pointer-events-none" style="border-radius: 1px; background: #04d1f9; box-shadow: 0 0 8px rgb(4 209 249 / 0.75)" />
           </div>
         </div>
       </div>
@@ -191,6 +200,9 @@ export default {
   computed: {
     theme() {
       return document.documentElement.dataset.theme || 'night'
+    },
+    coverFgClass() {
+      return this.coverBgIsLight && this.theme !== 'black' ? 'text-black text-opacity-75' : 'text-fg'
     },
     menuItems() {
       const items = []
@@ -1123,8 +1135,22 @@ export default {
   width: var(--cover-image-width);
   left: calc(50% - (calc(var(--cover-image-width)) / 2));
   bottom: calc(50% + 120px - (calc(var(--cover-image-height)) / 2));
-  border-radius: 16px;
+  border-radius: 2px;
   overflow: hidden;
+}
+.terminal-cover {
+  border: 1px solid rgb(var(--color-fg) / 0.35);
+  box-shadow: 0 0 0 1px rgb(var(--color-success) / 0.12);
+}
+.terminal-mini-strip {
+  border-top: 1px solid rgb(var(--color-border));
+  backdrop-filter: blur(8px);
+}
+.terminal-play-btn {
+  border: 1px solid rgb(var(--color-success) / 0.55) !important;
+  border-radius: 2px !important;
+  background: rgb(var(--color-bg) / 0.85) !important;
+  box-shadow: none !important;
 }
 
 .fullscreen #playerControls {

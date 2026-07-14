@@ -4,7 +4,8 @@
       <span class="material-symbols text-2xl text-gray-200">record_voice_over</span>
     </div>
     <div class="flex-grow px-2 narratorSearchCardContent h-full">
-      <p class="truncate text-sm">{{ narrator }}</p>
+      <p class="truncate text-sm text-fg">{{ narrator }}</p>
+      <p class="font-mono text-xxs uppercase tracking-wide text-fg-muted">narrator</p>
     </div>
   </div>
 </template>

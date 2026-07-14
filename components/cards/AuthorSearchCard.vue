@@ -4,7 +4,8 @@
       <covers-author-image :author="author" />
     </div>
     <div class="flex-grow px-2 authorSearchCardContent h-full">
-      <p class="truncate text-sm">{{ name }}</p>
+      <p class="truncate text-sm text-fg">{{ name }}</p>
+      <p class="font-mono text-xxs uppercase tracking-wide text-fg-muted">author</p>
     </div>
   </div>
 </template>

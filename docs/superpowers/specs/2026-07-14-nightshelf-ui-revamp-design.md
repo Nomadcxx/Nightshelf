@@ -40,7 +40,7 @@ The following defects were observed on device and **must** be fixed in this pass
 - ABS **server** changes (no landscape backdrops / Netflix billboard assets)  
 - Stretching portrait covers into 16:9 heroes  
 - iOS  
-- Full player HUD rewrite (retain synthwave progress; align icons/accents only)  
+- ~~Full player HUD rewrite~~ **AMENDED:** Terminal player chrome is in scope (fullscreen + mini); retain synthwave progress as the primary scrubber language
 - Custom OEM notification layouts  
 
 ## Locked product decisions
@@ -189,6 +189,7 @@ Implementation note: map chips to existing library filter/collapse APIs and clie
 6. Search idle shows suggestion rails; query shows chips + list  
 7. Theme switcher still works (`night` / `terminal` / `black`)  
 8. No new server dependencies; covers remain portrait  
+9. Fullscreen + mini player use Terminal chrome (PhIcon controls, mono mode line, light cover border, bracketed scrubber times) — not stock ABS Material player 
 
 ---
 

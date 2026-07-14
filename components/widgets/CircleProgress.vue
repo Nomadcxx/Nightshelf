@@ -4,7 +4,7 @@
       <circle cx="20" cy="20" r="17.5" ref="circle" class="progressbar__svg-circle circle-anim"></circle>
       <circle cx="20" cy="20" r="17.5" class="progressbar__svg-circlebg"></circle>
     </svg>
-    <p class="progressbar__text text-sm text-warning">{{ count }}</p>
+    <p class="progressbar__text text-sm font-mono text-success">{{ count }}</p>
   </div>
 </template>
 
@@ -79,7 +79,7 @@ export default {
   stroke-width: 4;
   /* stroke-dasharray: 110;
   stroke-dashoffset: 110; */
-  stroke: #fb8c0022;
+  stroke: rgb(var(--color-success) / 0.15);
   stroke-linecap: round;
   transform: translate(2px, 2px);
 }
@@ -92,7 +92,7 @@ export default {
   stroke-dasharray: 110;
   stroke-dashoffset: 110;
   /* stroke: hsl(0, 0%, 100%); */
-  stroke: #fb8c00;
+  stroke: rgb(var(--color-success));
   stroke-linecap: round;
   transform: translate(2px, 2px);
 }

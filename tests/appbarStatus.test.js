@@ -15,7 +15,7 @@ function loadUtil(filename) {
   return module.exports
 }
 
-const { statusLabel } = loadUtil('appbarStatus.js')
+const { statusLabel, filterShortCode } = loadUtil('appbarStatus.js')
 
 test('builds mono app bar status from route and theme', () => {
   assert.equal(statusLabel({ routeName: 'bookshelf', theme: 'night' }), 'HOME · NIGHT')
@@ -23,4 +23,21 @@ test('builds mono app bar status from route and theme', () => {
   assert.equal(statusLabel({ routeName: 'settings', theme: 'black' }), 'SETTINGS · BLACK')
   assert.equal(statusLabel({ routeName: 'connect', theme: 'night' }), 'CONNECT · NIGHT')
   assert.equal(statusLabel({ routeName: 'bookshelf-library', theme: 'night' }), 'LIBRARY · NIGHT')
+})
+
+test('appends filter short code on library when filter active', () => {
+  assert.equal(
+    statusLabel({ routeName: 'bookshelf-library', theme: 'terminal', filterBy: 'genres.Science Fiction' }),
+    'LIBRARY · TERMINAL · FILTER · SF'
+  )
+  assert.equal(
+    statusLabel({ routeName: 'bookshelf-library', theme: 'night', filterBy: 'all' }),
+    'LIBRARY · NIGHT'
+  )
+})
+
+test('filterShortCode derives initials or truncated tokens', () => {
+  assert.equal(filterShortCode('genres.Science Fiction'), 'SF')
+  assert.equal(filterShortCode('tags.Horror'), 'HORR')
+  assert.equal(filterShortCode('all'), '')
 })

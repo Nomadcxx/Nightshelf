@@ -17,7 +17,7 @@
 
     <div v-if="!shelves.length && !isLoading" class="absolute top-0 left-0 w-full h-full flex items-center justify-center px-6">
       <div>
-        <p class="mb-4 text-center text-xl text-fg">
+        <p class="mb-4 text-center font-mono text-sm uppercase tracking-widest text-fg-muted">
           {{ $strings.MessageBookshelfEmpty }}
         </p>
         <div class="w-full" v-if="!user">
@@ -285,46 +285,6 @@ export default {
         console.log(`[categories] libraryChanged so fetching categories`)
         this.fetchCategories()
       }
-    },
-    audiobookAdded(audiobook) {
-      // TODO: Check if audiobook would be on this shelf
-      if (!this.search) {
-        this.fetchCategories()
-      }
-    },
-    audiobookUpdated(audiobook) {
-      this.shelves.forEach((shelf) => {
-        if (shelf.type === 'books') {
-          shelf.entities = shelf.entities.map((ent) => {
-            if (ent.id === audiobook.id) {
-              return audiobook
-            }
-            return ent
-          })
-        } else if (shelf.type === 'series') {
-          shelf.entities.forEach((ent) => {
-            ent.books = ent.books.map((book) => {
-              if (book.id === audiobook.id) return audiobook
-              return book
-            })
-          })
-        }
-      })
-    },
-    removeBookFromShelf(audiobook) {
-      this.shelves.forEach((shelf) => {
-        if (shelf.type === 'books') {
-          shelf.entities = shelf.entities.filter((ent) => {
-            return ent.id !== audiobook.id
-          })
-        } else if (shelf.type === 'series') {
-          shelf.entities.forEach((ent) => {
-            ent.books = ent.books.filter((book) => {
-              return book.id !== audiobook.id
-            })
-          })
-        }
-      })
     },
     initListeners() {
       this.$eventBus.$on('library-changed', this.libraryChanged)

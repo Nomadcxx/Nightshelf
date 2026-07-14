@@ -21,7 +21,8 @@
             class="w-full flex items-center py-3 px-5 text-fg-muted border-l-2 border-transparent hover:bg-secondary/40"
             @click="clickAction(item.action)"
           >
-            <ui-ph-icon :name="item.icon" :size="20" />
+            <ui-status-dot v-if="item.statusDot" :tone="item.statusDot" :size="8" />
+            <ui-ph-icon v-else :name="item.icon" :size="20" />
             <p class="pl-3 text-sm">{{ item.text }}</p>
           </button>
           <nuxt-link
@@ -32,7 +33,8 @@
             class="w-full flex items-center py-3 px-5 border-l-2"
             :class="isActive(item.to) ? 'border-accent bg-secondary/50 text-fg' : 'border-transparent text-fg-muted hover:bg-secondary/30'"
           >
-            <ui-ph-icon :name="item.icon" :size="20" :class="isActive(item.to) ? 'text-accent' : ''" />
+            <ui-status-dot v-if="item.statusDot" :tone="item.statusDot" :size="8" />
+            <ui-ph-icon v-else :name="item.icon" :size="20" :class="isActive(item.to) ? 'text-accent' : ''" />
             <p class="pl-3 text-sm">{{ item.text }}</p>
           </nuxt-link>
         </template>
@@ -110,7 +112,7 @@ export default {
       if (!this.serverConnectionConfig) {
         items = [
           {
-            icon: 'cloud_off',
+            statusDot: 'offline',
             text: this.$strings.ButtonConnectToServer,
             to: '/connect'
           }

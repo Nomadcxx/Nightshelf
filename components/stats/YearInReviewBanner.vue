@@ -2,8 +2,7 @@
   <div class="bg-bg rounded-md shadow-lg border border-white border-opacity-5 p-2 sm:p-4 mb-4">
     <!-- hack to get icon fonts loaded on init -->
     <div class="h-0 w-0 overflow-hidden opacity-0">
-      <span class="material-symbols">close</span>
-      <span class="abs-icons icon-audiobookshelf" />
+      <img src="/Logo.png" alt="" />
     </div>
 
     <div class="flex items-center">

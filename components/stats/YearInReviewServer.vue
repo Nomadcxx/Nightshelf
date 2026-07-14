@@ -135,14 +135,9 @@ export default {
       ctx.fillStyle = grd1
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Top Abs icon
+      // Top Nightshelf branding
       let tanColor = '#ffdb70'
-      ctx.fillStyle = tanColor
-      ctx.font = '42px absicons'
-      ctx.fillText('\ue900', 15, 36)
-
-      // Top text
-      addText('audiobookshelf', '28px', 'normal', tanColor, '0px', 65, 28)
+      addText('Nightshelf', '28px', 'normal', tanColor, '0px', 15, 36)
       addText(`${this.year} YEAR IN REVIEW`, '18px', 'bold', 'white', '1px', 65, 51)
 
       // Top left box
@@ -225,7 +220,7 @@ export default {
     share() {
       const base64Data = this.dataUrl.split(';base64,').pop()
       FileSharer.share({
-        filename: `audiobookshelf_server_${this.year}.png`,
+        filename: `nightshelf_server_${this.year}.png`,
         contentType: 'image/png',
         base64Data
       }).catch((error) => {

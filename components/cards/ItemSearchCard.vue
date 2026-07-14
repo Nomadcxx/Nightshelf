@@ -2,9 +2,9 @@
   <div class="flex h-full px-1 overflow-hidden">
     <covers-book-cover :library-item="libraryItem" :width="coverWidth" :book-cover-aspect-ratio="bookCoverAspectRatio" />
     <div class="grow px-2 audiobookSearchCardContent">
-      <p class="truncate text-sm">{{ title }}</p>
-      <p v-if="subtitle" class="truncate text-xs text-gray-300">{{ subtitle }}</p>
-      <p class="text-xs text-gray-200 truncate">{{ $getString('LabelByAuthor', [authorName]) }}</p>
+      <p class="truncate text-sm text-fg">{{ title }}</p>
+      <p v-if="subtitle" class="truncate font-mono text-xxs uppercase tracking-wide text-fg-muted">{{ subtitle }}</p>
+      <p class="font-mono text-xxs uppercase tracking-wide text-fg-muted truncate">{{ $getString('LabelByAuthor', [authorName]) }}</p>
     </div>
   </div>
 </template>

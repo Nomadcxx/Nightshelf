@@ -6,7 +6,11 @@
     </div>
 
     <div v-if="!lastSearch" class="px-4 pb-4 overflow-y-auto search-idle">
-      <template v-if="suggestionShelves.length">
+      <div v-if="suggestionsLoading" class="py-4 flex items-center gap-2">
+        <widgets-loading-spinner size="la-sm" />
+        <p class="font-mono text-xxs uppercase tracking-wider text-fg-muted">Loading suggestions</p>
+      </div>
+      <template v-else-if="suggestionShelves.length">
         <div v-for="shelf in suggestionShelves" :key="shelf.id" class="mb-4">
           <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-2">{{ shelf.label }}</p>
           <div class="flex gap-3 overflow-x-auto pb-1">
@@ -50,7 +54,7 @@
       <template v-if="showGroup('books') && bookResults.length">
         <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-1">{{ $strings.LabelBooks }}</p>
         <template v-for="item in bookResults">
-          <div :key="item.libraryItem.id" class="w-full h-16 py-1">
+          <div :key="item.libraryItem.id" class="w-full py-1 border-b border-border">
             <nuxt-link :to="`/item/${item.libraryItem.id}`">
               <cards-item-search-card :library-item="item.libraryItem" :search="lastSearch" />
             </nuxt-link>
@@ -61,7 +65,7 @@
       <template v-if="showGroup('podcasts') && podcastResults.length">
         <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-1 mt-2">{{ $strings.LabelPodcasts }}</p>
         <template v-for="item in podcastResults">
-          <div :key="item.libraryItem.id" class="text-fg select-none relative py-1">
+          <div :key="item.libraryItem.id" class="text-fg select-none relative py-1 border-b border-border">
             <nuxt-link :to="`/item/${item.libraryItem.id}`">
               <cards-item-search-card :library-item="item.libraryItem" :search="lastSearch" />
             </nuxt-link>
@@ -72,7 +76,7 @@
       <template v-if="showGroup('podcasts') && episodeResults.length">
         <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-1 mt-2">{{ $strings.HeaderEpisodes }}</p>
         <template v-for="item in episodeResults">
-          <div :key="item.libraryItem.recentEpisode.id" class="text-fg select-none relative py-1">
+          <div :key="item.libraryItem.recentEpisode.id" class="text-fg select-none relative py-1 border-b border-border">
             <nuxt-link :to="`/item/${item.libraryItem.id}/${item.libraryItem.recentEpisode.id}`">
               <cards-episode-search-card :episode="item.libraryItem.recentEpisode" :library-item="item.libraryItem" />
             </nuxt-link>
@@ -83,7 +87,7 @@
       <template v-if="showGroup('series') && seriesResults.length">
         <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-1 mt-2">{{ $strings.LabelSeries }}</p>
         <template v-for="seriesResult in seriesResults">
-          <div :key="seriesResult.series.id" class="w-full h-16 py-1">
+          <div :key="seriesResult.series.id" class="w-full py-1 border-b border-border">
             <nuxt-link :to="`/bookshelf/series/${seriesResult.series.id}`">
               <cards-series-search-card :series="seriesResult.series" :book-items="seriesResult.books" />
             </nuxt-link>
@@ -94,7 +98,7 @@
       <template v-if="showGroup('authors') && authorResults.length">
         <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-1 mt-2">{{ $strings.LabelAuthors }}</p>
         <template v-for="authorResult in authorResults">
-          <div :key="authorResult.id" class="w-full h-14 py-1">
+          <div :key="authorResult.id" class="w-full py-1 border-b border-border">
             <nuxt-link :to="`/bookshelf/library?filter=authors.${$encode(authorResult.id)}`">
               <cards-author-search-card :author="authorResult" />
             </nuxt-link>
@@ -105,7 +109,7 @@
       <template v-if="showGroup('narrators') && narratorResults.length">
         <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-1 mt-2">{{ $strings.LabelNarrators }}</p>
         <template v-for="narrator in narratorResults">
-          <div :key="narrator.name" class="w-full h-14 py-1">
+          <div :key="narrator.name" class="w-full py-1 border-b border-border">
             <nuxt-link :to="`/bookshelf/library?filter=narrators.${$encode(narrator.name)}`">
               <cards-narrator-search-card :narrator="narrator.name" />
             </nuxt-link>
@@ -116,7 +120,7 @@
       <template v-if="showGroup('tags') && tagResults.length">
         <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-1 mt-2">{{ $strings.LabelTags }}</p>
         <template v-for="tag in tagResults">
-          <div :key="tag.name" class="w-full h-14 py-1">
+          <div :key="tag.name" class="w-full py-1 border-b border-border">
             <nuxt-link :to="`/bookshelf/library?filter=tags.${$encode(tag.name)}`">
               <cards-tag-search-card :tag="tag.name" />
             </nuxt-link>
@@ -140,6 +144,7 @@ export default {
       activeChip: 'all',
       chips: SEARCH_CHIPS,
       suggestionShelves: [],
+      suggestionsLoading: false,
       bookResults: [],
       podcastResults: [],
       episodeResults: [],
@@ -157,6 +162,11 @@ export default {
       return this.bookResults.length + this.seriesResults.length + this.authorResults.length + this.podcastResults.length + this.narratorResults.length + this.tagResults.length + this.episodeResults.length
     }
   },
+  watch: {
+    currentLibraryId() {
+      this.loadSuggestions()
+    }
+  },
   methods: {
     showGroup(name) {
       return visibleGroups(this.activeChip, [name]).includes(name)
@@ -171,18 +181,34 @@ export default {
       return `/item/${entity.id}`
     },
     async loadSuggestions() {
-      if (!this.currentLibraryId || !this.$store.state.user.user) return
-      const categories = await this.$nativeHttp.get(`/api/libraries/${this.currentLibraryId}/personalized?limit=10&include=rssfeed,numEpisodesIncomplete`).catch(() => null)
-      if (!Array.isArray(categories)) return
-      this.suggestionShelves = categories
-        .filter((c) => c.entities?.length)
-        .slice(0, 3)
-        .map((c) => ({
-          id: c.id,
-          label: c.label || c.id,
-          type: c.type,
-          entities: c.entities
-        }))
+      if (!this.currentLibraryId || !this.$store.state.user.user) {
+        this.suggestionShelves = []
+        return
+      }
+      this.suggestionsLoading = true
+      try {
+        const categories = await this.$nativeHttp
+          .get(`/api/libraries/${this.currentLibraryId}/personalized?limit=10&include=rssfeed,numEpisodesIncomplete`)
+          .catch(() => null)
+        if (!Array.isArray(categories)) {
+          this.suggestionShelves = []
+          return
+        }
+        this.suggestionShelves = categories
+          .filter((c) => c.entities?.length)
+          .slice(0, 3)
+          .map((c) => ({
+            id: c.id,
+            label: c.label || c.id,
+            type: c.type,
+            entities: c.entities
+          }))
+      } catch (error) {
+        console.error('[search] Failed to load suggestions', error)
+        this.suggestionShelves = []
+      } finally {
+        this.suggestionsLoading = false
+      }
     },
     async runSearch(value) {
       if (this.isFetching && this.lastSearch === value) return
@@ -191,6 +217,18 @@ export default {
       this.$store.commit('globals/setLastSearch', value)
 
       if (!this.lastSearch) {
+        this.isFetching = false
+        this.bookResults = []
+        this.podcastResults = []
+        this.episodeResults = []
+        this.seriesResults = []
+        this.authorResults = []
+        this.narratorResults = []
+        this.tagResults = []
+        return
+      }
+      if (!this.currentLibraryId) {
+        this.isFetching = false
         this.bookResults = []
         this.podcastResults = []
         this.episodeResults = []

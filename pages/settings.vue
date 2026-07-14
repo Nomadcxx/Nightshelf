@@ -58,7 +58,7 @@
               <ui-toggle-switch v-model="settings.enableMp3IndexSeeking" @input="saveSettings" />
             </div>
             <p class="pl-4">{{ $strings.LabelEnableMp3IndexSeeking }}</p>
-            <span class="material-symbols text-xl ml-2" @click.stop="showConfirmMp3IndexSeeking">info</span>
+            <ui-ph-icon name="info" :size="20" class="ml-2 text-fg-muted" @click.native.stop="showConfirmMp3IndexSeeking" />
           </div>
           <div class="flex items-center py-3">
             <div class="w-10 flex justify-center" @click="toggleAllowSeekingOnMediaControls">
@@ -73,7 +73,7 @@
                 <ui-toggle-switch v-model="settings.disableShakeToResetSleepTimer" @input="saveSettings" />
               </div>
               <p class="pl-4">{{ $strings.LabelDisableShakeToReset }}</p>
-              <span class="material-symbols text-xl ml-2" @click.stop="showInfo('disableShakeToResetSleepTimer')">info</span>
+              <ui-ph-icon name="info" :size="20" class="ml-2 text-fg-muted" @click.native.stop="showInfo('disableShakeToResetSleepTimer')" />
             </div>
             <div v-if="!settings.disableShakeToResetSleepTimer" class="py-3 flex items-center">
               <p class="pr-4 w-36">{{ $strings.LabelShakeSensitivity }}</p>
@@ -87,7 +87,7 @@
               <ui-toggle-switch v-model="settings.disableSleepTimerFadeOut" @input="saveSettings" />
             </div>
             <p class="pl-4">{{ $strings.LabelDisableAudioFadeOut }}</p>
-            <span class="material-symbols text-xl ml-2" @click.stop="showInfo('disableSleepTimerFadeOut')">info</span>
+            <ui-ph-icon name="info" :size="20" class="ml-2 text-fg-muted" @click.native.stop="showInfo('disableSleepTimerFadeOut')" />
           </div>
           <template v-if="!isiOS">
             <div class="flex items-center py-3">
@@ -95,21 +95,21 @@
                 <ui-toggle-switch v-model="settings.disableSleepTimerResetFeedback" @input="saveSettings" />
               </div>
               <p class="pl-4">{{ $strings.LabelDisableVibrateOnReset }}</p>
-              <span class="material-symbols text-xl ml-2" @click.stop="showInfo('disableSleepTimerResetFeedback')">info</span>
+              <ui-ph-icon name="info" :size="20" class="ml-2 text-fg-muted" @click.native.stop="showInfo('disableSleepTimerResetFeedback')" />
             </div>
             <div class="flex items-center py-3">
               <div class="w-10 flex justify-center" @click="toggleSleepTimerAlmostDoneChime">
                 <ui-toggle-switch v-model="settings.enableSleepTimerAlmostDoneChime" @input="saveSettings" />
               </div>
               <p class="pl-4">{{ $strings.LabelSleepTimerAlmostDoneChime }}</p>
-              <span class="material-symbols text-xl ml-2" @click.stop="showInfo('enableSleepTimerAlmostDoneChime')">info</span>
+              <ui-ph-icon name="info" :size="20" class="ml-2 text-fg-muted" @click.native.stop="showInfo('enableSleepTimerAlmostDoneChime')" />
             </div>
             <div class="flex items-center py-3">
               <div class="w-10 flex justify-center" @click="toggleAutoSleepTimer">
                 <ui-toggle-switch v-model="settings.autoSleepTimer" @input="saveSettings" />
               </div>
               <p class="pl-4">{{ $strings.LabelAutoSleepTimer }}</p>
-              <span class="material-symbols text-xl ml-2" @click.stop="showInfo('autoSleepTimer')">info</span>
+              <ui-ph-icon name="info" :size="20" class="ml-2 text-fg-muted" @click.native.stop="showInfo('autoSleepTimer')" />
             </div>
           </template>
           <div v-if="settings.autoSleepTimer" class="py-3 flex items-center">
@@ -131,7 +131,7 @@
               <ui-toggle-switch v-model="settings.autoSleepTimerAutoRewind" @input="saveSettings" />
             </div>
             <p class="pl-4">{{ $strings.LabelAutoSleepTimerAutoRewind }}</p>
-            <span class="material-symbols text-xl ml-2" @click.stop="showInfo('autoSleepTimerAutoRewind')">info</span>
+            <ui-ph-icon name="info" :size="20" class="ml-2 text-fg-muted" @click.native.stop="showInfo('autoSleepTimerAutoRewind')" />
           </div>
           <div v-if="settings.autoSleepTimerAutoRewind" class="py-3 flex items-center">
             <p class="pr-4 w-36">{{ $strings.LabelAutoRewindTime }}</p>
@@ -166,7 +166,7 @@
           <div class="py-3 flex items-center">
             <p class="pr-4 w-36">{{ $strings.LabelAndroidAutoBrowseLimitForGrouping }}</p>
             <ui-text-input type="number" v-model="settings.androidAutoBrowseLimitForGrouping" class="settings-readonly-value" style="width: 145px; max-width: 145px" @input="androidAutoBrowseLimitForGroupingUpdated" />
-            <span class="material-symbols text-xl ml-2" @click.stop="showInfo('androidAutoBrowseLimitForGrouping')">info</span>
+            <ui-ph-icon name="info" :size="20" class="ml-2 text-fg-muted" @click.native.stop="showInfo('androidAutoBrowseLimitForGrouping')" />
           </div>
           <div class="py-3 flex items-center">
             <p class="pr-4 w-36">{{ $strings.LabelAndroidAutoBrowseSeriesSequenceOrder }}</p>

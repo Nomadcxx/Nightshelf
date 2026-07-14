@@ -4,7 +4,8 @@
       <span class="material-symbols fill text-2xl text-fg">sell</span>
     </div>
     <div class="flex-grow px-2 tagSearchCardContent h-full">
-      <p class="truncate text-sm">{{ tag }}</p>
+      <p class="truncate text-sm text-fg">{{ tag }}</p>
+      <p class="font-mono text-xxs uppercase tracking-wide text-fg-muted">tag</p>
     </div>
   </div>
 </template>
