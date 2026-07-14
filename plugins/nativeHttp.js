@@ -123,8 +123,9 @@ export default function ({ store, $db, $socket }, inject) {
       } catch (error) {
         console.error('[nativeHttp] Token refresh failed:', error)
 
-        // Only log out on permanent rejection (401); transient errors keep credentials
-        if (!error?.transient) {
+        // Only log out when the refresh token was permanently rejected.
+        // Retry and configuration failures must keep the refreshed credentials.
+        if (error?.permanent) {
           await this.handleRefreshFailure(serverConnectionConfig?.id)
         }
         throw error

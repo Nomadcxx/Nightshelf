@@ -73,7 +73,7 @@
             <span v-if="showFullscreen" class="jump-label text-[10px] font-semibold leading-tight">{{ jumpBackwardsLabel }}</span>
           </div>
           <ui-icon-btn
-            class="play-btn cursor-pointer shadow-sm text-primary mx-4 relative overflow-hidden"
+            class="play-btn rounded-full cursor-pointer shadow-sm text-primary mx-4 relative overflow-hidden"
             :style="{ backgroundColor: coverRgb }"
             :class="{ 'animate-spin': seekLoading, 'text-white': coverRgb && !coverBgIsLight }"
             :icon="seekLoading ? 'autorenew' : !isPlaying ? 'play_arrow' : 'pause'"
