@@ -94,3 +94,5 @@ sw.*
 
 # Brainstorm / design session artifacts
 .superpowers/
+# Git worktrees
+.worktrees/
