@@ -37,6 +37,7 @@
 
 <script>
 import TouchEvent from '@/objects/TouchEvent'
+import { AbsAudioPlayer } from '@/plugins/capacitor'
 
 export default {
   data() {
@@ -108,6 +109,13 @@ export default {
           text: this.$strings.ButtonUserStats,
           to: '/stats'
         })
+        if (this.isCastAvailable) {
+          items.push({
+            icon: this.isCasting ? 'cast_connected' : 'cast',
+            text: 'Cast',
+            action: 'cast'
+          })
+        }
       }
 
       if (this.$platform !== 'ios') {
@@ -156,6 +164,12 @@ export default {
     },
     currentRoutePath() {
       return this.$route.path
+    },
+    isCastAvailable() {
+      return this.$store.state.isCastAvailable
+    },
+    isCasting() {
+      return this.$store.state.isCasting
     }
   },
   methods: {
@@ -164,6 +178,13 @@ export default {
       if (action === 'logout') {
         await this.logout()
         this.$router.push('/connect')
+      } else if (action === 'cast') {
+        this.show = false
+        if (this.$store.getters['getIsCurrentSessionLocal']) {
+          this.$eventBus.$emit('cast-local-item')
+          return
+        }
+        AbsAudioPlayer.requestSession()
       } else if (action === 'openWebClient') {
         this.show = false
         let path = `/library/${this.$store.state.libraries.currentLibraryId}`

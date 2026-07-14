@@ -7,6 +7,10 @@
       <a v-if="showBack" @click="back" aria-label="Back" class="rounded-full h-10 w-10 flex items-center justify-center mr-2 cursor-pointer">
         <span class="material-symbols text-3xl text-fg">arrow_back</span>
       </a>
+      <nuxt-link to="/bookshelf" class="mr-3 min-w-0 leading-none">
+        <p class="font-sans font-semibold text-base text-fg truncate">Nightshelf</p>
+        <p class="nightshelf-theme-label hidden font-mono uppercase tracking-widest text-xxs text-success mt-1">Terminal</p>
+      </nuxt-link>
       <div v-if="user && currentLibrary">
         <button type="button" aria-label="Show library modal" class="pl-1.5 pr-2.5 py-2 bg-bg bg-opacity-30 rounded-md flex items-center" @click="clickShowLibraryModal">
           <ui-library-icon :icon="currentLibraryIcon" :size="4" font-size="base" />
@@ -17,15 +21,6 @@
       <widgets-connection-indicator />
 
       <div class="flex-grow" />
-
-      <widgets-download-progress-indicator />
-
-      <!-- Must be connected to a server to cast, only supports media items on server -->
-      <button type="button" aria-label="Cast" v-show="isCastAvailable && user" class="mx-2 cursor-pointer flex items-center" @click="castClick">
-        <span class="material-symbols text-2xl leading-none">
-          {{ isCasting ? 'cast_connected' : 'cast' }}
-        </span>
-      </button>
 
       <nuxt-link v-if="user" class="mx-1.5 flex items-center h-10" to="/search" aria-label="Search">
         <span class="material-symbols text-2xl leading-none">search</span>
@@ -74,19 +69,9 @@ export default {
     },
     username() {
       return this.user?.username || 'err'
-    },
-    isCasting() {
-      return this.$store.state.isCasting
     }
   },
   methods: {
-    castClick() {
-      if (this.$store.getters['getIsCurrentSessionLocal']) {
-        this.$eventBus.$emit('cast-local-item')
-        return
-      }
-      AbsAudioPlayer.requestSession()
-    },
     clickShowSideDrawer() {
       this.$store.commit('setShowSideDrawer', true)
     },
@@ -116,6 +101,11 @@ export default {
 #appbar {
   box-shadow: 0px 5px 5px #11111155;
 }
+
+html[data-theme='terminal'] .nightshelf-theme-label {
+  display: block;
+}
+
 .loader-dots div {
   animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }

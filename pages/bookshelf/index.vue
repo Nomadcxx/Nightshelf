@@ -10,7 +10,26 @@
     </div>
 
     <div class="w-full" :class="{ 'py-6': altViewEnabled }">
-      <template v-for="(shelf, index) in shelves">
+      <transition name="continue-hero">
+        <article v-if="continueItem" class="mx-4 mb-6 rounded-xl border border-border bg-secondary/60 shadow-lg overflow-hidden">
+          <button type="button" class="w-full flex text-left p-4 gap-4" @click="openContinueItem">
+            <div class="flex-none w-20 h-28 rounded-lg overflow-hidden bg-primary">
+              <img :src="continueItemCoverSrc" :alt="continueItemTitle" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0 flex-grow flex flex-col justify-center">
+              <p class="text-xs uppercase tracking-widest text-fg-muted font-semibold">Continue listening</p>
+              <p class="mt-1 text-lg font-semibold leading-tight truncate">{{ continueItemTitle }}</p>
+              <p v-if="continueItemSubtitle" class="mt-1 text-sm text-fg-muted truncate">{{ continueItemSubtitle }}</p>
+              <div v-if="continueItemProgress !== null" class="mt-4">
+                <ui-synthwave-progress :progress="continueItemProgress" variant="mini" />
+                <p class="mt-1.5 text-xs font-mono text-fg-muted">{{ Math.round(continueItemProgress * 100) }}% complete</p>
+              </div>
+            </div>
+            <span class="material-symbols self-center text-accent" aria-hidden="true">arrow_forward</span>
+          </button>
+        </article>
+      </transition>
+      <template v-for="(shelf, index) in displayedShelves">
         <bookshelf-shelf :key="shelf.id" :label="getShelfLabel(shelf)" :entities="shelf.entities" :type="shelf.type" :style="{ zIndex: shelves.length - index }" />
       </template>
     </div>
@@ -38,6 +57,8 @@
 </template>
 
 <script>
+import { Capacitor } from '@capacitor/core'
+
 export default {
   props: {},
   data() {
@@ -112,12 +133,69 @@ export default {
     },
     attemptingConnection() {
       return this.$store.state.attemptingConnection
+    },
+    continueShelf() {
+      return this.shelves.find((shelf) => this.isContinueShelf(shelf)) || null
+    },
+    continueItem() {
+      return this.continueShelf?.entities?.[0] || null
+    },
+    displayedShelves() {
+      if (!this.continueShelf) return this.shelves
+      return this.shelves.filter((shelf) => shelf !== this.continueShelf)
+    },
+    continueItemMedia() {
+      return this.continueItem?.media || {}
+    },
+    continueItemMetadata() {
+      return this.continueItemMedia.metadata || {}
+    },
+    continueItemEpisode() {
+      return this.continueItem?.recentEpisode || null
+    },
+    continueItemTitle() {
+      return this.continueItemEpisode?.title || this.continueItemMetadata.title || ''
+    },
+    continueItemSubtitle() {
+      if (this.continueItemEpisode) return this.continueItemMetadata.title || this.continueItemMetadata.author || ''
+      return this.continueItemMetadata.authorName || this.continueItemMetadata.author || ''
+    },
+    continueItemProgress() {
+      if (!this.continueItem) return null
+      const progress = this.continueItem.isLocal
+        ? this.$store.getters['globals/getLocalMediaProgressById'](this.continueItem.id, this.continueItemEpisode?.id)
+        : this.$store.getters['user/getUserMediaProgress'](this.continueItem.id, this.continueItemEpisode?.id)
+
+      if (!progress) return null
+      return Math.max(0, Math.min(1, progress.progress || progress.ebookProgress || 0))
+    },
+    continueItemCoverSrc() {
+      if (this.continueItem?.isLocal && this.continueItem.coverContentUrl) {
+        return Capacitor.convertFileSrc(this.continueItem.coverContentUrl)
+      }
+      return this.$store.getters['globals/getLibraryItemCoverSrc'](this.continueItem, '/book_placeholder.jpg')
     }
   },
   methods: {
     getShelfLabel(shelf) {
       if (shelf.labelStringKey && this.$strings[shelf.labelStringKey]) return this.$strings[shelf.labelStringKey]
       return shelf.label
+    },
+    isContinueShelf(shelf) {
+      const shelfId = String(shelf?.id || '').toLowerCase()
+      return shelfId.includes('continue') || [this.$strings.LabelContinueBooks, this.$strings.LabelContinueEpisodes].includes(this.getShelfLabel(shelf))
+    },
+    openContinueItem() {
+      if (!this.continueItem) return
+      const itemId = this.continueItem.id
+      const episodeId = this.continueItemEpisode?.id
+      if (episodeId) {
+        this.$router.push(`/item/${itemId}/${episodeId}`)
+      } else if (this.continueItem.localLibraryItem) {
+        this.$router.push(`/item/${itemId}?localLibraryItemId=${this.continueItem.localLibraryItem.id}`)
+      } else {
+        this.$router.push(`/item/${itemId}`)
+      }
     },
     getLocalMediaItemCategories() {
       const localMedia = this.localLibraryItems
@@ -348,3 +426,20 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.continue-hero-enter-active {
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
+}
+
+.continue-hero-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .continue-hero-enter-active {
+    transition: none;
+  }
+}
+</style>
