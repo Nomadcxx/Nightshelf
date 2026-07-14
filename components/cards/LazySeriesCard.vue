@@ -5,7 +5,9 @@
       <covers-group-cover v-if="series" ref="cover" :id="seriesId" :name="title" :book-items="books" :width="width" :height="height" :book-cover-aspect-ratio="bookCoverAspectRatio" />
     </div>
 
-    <div v-if="seriesPercentInProgress > 0" class="absolute bottom-0 left-0 h-1 max-w-full z-10 rounded-b w-full box-shadow-progressbar" :class="isSeriesFinished ? 'bg-success' : 'bg-yellow-400'" :style="{ width: seriesPercentInProgress * 100 + '%' }" />
+    <div v-if="seriesPercentInProgress > 0" class="absolute bottom-0 left-0 h-1 w-full max-w-full z-10 rounded-b overflow-hidden bg-track">
+      <div class="h-full box-shadow-progressbar" :class="isSeriesFinished ? 'bg-success' : 'bg-accent'" :style="{ width: seriesPercentInProgress * 100 + '%' }" />
+    </div>
 
     <div v-if="isAltViewEnabled && isCategorized" class="absolute z-30 left-0 right-0 mx-auto -bottom-8 h-8 py-1 rounded-md text-center">
       <p class="truncate" :style="{ fontSize: labelFontSize + 'rem' }">{{ title }}</p>

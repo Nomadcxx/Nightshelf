@@ -1,10 +1,11 @@
 <template>
-  <div class="w-full h-9 bg-bg relative">
-    <div id="bookshelf-navbar" class="absolute z-10 top-0 left-0 w-full h-full flex bg-secondary">
-      <nuxt-link v-for="item in items" :key="item.to" :to="item.to" class="h-full flex-grow flex items-center justify-center" :class="routeName === item.routeName ? 'bg-primary' : 'text-fg-muted'">
-        <p v-if="routeName === item.routeName" class="text-sm font-semibold">{{ item.text }}</p>
+  <div class="w-full h-8 bg-bg relative">
+    <div id="bookshelf-navbar" class="absolute z-10 top-0 left-0 w-full h-full flex bg-secondary border-b border-border">
+      <nuxt-link v-for="item in items" :key="item.to" :to="item.to" class="h-full flex-grow flex items-center justify-center relative" :class="routeName === item.routeName ? 'text-fg' : 'text-fg-muted'">
+        <p v-if="routeName === item.routeName" class="text-xs font-semibold">{{ item.text }}</p>
         <span v-else-if="item.iconPack === 'abs-icons'" class="abs-icons" :class="`icon-${item.icon} ${item.iconClass || ''}`"></span>
         <span v-else :class="`${item.iconPack} ${item.iconClass || ''}`">{{ item.icon }}</span>
+        <span v-if="routeName === item.routeName" class="absolute bottom-0 left-2 right-2 h-0.5 bg-accent rounded-t" />
       </nuxt-link>
     </div>
   </div>
@@ -145,9 +146,9 @@ export default {
 
 <style>
 #bookshelf-navbar {
-  box-shadow: 0px 5px 5px #11111155;
+  box-shadow: 0 2px 6px rgb(var(--color-bg) / 0.35);
 }
 #bookshelf-navbar a {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 </style>

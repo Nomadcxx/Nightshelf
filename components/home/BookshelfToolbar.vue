@@ -1,20 +1,20 @@
 <template>
-  <div class="w-full h-9 bg-bg relative z-20">
+  <div class="w-full h-8 bg-secondary border-b border-border relative z-20">
     <div id="bookshelf-toolbar" class="absolute top-0 left-0 w-full h-full z-20 flex items-center px-2">
       <div class="flex items-center w-full text-sm">
-        <p v-show="!selectedSeriesName" class="pt-1">{{ $formatNumber(totalEntities) }} {{ entityTitle }}</p>
-        <p v-show="selectedSeriesName" class="ml-2 pt-1">{{ selectedSeriesName }} ({{ $formatNumber(totalEntities) }})</p>
+        <p v-show="!selectedSeriesName" class="text-fg-muted">{{ $formatNumber(totalEntities) }} {{ entityTitle }}</p>
+        <p v-show="selectedSeriesName" class="ml-1 truncate">{{ selectedSeriesName }} ({{ $formatNumber(totalEntities) }})</p>
         <div class="flex-grow" />
-        <span v-if="page == 'library' || seriesBookPage" class="material-symbols text-2xl px-2" @click="changeView">{{ !bookshelfListView ? 'view_list' : 'grid_view' }}</span>
+        <ui-icon-btn v-if="page == 'library' || seriesBookPage" class="h-8 w-8 text-fg-muted" borderless :icon="!bookshelfListView ? 'view_list' : 'grid_view'" @click="changeView" />
         <template v-if="page === 'library'">
-          <div class="relative flex items-center px-2">
-            <span class="material-symbols text-2xl" @click="showFilterModal = true">filter_alt</span>
-            <div v-show="hasFilters" class="absolute top-0 right-2 w-2 h-2 rounded-full bg-success border border-green-300 shadow-sm z-10 pointer-events-none" />
+          <div class="relative flex items-center">
+            <ui-icon-btn class="h-8 w-8 text-fg-muted" borderless icon="filter_alt" @click="showFilterModal = true" />
+            <div v-show="hasFilters" class="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-success border border-secondary shadow-sm z-10 pointer-events-none" />
           </div>
-          <span class="material-symbols text-2xl px-2" @click="showSortModal = true">sort</span>
+          <ui-icon-btn class="h-8 w-8 text-fg-muted" borderless icon="sort" @click="showSortModal = true" />
         </template>
-        <span v-if="seriesBookPage" class="material-symbols text-2xl px-2" @click="downloadSeries">download</span>
-        <span v-if="(page == 'library' && isBookLibrary) || seriesBookPage" class="material-symbols text-2xl px-2" @click="showMoreMenuDialog = true">more_vert</span>
+        <ui-icon-btn v-if="seriesBookPage" class="h-8 w-8 text-fg-muted" borderless icon="download" @click="downloadSeries" />
+        <ui-icon-btn v-if="(page == 'library' && isBookLibrary) || seriesBookPage" class="h-8 w-8 text-fg-muted" borderless icon="more_vert" @click="showMoreMenuDialog = true" />
       </div>
     </div>
 
@@ -165,6 +165,6 @@ export default {
 
 <style>
 #bookshelf-toolbar {
-  box-shadow: 0px 5px 5px #11111155;
+  box-shadow: 0 2px 6px rgb(var(--color-bg) / 0.35);
 }
 </style>

@@ -59,7 +59,9 @@
     </div>
 
     <!-- No progress shown for collapsed series in library -->
-    <div v-if="!collapsedSeries && (!isPodcast || recentEpisode)" class="absolute bottom-0 left-0 h-1 max-w-full z-10 rounded-b box-shadow-progressbar" :class="itemIsFinished ? 'bg-success' : 'bg-yellow-400'" :style="{ width: width * userProgressPercent + 'px' }"></div>
+    <div v-if="!collapsedSeries && (!isPodcast || recentEpisode)" class="absolute bottom-0 left-0 w-full h-1 z-10 overflow-hidden rounded-b bg-track">
+      <div class="h-full box-shadow-progressbar" :class="itemIsFinished ? 'bg-success' : 'bg-accent'" :style="{ width: width * userProgressPercent + 'px' }" />
+    </div>
 
     <!-- Downloaded icon -->
     <div v-if="showHasLocalDownload" class="absolute right-0 top-0 z-20" :style="{ top: (isPodcast || (seriesSequence && showSequence) ? 1.75 : 0.375) * sizeMultiplier + 'rem', right: 0.375 * sizeMultiplier + 'rem', padding: `${0.1 * sizeMultiplier}rem ${0.25 * sizeMultiplier}rem` }">
