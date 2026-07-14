@@ -6,7 +6,8 @@
           <p v-show="!selectedSeriesName" class="font-mono text-xxs uppercase tracking-widest text-fg-muted">{{ $formatNumber(totalEntities) }} {{ entityTitle }}</p>
           <p v-show="selectedSeriesName" class="ml-1 truncate text-sm">{{ selectedSeriesName }} ({{ $formatNumber(totalEntities) }})</p>
           <div class="flex-grow" />
-          <ui-icon-btn v-if="page == 'library' || seriesBookPage" class="h-8 w-8 text-fg-muted" borderless :icon="!bookshelfListView ? 'view_list' : 'grid_view'" @click="changeView" />
+          <ui-icon-btn v-if="page == 'library'" class="h-8 w-8 text-fg-muted" borderless :icon="libraryViewMode === 'rails' ? 'grid_view' : 'view_list'" @click="changeLibraryViewMode" />
+          <ui-icon-btn v-else-if="seriesBookPage" class="h-8 w-8 text-fg-muted" borderless :icon="!bookshelfListView ? 'view_list' : 'grid_view'" @click="changeView" />
           <template v-if="page === 'library'">
             <div class="relative flex items-center">
               <ui-icon-btn class="h-8 w-8 text-fg-muted" borderless icon="filter_alt" @click="showFilterModal = true" />
@@ -48,6 +49,9 @@ export default {
         this.$localStore.setBookshelfListView(val)
         this.$store.commit('globals/setBookshelfListView', val)
       }
+    },
+    libraryViewMode() {
+      return this.$store.state.globals.libraryViewMode || 'rails'
     },
     currentLibraryMediaType() {
       return this.$store.getters['libraries/getCurrentLibraryMediaType']
@@ -139,6 +143,8 @@ export default {
     },
     async init() {
       this.bookshelfListView = await this.$localStore.getBookshelfListView()
+      const mode = await this.$localStore.getLibraryViewMode()
+      this.$store.commit('globals/setLibraryViewMode', mode)
       this.settings = { ...this.$store.state.user.settings }
       this.bookshelfReady = true
     },
@@ -152,6 +158,12 @@ export default {
     },
     async changeView() {
       this.bookshelfListView = !this.bookshelfListView
+      await this.$hapticsImpact()
+    },
+    async changeLibraryViewMode() {
+      const next = this.libraryViewMode === 'rails' ? 'grid' : 'rails'
+      this.$store.commit('globals/setLibraryViewMode', next)
+      await this.$localStore.setLibraryViewMode(next)
       await this.$hapticsImpact()
     },
     downloadSeries() {

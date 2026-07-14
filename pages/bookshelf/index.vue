@@ -38,8 +38,6 @@
 </template>
 
 <script>
-import { Capacitor } from '@capacitor/core'
-
 export default {
   props: {},
   data() {
@@ -106,77 +104,20 @@ export default {
     currentLibraryIsPodcast() {
       return this.currentLibraryMediaType === 'podcast'
     },
-    altViewEnabled() {
-      return this.$store.getters['getAltViewEnabled']
-    },
-    localMediaProgress() {
-      return this.$store.state.globals.localMediaProgress
+    displayedShelves() {
+      return this.shelves
     },
     attemptingConnection() {
       return this.$store.state.attemptingConnection
     },
-    continueShelf() {
-      return this.shelves.find((shelf) => this.isContinueShelf(shelf)) || null
-    },
-    continueItem() {
-      return this.continueShelf?.entities?.[0] || null
-    },
-    displayedShelves() {
-      if (!this.continueShelf) return this.shelves
-      return this.shelves.filter((shelf) => shelf !== this.continueShelf)
-    },
-    continueItemMedia() {
-      return this.continueItem?.media || {}
-    },
-    continueItemMetadata() {
-      return this.continueItemMedia.metadata || {}
-    },
-    continueItemEpisode() {
-      return this.continueItem?.recentEpisode || null
-    },
-    continueItemTitle() {
-      return this.continueItemEpisode?.title || this.continueItemMetadata.title || ''
-    },
-    continueItemSubtitle() {
-      if (this.continueItemEpisode) return this.continueItemMetadata.title || this.continueItemMetadata.author || ''
-      return this.continueItemMetadata.authorName || this.continueItemMetadata.author || ''
-    },
-    continueItemProgress() {
-      if (!this.continueItem) return null
-      const progress = this.continueItem.isLocal
-        ? this.$store.getters['globals/getLocalMediaProgressById'](this.continueItem.id, this.continueItemEpisode?.id)
-        : this.$store.getters['user/getUserMediaProgress'](this.continueItem.id, this.continueItemEpisode?.id)
-
-      if (!progress) return null
-      return Math.max(0, Math.min(1, progress.progress || progress.ebookProgress || 0))
-    },
-    continueItemCoverSrc() {
-      if (this.continueItem?.isLocal && this.continueItem.coverContentUrl) {
-        return Capacitor.convertFileSrc(this.continueItem.coverContentUrl)
-      }
-      return this.$store.getters['globals/getLibraryItemCoverSrc'](this.continueItem, '/book_placeholder.jpg')
+    localMediaProgress() {
+      return this.$store.state.globals.localMediaProgress
     }
   },
   methods: {
     getShelfLabel(shelf) {
       if (shelf.labelStringKey && this.$strings[shelf.labelStringKey]) return this.$strings[shelf.labelStringKey]
       return shelf.label
-    },
-    isContinueShelf(shelf) {
-      const shelfId = String(shelf?.id || '').toLowerCase()
-      return shelfId.includes('continue') || [this.$strings.LabelContinueBooks, this.$strings.LabelContinueEpisodes].includes(this.getShelfLabel(shelf))
-    },
-    openContinueItem() {
-      if (!this.continueItem) return
-      const itemId = this.continueItem.id
-      const episodeId = this.continueItemEpisode?.id
-      if (episodeId) {
-        this.$router.push(`/item/${itemId}/${episodeId}`)
-      } else if (this.continueItem.localLibraryItem) {
-        this.$router.push(`/item/${itemId}?localLibraryItemId=${this.continueItem.localLibraryItem.id}`)
-      } else {
-        this.$router.push(`/item/${itemId}`)
-      }
     },
     getLocalMediaItemCategories() {
       const localMedia = this.localLibraryItems
@@ -407,20 +348,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.continue-hero-enter-active {
-  transition: opacity 180ms ease-out, transform 180ms ease-out;
-}
-
-.continue-hero-enter {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .continue-hero-enter-active {
-    transition: none;
-  }
-}
-</style>

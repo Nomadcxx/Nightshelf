@@ -97,14 +97,24 @@ export default {
       this.theme = stored || document.documentElement.dataset.theme || 'night'
     }
   },
+  watch: {
+    '$route.name'() {
+      this.refreshTheme()
+    }
+  },
   async mounted() {
     await this.refreshTheme()
+    this._themeObserver = new MutationObserver(() => {
+      this.theme = document.documentElement.dataset.theme || this.theme
+    })
+    this._themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
     AbsAudioPlayer.getIsCastAvailable().then((data) => {
       this.isCastAvailable = data && data.value
     })
     this.onCastAvailableUpdateListener = await AbsAudioPlayer.addListener('onCastAvailableUpdate', this.onCastAvailableUpdate)
   },
   beforeDestroy() {
+    this._themeObserver?.disconnect()
     this.onCastAvailableUpdateListener?.remove()
   }
 }

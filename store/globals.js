@@ -2,6 +2,7 @@ export const state = () => ({
   isModalOpen: false,
   itemDownloads: [],
   bookshelfListView: false,
+  libraryViewMode: 'rails',
   series: null,
   localMediaProgress: [],
   lastSearch: null,
@@ -137,6 +138,9 @@ export const mutations = {
   },
   setBookshelfListView(state, val) {
     state.bookshelfListView = val
+  },
+  setLibraryViewMode(state, val) {
+    state.libraryViewMode = val === 'grid' ? 'grid' : 'rails'
   },
   setSeries(state, val) {
     state.series = val

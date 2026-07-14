@@ -78,6 +78,24 @@ class LocalStorage {
     }
   }
 
+  async setLibraryViewMode(mode) {
+    try {
+      await Preferences.set({ key: 'libraryViewMode', value: mode === 'grid' ? 'grid' : 'rails' })
+    } catch (error) {
+      console.error('[LocalStorage] Failed to set library view mode', error)
+    }
+  }
+
+  async getLibraryViewMode() {
+    try {
+      var obj = (await Preferences.get({ key: 'libraryViewMode' })) || {}
+      return obj.value === 'grid' ? 'grid' : 'rails'
+    } catch (error) {
+      console.error('[LocalStorage] Failed to get library view mode', error)
+      return 'rails'
+    }
+  }
+
   async setLastLibraryId(libraryId) {
     try {
       await Preferences.set({ key: 'lastLibraryId', value: libraryId })
