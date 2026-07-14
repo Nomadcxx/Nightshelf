@@ -1,13 +1,13 @@
 {
-	"appId": "com.audiobookshelf.app",
-	"appName": "audiobookshelf-app",
+	"appId": "com.nightshelf.app",
+	"appName": "Nightshelf",
 	"webDir": "dist",
 	"plugins": {
 		"CapacitorHttp": {
 			"enabled": false
 		},
 		"StatusBar": {
-			"backgroundColor": "#232323",
+			"backgroundColor": "#212337",
 			"style": "DARK"
 		}
 	},
