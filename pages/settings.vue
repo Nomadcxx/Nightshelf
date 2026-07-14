@@ -22,12 +22,6 @@
       </div>
     </div>
     <div class="py-3 flex items-center">
-      <p class="pr-4 w-36">{{ $strings.LabelLanguage }}</p>
-      <div @click.stop="showLanguageOptions">
-        <ui-text-input :value="languageOption" readonly append-icon="expand_more" style="max-width: 200px" />
-      </div>
-    </div>
-    <div class="py-3 flex items-center">
       <p class="pr-4 w-36">{{ $strings.LabelTheme }}</p>
       <div @click.stop="showThemeOptions">
         <ui-text-input :value="themeOption" readonly append-icon="expand_more" style="max-width: 200px" />
@@ -360,9 +354,6 @@ export default {
     jumpBackwardsSecondsOptions() {
       return this.$store.state.globals.jumpBackwardsSecondsOptions || []
     },
-    languageOptionItems() {
-      return this.$languageCodeOptions || []
-    },
     jumpForwardOption() {
       return this.getJumpLabel(this.settings.jumpForwardTime)
     },
@@ -393,9 +384,6 @@ export default {
       const item = this.hapticFeedbackItems.find((i) => i.value === this.settings.hapticFeedback)
       return item?.text || 'Error'
     },
-    languageOption() {
-      return this.languageOptionItems.find((i) => i.value === this.settings.languageCode)?.text || ''
-    },
     themeOption() {
       return this.themeOptionItems.find((i) => i.value === this.theme)?.text || ''
     },
@@ -423,7 +411,6 @@ export default {
     moreMenuItems() {
       if (this.moreMenuSetting === 'shakeSensitivity') return this.shakeSensitivityItems
       else if (this.moreMenuSetting === 'hapticFeedback') return this.hapticFeedbackItems
-      else if (this.moreMenuSetting === 'language') return this.languageOptionItems
       else if (this.moreMenuSetting === 'theme') return this.themeOptionItems
       else if (this.moreMenuSetting === 'downloadUsingCellular') return this.downloadUsingCellularItems
       else if (this.moreMenuSetting === 'streamingUsingCellular') return this.streamingUsingCellularItems
@@ -443,7 +430,6 @@ export default {
     moreMenuSelected() {
       if (this.moreMenuSetting === 'jumpForward') return this.settings.jumpForwardTime
       if (this.moreMenuSetting === 'jumpBackwards') return this.settings.jumpBackwardsTime
-      if (this.moreMenuSetting === 'language') return this.settings.languageCode
       if (this.moreMenuSetting === 'theme') return this.theme
       if (this.moreMenuSetting === 'downloadUsingCellular') return this.settings.downloadUsingCellular
       if (this.moreMenuSetting === 'streamingUsingCellular') return this.settings.streamingUsingCellular
@@ -474,10 +460,6 @@ export default {
     },
     showShakeSensitivityOptions() {
       this.moreMenuSetting = 'shakeSensitivity'
-      this.showMoreMenuDialog = true
-    },
-    showLanguageOptions() {
-      this.moreMenuSetting = 'language'
       this.showMoreMenuDialog = true
     },
     showThemeOptions() {
@@ -512,9 +494,6 @@ export default {
       } else if (this.moreMenuSetting === 'hapticFeedback') {
         this.settings.hapticFeedback = action
         this.hapticFeedbackUpdated(action)
-      } else if (this.moreMenuSetting === 'language') {
-        this.settings.languageCode = action
-        this.saveSettings()
       } else if (this.moreMenuSetting === 'theme') {
         this.theme = action
         this.saveTheme(action)
@@ -663,7 +642,7 @@ export default {
       this.settings.autoSleepTimerAutoRewind = !!deviceSettings.autoSleepTimerAutoRewind
       this.settings.autoSleepTimerAutoRewindTime = !isNaN(deviceSettings.autoSleepTimerAutoRewindTime) ? deviceSettings.autoSleepTimerAutoRewindTime : 300000 // 5 minutes
 
-      this.settings.languageCode = deviceSettings.languageCode || 'en-us'
+      this.settings.languageCode = 'en-us'
 
       this.settings.downloadUsingCellular = deviceSettings.downloadUsingCellular || 'ALWAYS'
       this.settings.streamingUsingCellular = deviceSettings.streamingUsingCellular || 'ALWAYS'

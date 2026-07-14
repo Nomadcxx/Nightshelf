@@ -5,32 +5,7 @@ const defaultCode = 'en-us'
 let $localStore = null
 
 const languageCodeMap = {
-  be: { label: 'Беларуская', dateFnsLocale: 'be' },
-  bn: { label: 'বাংলা', dateFnsLocale: 'bn' },
-  bg: { label: 'Български', dateFnsLocale: 'bg' },
-  ca: { label: 'Català', dateFnsLocale: 'ca' },
-  cs: { label: 'Čeština', dateFnsLocale: 'cs' },
-  da: { label: 'Dansk', dateFnsLocale: 'da' },
-  de: { label: 'Deutsch', dateFnsLocale: 'de' },
-  'en-us': { label: 'English', dateFnsLocale: 'enUS' },
-  es: { label: 'Español', dateFnsLocale: 'es' },
-  fi: { label: 'Suomi', dateFnsLocale: 'fi' },
-  fr: { label: 'Français', dateFnsLocale: 'fr' },
-  hr: { label: 'Hrvatski', dateFnsLocale: 'hr' },
-  it: { label: 'Italiano', dateFnsLocale: 'it' },
-  lt: { label: 'Lietuvių', dateFnsLocale: 'lt' },
-  hu: { label: 'Magyar', dateFnsLocale: 'hu' },
-  nl: { label: 'Nederlands', dateFnsLocale: 'nl' },
-  no: { label: 'Norsk', dateFnsLocale: 'no' },
-  pl: { label: 'Polski', dateFnsLocale: 'pl' },
-  'pt-br': { label: 'Português (Brasil)', dateFnsLocale: 'ptBR' },
-  ru: { label: 'Русский', dateFnsLocale: 'ru' },
-  sl: { label: 'Slovenščina', dateFnsLocale: 'sl' },
-  sv: { label: 'Svenska', dateFnsLocale: 'sv' },
-  tr: { label: 'Türkçe', dateFnsLocale: 'tr' },
-  uk: { label: 'Українська', dateFnsLocale: 'uk' },
-  'vi-vn': { label: 'Tiếng Việt', dateFnsLocale: 'vi' },
-  'zh-cn': { label: '简体中文 (Simplified Chinese)', dateFnsLocale: 'zhCN' }
+  'en-us': { label: 'English', dateFnsLocale: 'enUS' }
 }
 
 function supplant(str, subs) {
@@ -69,42 +44,19 @@ Vue.prototype.$formatNumber = (num) => {
   return Intl.NumberFormat(Vue.prototype.$languageCodes.current).format(num)
 }
 
-var translations = {
-  [defaultCode]: enUsStrings
-}
-
-function loadTranslationStrings(code) {
-  return new Promise((resolve) => {
-    import(`../strings/${code}`)
-      .then((fileContents) => {
-        resolve(fileContents.default)
-      })
-      .catch((error) => {
-        console.error('Failed to load i18n strings', code, error)
-        resolve(null)
-      })
-  })
-}
-
-async function loadi18n(code) {
-  if (!code) return false
+async function loadi18n() {
+  const code = defaultCode
   if (Vue.prototype.$languageCodes.current == code) {
     // already set
     return false
   }
 
-  const strings = translations[code] || (await loadTranslationStrings(code))
-  if (!strings) {
-    console.warn(`Invalid lang code ${code}`)
-    return false
-  }
-
-  translations[code] = strings
+  const strings = enUsStrings
   Vue.prototype.$languageCodes.current = code
   $localStore.setLanguage(code)
 
   for (const key in Vue.prototype.$strings) {
-    Vue.prototype.$strings[key] = strings[key] || translations[defaultCode][key]
+    Vue.prototype.$strings[key] = strings[key]
   }
 
   Vue.prototype.$setDateFnsLocale(languageCodeMap[code].dateFnsLocale)
@@ -116,17 +68,8 @@ async function loadi18n(code) {
 Vue.prototype.$setLanguageCode = loadi18n
 
 // Set the servers default language code, does not override users local language code
-Vue.prototype.$setServerLanguageCode = (code) => {
-  if (!code) return
-
-  if (!languageCodeMap[code]) {
-    console.warn('invalid server language in', code)
-  } else {
-    Vue.prototype.$languageCodes.server = code
-    if (!Vue.prototype.$languageCodes.local && code !== defaultCode) {
-      loadi18n(code)
-    }
-  }
+Vue.prototype.$setServerLanguageCode = () => {
+  Vue.prototype.$languageCodes.server = defaultCode
 }
 
 // Initialize with language code in localStorage if valid
@@ -134,12 +77,11 @@ async function initialize() {
   const localLanguage = await $localStore.getLanguage()
   if (!localLanguage) return
 
-  if (!languageCodeMap[localLanguage]) {
+  if (localLanguage !== defaultCode) {
     console.warn('Invalid local language code', localLanguage)
     $localStore.setLanguage(defaultCode)
   } else {
-    Vue.prototype.$languageCodes.local = localLanguage
-    loadi18n(localLanguage)
+    Vue.prototype.$languageCodes.local = defaultCode
   }
 }
 
