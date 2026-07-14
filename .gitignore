@@ -91,3 +91,6 @@ sw.*
 
 /resources/
 /android/app/release/
+
+# Brainstorm / design session artifacts
+.superpowers/
