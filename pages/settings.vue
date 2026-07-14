@@ -225,7 +225,7 @@ export default {
         androidAutoBrowseLimitForGrouping: 100,
         androidAutoBrowseSeriesSequenceOrder: 'ASC'
       },
-      theme: 'dark',
+      theme: 'night',
       lockCurrentOrientation: false,
       settingInfo: {
         disableShakeToResetSleepTimer: {
@@ -372,16 +372,16 @@ export default {
     themeOptionItems() {
       return [
         {
+          text: this.$strings.LabelThemeNight || 'Night',
+          value: 'night'
+        },
+        {
+          text: this.$strings.LabelThemeTerminal || 'Terminal',
+          value: 'terminal'
+        },
+        {
           text: this.$strings.LabelThemeBlack,
           value: 'black'
-        },
-        {
-          text: this.$strings.LabelThemeDark,
-          value: 'dark'
-        },
-        {
-          text: this.$strings.LabelThemeLight,
-          value: 'light'
         }
       ]
     },
@@ -535,9 +535,8 @@ export default {
         this.saveSettings()
       }
     },
-    saveTheme(theme) {
-      document.documentElement.dataset.theme = theme
-      this.$localStore.setTheme(theme)
+    async saveTheme(theme) {
+      this.theme = await this.$applyTheme(theme)
     },
     autoSleepTimerTimeUpdated(val) {
       if (!val) return // invalid times return falsy
@@ -674,7 +673,7 @@ export default {
     },
     async init() {
       this.loading = true
-      this.theme = (await this.$localStore.getTheme()) || 'dark'
+      this.theme = await this.$applyTheme(await this.$localStore.getTheme())
       this.deviceData = await this.$db.getDeviceData()
       this.$store.commit('setDeviceData', this.deviceData)
       this.setDeviceSettings()

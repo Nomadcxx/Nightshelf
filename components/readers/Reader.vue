@@ -204,7 +204,7 @@ export default {
     },
     ereaderTheme() {
       if (this.isEpub) return this.ereaderSettings.theme
-      return document.documentElement.dataset.theme || 'dark'
+      return document.documentElement.dataset.theme || 'night'
     },
     spreadItems() {
       return [

@@ -185,7 +185,7 @@ export default {
   },
   computed: {
     theme() {
-      return document.documentElement.dataset.theme || 'dark'
+      return document.documentElement.dataset.theme || 'night'
     },
     menuItems() {
       const items = []

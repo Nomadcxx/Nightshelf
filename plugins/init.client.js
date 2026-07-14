@@ -11,11 +11,33 @@ import * as locale from 'date-fns/locale'
 
 Vue.directive('click-outside', vClickOutside.directive)
 
-if (Capacitor.getPlatform() != 'web') {
-  const setStatusBarStyleDark = async () => {
+const THEME_STATUS = {
+  night: '#212337',
+  black: '#171928',
+  terminal: '#212337'
+}
+
+function migrateTheme(theme) {
+  if (theme === 'dark' || theme === 'light' || !theme) return 'night'
+  if (['night', 'black', 'terminal'].includes(theme)) return theme
+  return 'night'
+}
+
+async function applyNativeChrome(theme) {
+  try {
     await StatusBar.setStyle({ style: Style.Dark })
+    await StatusBar.setBackgroundColor({ color: THEME_STATUS[theme] || THEME_STATUS.night })
+  } catch (error) {
+    // StatusBar is unsupported on the web.
   }
-  setStatusBarStyleDark()
+}
+
+Vue.prototype.$applyTheme = async function (theme) {
+  const migratedTheme = migrateTheme(theme)
+  document.documentElement.dataset.theme = migratedTheme
+  await this.$localStore?.setTheme(migratedTheme)
+  await applyNativeChrome(migratedTheme)
+  return migratedTheme
 }
 
 Vue.prototype.$showHideStatusBar = async (show) => {
@@ -275,11 +297,15 @@ export default ({ store, app }, inject) => {
   inject('isValidVersion', isValidVersion)
 
   // Set theme
-  app.$localStore?.getTheme()?.then((theme) => {
-    if (theme) {
-      document.documentElement.dataset.theme = theme
+  ;(async () => {
+    const storedTheme = await app.$localStore?.getTheme()
+    const theme = migrateTheme(storedTheme)
+    document.documentElement.dataset.theme = theme
+    if (theme !== storedTheme) {
+      await app.$localStore?.setTheme(theme)
     }
-  })
+    await applyNativeChrome(theme)
+  })()
 
   // iOS Only
   //  backButton event does not work with iOS swipe navigation so use this workaround
