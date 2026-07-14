@@ -1,10 +1,15 @@
 <template>
-  <div class="w-full h-8 bg-bg relative">
+  <div class="w-full h-10 bg-bg relative">
     <div id="bookshelf-navbar" class="absolute z-10 top-0 left-0 w-full h-full flex bg-secondary border-b border-border">
-      <nuxt-link v-for="item in items" :key="item.to" :to="item.to" class="h-full flex-grow flex items-center justify-center relative" :class="routeName === item.routeName ? 'text-fg' : 'text-fg-muted'">
-        <p v-if="routeName === item.routeName" class="text-xs font-semibold">{{ item.text }}</p>
-        <span v-else-if="item.iconPack === 'abs-icons'" class="abs-icons" :class="`icon-${item.icon} ${item.iconClass || ''}`"></span>
-        <span v-else :class="`${item.iconPack} ${item.iconClass || ''}`">{{ item.icon }}</span>
+      <nuxt-link
+        v-for="item in items"
+        :key="item.to"
+        :to="item.to"
+        class="h-full flex-grow flex flex-col items-center justify-center relative gap-0.5"
+        :class="routeName === item.routeName ? 'text-accent' : 'text-fg-muted'"
+      >
+        <ui-ph-icon :name="item.icon" :size="18" />
+        <p v-if="routeName === item.routeName" class="font-mono text-xxs uppercase tracking-wider">{{ item.text }}</p>
         <span v-if="routeName === item.routeName" class="absolute bottom-0 left-2 right-2 h-0.5 bg-accent rounded-t" />
       </nuxt-link>
     </div>
@@ -13,16 +18,7 @@
 
 <script>
 export default {
-  data() {
-    return {}
-  },
   computed: {
-    currentLibrary() {
-      return this.$store.getters['libraries/getCurrentLibrary']
-    },
-    currentLibraryIcon() {
-      return this.currentLibrary?.icon || 'database'
-    },
     userHasPlaylists() {
       return this.$store.state.libraries.numUserPlaylists
     },
@@ -33,96 +29,25 @@ export default {
       let items = []
       if (this.isPodcast) {
         items = [
-          {
-            to: '/bookshelf',
-            routeName: 'bookshelf',
-            iconPack: 'abs-icons',
-            icon: 'home',
-            iconClass: 'text-xl',
-            text: this.$strings.ButtonHome
-          },
-          {
-            to: '/bookshelf/latest',
-            routeName: 'bookshelf-latest',
-            iconPack: 'abs-icons',
-            icon: 'list',
-            iconClass: 'text-xl',
-            text: this.$strings.ButtonLatest
-          },
-          {
-            to: '/bookshelf/library',
-            routeName: 'bookshelf-library',
-            iconPack: 'abs-icons',
-            icon: this.currentLibraryIcon,
-            iconClass: 'text-lg',
-            text: this.$strings.ButtonLibrary
-          }
+          { to: '/bookshelf', routeName: 'bookshelf', icon: 'home', text: this.$strings.ButtonHome },
+          { to: '/bookshelf/latest', routeName: 'bookshelf-latest', icon: 'list_bullets', text: this.$strings.ButtonLatest },
+          { to: '/bookshelf/library', routeName: 'bookshelf-library', icon: 'database', text: this.$strings.ButtonLibrary }
         ]
-
         if (this.userIsAdminOrUp) {
-          items.push({
-            to: '/bookshelf/add-podcast',
-            routeName: 'bookshelf-add-podcast',
-            iconPack: 'material-symbols',
-            icon: 'podcasts',
-            iconClass: 'text-xl',
-            text: this.$strings.ButtonAdd
-          })
+          items.push({ to: '/bookshelf/add-podcast', routeName: 'bookshelf-add-podcast', icon: 'podcasts', text: this.$strings.ButtonAdd })
         }
       } else {
         items = [
-          {
-            to: '/bookshelf',
-            routeName: 'bookshelf',
-            iconPack: 'abs-icons',
-            icon: 'home',
-            iconClass: 'text-xl',
-            text: this.$strings.ButtonHome
-          },
-          {
-            to: '/bookshelf/library',
-            routeName: 'bookshelf-library',
-            iconPack: 'abs-icons',
-            icon: this.currentLibraryIcon,
-            iconClass: 'text-lg',
-            text: this.$strings.ButtonLibrary
-          },
-          {
-            to: '/bookshelf/series',
-            routeName: 'bookshelf-series',
-            iconPack: 'abs-icons',
-            icon: 'columns',
-            iconClass: 'text-lg pt-px',
-            text: this.$strings.ButtonSeries
-          },
-          {
-            to: '/bookshelf/collections',
-            routeName: 'bookshelf-collections',
-            iconPack: 'material-symbols',
-            icon: 'collections_bookmark',
-            iconClass: 'text-xl',
-            text: this.$strings.ButtonCollections
-          },
-          {
-            to: '/bookshelf/authors',
-            routeName: 'bookshelf-authors',
-            iconPack: 'abs-icons',
-            icon: 'authors',
-            iconClass: 'text-2xl',
-            text: this.$strings.ButtonAuthors
-          }
+          { to: '/bookshelf', routeName: 'bookshelf', icon: 'home', text: this.$strings.ButtonHome },
+          { to: '/bookshelf/library', routeName: 'bookshelf-library', icon: 'database', text: this.$strings.ButtonLibrary },
+          { to: '/bookshelf/series', routeName: 'bookshelf-series', icon: 'columns', text: this.$strings.ButtonSeries },
+          { to: '/bookshelf/collections', routeName: 'bookshelf-collections', icon: 'collections_bookmark', text: this.$strings.ButtonCollections },
+          { to: '/bookshelf/authors', routeName: 'bookshelf-authors', icon: 'authors', text: this.$strings.ButtonAuthors }
         ]
       }
 
       if (this.userHasPlaylists) {
-        items.push({
-          to: '/bookshelf/playlists',
-          routeName: 'bookshelf-playlists',
-          iconPack: 'material-symbols',
-          icon: 'queue_music',
-          iconClass: 'text-2xl',
-          text: this.$strings.ButtonPlaylists
-        })
+        items.push({ to: '/bookshelf/playlists', routeName: 'bookshelf-playlists', icon: 'queue_music', text: this.$strings.ButtonPlaylists })
       }
 
       return items
@@ -136,19 +61,12 @@ export default {
     libraryMediaType() {
       return this.$store.getters['libraries/getCurrentLibraryMediaType']
     }
-  },
-  methods: {
-    isSelected(item) {}
-  },
-  mounted() {}
+  }
 }
 </script>
 
 <style>
 #bookshelf-navbar {
   box-shadow: 0 2px 6px rgb(var(--color-bg) / 0.35);
-}
-#bookshelf-navbar a {
-  font-size: 0.8rem;
 }
 </style>
