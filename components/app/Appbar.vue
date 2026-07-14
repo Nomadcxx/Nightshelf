@@ -1,6 +1,15 @@
 <template>
   <div class="w-full h-16 bg-secondary border-b border-border relative z-20">
     <div id="appbar" class="absolute top-0 left-0 w-full h-full flex items-center px-3 gap-2">
+      <button type="button" aria-label="Toggle side drawer" class="h-10 w-10 flex items-center justify-center text-fg flex-none" @click="clickShowSideDrawer">
+        <!-- Terminal menu: unequal bars, not Material hamburger — left of brand -->
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden="true">
+          <rect x="0" y="0" width="22" height="2.5" rx="1" class="fill-success" />
+          <rect x="0" y="6.75" width="14" height="2.5" rx="1" class="fill-fg" />
+          <rect x="0" y="13.5" width="18" height="2.5" rx="1" class="fill-fg" />
+        </svg>
+      </button>
+
       <nuxt-link v-show="!showBack" to="/" class="flex-none">
         <img src="/Logo.png" alt="" class="h-9 w-9" />
       </nuxt-link>
@@ -33,15 +42,6 @@
       <nuxt-link v-if="user" class="mx-1 flex items-center justify-center h-10 w-10 text-fg" to="/search" aria-label="Search">
         <ui-ph-icon name="search" :size="22" />
       </nuxt-link>
-
-      <button type="button" aria-label="Toggle side drawer" class="h-10 w-10 flex items-center justify-center text-fg" @click="clickShowSideDrawer">
-        <!-- Terminal menu: unequal bars, not Material hamburger -->
-        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden="true">
-          <rect x="0" y="0" width="22" height="2.5" rx="1" class="fill-success" />
-          <rect x="0" y="6.75" width="14" height="2.5" rx="1" class="fill-fg" />
-          <rect x="0" y="13.5" width="18" height="2.5" rx="1" class="fill-fg" />
-        </svg>
-      </button>
     </div>
   </div>
 </template>

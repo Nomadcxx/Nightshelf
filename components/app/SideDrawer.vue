@@ -1,7 +1,7 @@
 <template>
   <div class="fixed top-0 left-0 right-0 layout-wrapper w-full z-50 overflow-hidden pointer-events-none">
     <div class="absolute top-0 left-0 w-full h-full bg-black transition-opacity duration-200" :class="show ? 'bg-opacity-60 pointer-events-auto' : 'bg-opacity-0'" @click="clickBackground" />
-    <div class="absolute top-0 right-0 w-72 h-full bg-bg border-l border-border transform transition-transform py-5 pointer-events-auto flex flex-col" :class="show ? '' : 'translate-x-72'" @click.stop>
+    <div class="absolute top-0 left-0 w-72 h-full bg-bg border-r border-border transform transition-transform py-5 pointer-events-auto flex flex-col" :class="show ? '' : '-translate-x-72'" @click.stop>
       <div class="px-5 mb-5 flex items-center gap-3">
         <img src="/Logo.png" alt="" class="h-10 w-10" />
         <div class="min-w-0">
@@ -224,7 +224,7 @@ export default {
     touchend(e) {
       if (!this.touchEvent) return
       this.touchEvent.setEndEvent(e)
-      if (this.touchEvent.isSwipeLeft()) this.show = false
+      if (this.touchEvent.isSwipeLeft()) this.show = false // dismiss left drawer by swiping left
       this.touchEvent = null
     },
     registerListener() {
