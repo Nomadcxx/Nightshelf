@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.AppWidgetTarget
 import com.bumptech.glide.request.transition.Transition
+import kotlin.math.roundToInt
 
 /**
  * Implementation of App Widget functionality.
@@ -89,6 +90,9 @@ internal fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManage
 
   val title = playbackSession?.displayTitle ?: "Unknown"
   views.setTextViewText(R.id.widgetMediaTitle, title)
+
+  val progress = playbackSession?.progress?.takeIf { it.isFinite() }?.coerceIn(0.0, 1.0) ?: 0.0
+  views.setProgressBar(R.id.widgetProgress, 1000, (progress * 1000).roundToInt(), false)
 
   val options = RequestOptions().override(300, 300).placeholder(R.drawable.icon).error(R.drawable.icon)
   Glide.with(context.applicationContext).asBitmap().load(imageUri).apply(options).into(awt)

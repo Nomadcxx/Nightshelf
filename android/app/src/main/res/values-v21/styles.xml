@@ -15,9 +15,9 @@
       <item name="android:navigationBarColor">@color/background_dark</item>
     </style>
 
-
     <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
-<!--      <item name="android:background">@drawable/screen</item>-->
+      <item name="android:windowBackground">@color/background_dark</item>
+      <item name="android:windowDisablePreview">true</item>
     </style>
 
     <style name="Widget.Android.AppWidget.Container" parent="android:Widget">

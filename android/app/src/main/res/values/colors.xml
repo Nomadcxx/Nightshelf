@@ -3,5 +3,16 @@
     <color name="light_blue_200">#FF81D4FA</color>
     <color name="light_blue_600">#FF039BE5</color>
     <color name="light_blue_900">#FF01579B</color>
-    <color name="background_dark">#232323</color>
+    <!-- Nightshelf / Eldritch Cthulhu palette -->
+    <color name="background_dark">#212337</color>
+    <color name="nightshelf_surface">#323449</color>
+    <color name="nightshelf_surface_deep">#1A1C2E</color>
+    <color name="nightshelf_border">#454759</color>
+    <color name="nightshelf_text">#EBFAFA</color>
+    <color name="nightshelf_text_muted">#AEB3C6</color>
+    <color name="nightshelf_accent">#A48CF2</color>
+    <color name="nightshelf_progress">#37F499</color>
+    <color name="colorPrimary">#212337</color>
+    <color name="colorPrimaryDark">#1A1C2E</color>
+    <color name="colorAccent">#A48CF2</color>
 </resources>

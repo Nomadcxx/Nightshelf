@@ -4,6 +4,7 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent"
   android:orientation="horizontal"
+  android:background="@color/background_dark"
   android:theme="@style/AppTheme.AppWidgetContainer"
   style="@style/Widget.Android.AppWidget.Container">
 
@@ -11,7 +12,7 @@
     android:layout_width="0dp"
     android:layout_height="match_parent"
     android:layout_weight="3"
-    android:background="?android:attr/colorAccent"
+    android:background="@color/nightshelf_surface"
     android:theme="@style/MediaPlayerWidgetTheme"
     android:orientation="horizontal">
 
@@ -40,6 +41,7 @@
         android:gravity="bottom"
         android:ellipsize="end"
         android:maxLines="1"
+        android:textColor="@color/nightshelf_text_muted"
         android:text="Artist"/>
 
       <TextView
@@ -51,7 +53,20 @@
         android:gravity="top"
         android:ellipsize="end"
         android:maxLines="1"
+        android:textColor="@color/nightshelf_text"
         android:text="Title"/>
+
+      <ProgressBar
+        android:id="@+id/widgetProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:indeterminate="false"
+        android:max="1000"
+        android:progress="0"
+        android:progressDrawable="@drawable/widget_progress" />
 
       <LinearLayout
         android:id="@+id/widgetButtonContainer"
@@ -59,7 +74,7 @@
         android:layout_height="0dp"
         android:layout_weight="3"
         android:orientation="horizontal"
-        android:background="?android:attr/colorAccent"
+        android:background="@color/nightshelf_surface_deep"
         android:theme="@style/MediaPlayerWidgetTheme">
 
         <ImageView

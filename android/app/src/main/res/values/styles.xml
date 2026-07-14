@@ -17,16 +17,15 @@
     <item name="android:navigationBarColor">@color/background_dark</item>
   </style>
 
-
-  <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-    <!--        <item name="android:background">@drawable/screen</item>-->
+  <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
+    <item name="android:windowBackground">@color/background_dark</item>
+    <item name="android:windowDisablePreview">true</item>
   </style>
 
   <style name="MediaPlayerWidgetTheme" parent="Theme.AppCompat.DayNight">
-    <!-- These colors match the vue pages -->
-    <item name="android:colorBackground">#232323</item>
-    <item name="android:colorAccent">#373838</item>
-    <item name="android:textColor">#ffffff</item>
+    <item name="android:colorBackground">@color/background_dark</item>
+    <item name="android:colorAccent">@color/nightshelf_surface</item>
+    <item name="android:textColor">@color/nightshelf_text</item>
   </style>
 
   <style name="Widget.Android.AppWidget.Container" parent="android:Widget">
