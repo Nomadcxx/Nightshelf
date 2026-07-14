@@ -1,16 +1,14 @@
 <template>
-  <div v-if="icon" class="flex h-full items-center px-2">
-    <span class="material-symbols text-lg" :class="iconClass" @click="showAlertDialog">{{ icon }}</span>
-  </div>
+  <button v-if="tone" type="button" class="flex h-full items-center px-1.5" :aria-label="$strings.HeaderConnectionStatus" @click="showAlertDialog">
+    <ui-status-dot :tone="tone" :size="8" />
+  </button>
 </template>
 
 <script>
 import { Dialog } from '@capacitor/dialog'
+import { toneFromState } from '@/utils/connectionStatus'
 
 export default {
-  data() {
-    return {}
-  },
   computed: {
     user() {
       return this.$store.state.user.user
@@ -33,27 +31,13 @@ export default {
     attemptingConnection() {
       return this.$store.state.attemptingConnection
     },
-    icon() {
-      if (!this.user && !this.attemptingConnection) return null // hide when not connected to server
-
-      if (this.attemptingConnection) {
-        return 'cloud_sync'
-      } else if (!this.networkConnected) {
-        return 'wifi_off'
-      } else if (!this.socketConnected) {
-        return 'cloud_off'
-      } else if (this.isCellular) {
-        return 'signal_cellular_alt'
-      } else {
-        return 'cloud_done'
-      }
-    },
-    iconClass() {
-      if (!this.networkConnected) return 'text-error'
-      else if (!this.socketConnected) return 'text-warning'
-      else if (!this.isNetworkUnmetered) return 'text-yellow-400'
-      else if (this.isCellular) return 'text-gray-200'
-      else return 'text-success'
+    tone() {
+      if (!this.user && !this.attemptingConnection) return null
+      return toneFromState({
+        attempting: this.attemptingConnection,
+        networkConnected: this.networkConnected,
+        socketConnected: this.socketConnected
+      })
     }
   },
   methods: {
@@ -75,8 +59,6 @@ export default {
         message: msg
       })
     }
-  },
-  mounted() {},
-  beforeDestroy() {}
+  }
 }
 </script>

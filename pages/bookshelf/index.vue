@@ -9,40 +9,21 @@
       <p class="pl-4">{{ $strings.MessageLoadingServerData }}</p>
     </div>
 
-    <div class="w-full" :class="{ 'py-6': altViewEnabled }">
-      <transition name="continue-hero">
-        <article v-if="continueItem" class="mx-4 mb-6 rounded-xl border border-border bg-secondary/60 shadow-lg overflow-hidden">
-          <button type="button" class="w-full flex text-left p-4 gap-4" @click="openContinueItem">
-            <div class="flex-none w-20 h-28 rounded-lg overflow-hidden bg-primary">
-              <img :src="continueItemCoverSrc" :alt="continueItemTitle" class="w-full h-full object-cover" />
-            </div>
-            <div class="min-w-0 flex-grow flex flex-col justify-center">
-              <p class="text-xs uppercase tracking-widest text-fg-muted font-semibold">Continue listening</p>
-              <p class="mt-1 text-lg font-semibold leading-tight truncate">{{ continueItemTitle }}</p>
-              <p v-if="continueItemSubtitle" class="mt-1 text-sm text-fg-muted truncate">{{ continueItemSubtitle }}</p>
-              <div v-if="continueItemProgress !== null" class="mt-4">
-                <ui-synthwave-progress :progress="continueItemProgress" variant="mini" />
-                <p class="mt-1.5 text-xs font-mono text-fg-muted">{{ Math.round(continueItemProgress * 100) }}% complete</p>
-              </div>
-            </div>
-            <span class="material-symbols self-center text-accent" aria-hidden="true">arrow_forward</span>
-          </button>
-        </article>
-      </transition>
+    <div class="w-full" :class="{ 'py-4': true }">
       <template v-for="(shelf, index) in displayedShelves">
         <bookshelf-shelf :key="shelf.id" :label="getShelfLabel(shelf)" :entities="shelf.entities" :type="shelf.type" :style="{ zIndex: shelves.length - index }" />
       </template>
     </div>
 
-    <div v-if="!shelves.length && !isLoading" class="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+    <div v-if="!shelves.length && !isLoading" class="absolute top-0 left-0 w-full h-full flex items-center justify-center px-6">
       <div>
-        <p class="mb-4 text-center text-xl">
+        <p class="mb-4 text-center text-xl text-fg">
           {{ $strings.MessageBookshelfEmpty }}
         </p>
         <div class="w-full" v-if="!user">
-          <div class="flex justify-center items-center mb-3">
-            <span class="material-symbols text-error text-lg">cloud_off</span>
-            <p class="pl-2 text-error text-sm">{{ $strings.MessageAudiobookshelfServerNotConnected }}</p>
+          <div class="flex justify-center items-center mb-3 gap-2">
+            <ui-status-dot tone="offline" :size="8" />
+            <p class="font-mono text-sm text-error">{{ $strings.MessageAudiobookshelfServerNotConnected }}</p>
           </div>
         </div>
         <div class="flex justify-center">

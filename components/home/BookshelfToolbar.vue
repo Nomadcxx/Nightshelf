@@ -1,22 +1,26 @@
 <template>
-  <div class="w-full h-8 bg-secondary border-b border-border relative z-20">
-    <div id="bookshelf-toolbar" class="absolute top-0 left-0 w-full h-full z-20 flex items-center px-2">
-      <div class="flex items-center w-full text-sm">
-        <p v-show="!selectedSeriesName" class="text-fg-muted">{{ $formatNumber(totalEntities) }} {{ entityTitle }}</p>
-        <p v-show="selectedSeriesName" class="ml-1 truncate">{{ selectedSeriesName }} ({{ $formatNumber(totalEntities) }})</p>
-        <div class="flex-grow" />
-        <ui-icon-btn v-if="page == 'library' || seriesBookPage" class="h-8 w-8 text-fg-muted" borderless :icon="!bookshelfListView ? 'view_list' : 'grid_view'" @click="changeView" />
-        <template v-if="page === 'library'">
-          <div class="relative flex items-center">
-            <ui-icon-btn class="h-8 w-8 text-fg-muted" borderless icon="filter_alt" @click="showFilterModal = true" />
-            <div v-show="hasFilters" class="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-success border border-secondary shadow-sm z-10 pointer-events-none" />
-          </div>
-          <ui-icon-btn class="h-8 w-8 text-fg-muted" borderless icon="sort" @click="showSortModal = true" />
-        </template>
-        <ui-icon-btn v-if="seriesBookPage" class="h-8 w-8 text-fg-muted" borderless icon="download" @click="downloadSeries" />
-        <ui-icon-btn v-if="(page == 'library' && isBookLibrary) || seriesBookPage" class="h-8 w-8 text-fg-muted" borderless icon="more_vert" @click="showMoreMenuDialog = true" />
+  <div class="w-full relative z-20">
+    <div class="w-full h-9 bg-secondary border-b border-border relative">
+      <div id="bookshelf-toolbar" class="absolute top-0 left-0 w-full h-full z-20 flex items-center px-2">
+        <div class="flex items-center w-full text-sm">
+          <p v-show="!selectedSeriesName" class="font-mono text-xxs uppercase tracking-widest text-fg-muted">{{ $formatNumber(totalEntities) }} {{ entityTitle }}</p>
+          <p v-show="selectedSeriesName" class="ml-1 truncate text-sm">{{ selectedSeriesName }} ({{ $formatNumber(totalEntities) }})</p>
+          <div class="flex-grow" />
+          <ui-icon-btn v-if="page == 'library' || seriesBookPage" class="h-8 w-8 text-fg-muted" borderless :icon="!bookshelfListView ? 'view_list' : 'grid_view'" @click="changeView" />
+          <template v-if="page === 'library'">
+            <div class="relative flex items-center">
+              <ui-icon-btn class="h-8 w-8 text-fg-muted" borderless icon="filter_alt" @click="showFilterModal = true" />
+              <div v-show="hasFilters" class="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-success border border-secondary shadow-sm z-10 pointer-events-none" />
+            </div>
+            <ui-icon-btn class="h-8 w-8 text-fg-muted" borderless icon="sort" @click="showSortModal = true" />
+          </template>
+          <ui-icon-btn v-if="seriesBookPage" class="h-8 w-8 text-fg-muted" borderless icon="download" @click="downloadSeries" />
+          <ui-icon-btn v-if="(page == 'library' && isBookLibrary) || seriesBookPage" class="h-8 w-8 text-fg-muted" borderless icon="more_vert" @click="showMoreMenuDialog = true" />
+        </div>
       </div>
     </div>
+
+    <home-library-genre-chips v-if="page === 'library' && isBookLibrary" :filter-by="settings.mobileFilterBy || 'all'" @change="applyGenreChip" />
 
     <modals-order-modal v-model="showSortModal" :order-by.sync="settings.mobileOrderBy" :descending.sync="settings.mobileOrderDesc" @change="updateOrder" />
     <modals-filter-modal v-model="showFilterModal" :filter-by.sync="settings.mobileFilterBy" @change="updateFilter" />
@@ -124,6 +128,10 @@ export default {
       this.saveSettings()
     },
     updateFilter() {
+      this.saveSettings()
+    },
+    applyGenreChip(value) {
+      this.settings.mobileFilterBy = value
       this.saveSettings()
     },
     saveSettings() {

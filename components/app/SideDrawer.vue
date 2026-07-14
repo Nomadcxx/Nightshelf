@@ -1,34 +1,54 @@
 <template>
   <div class="fixed top-0 left-0 right-0 layout-wrapper w-full z-50 overflow-hidden pointer-events-none">
     <div class="absolute top-0 left-0 w-full h-full bg-black transition-opacity duration-200" :class="show ? 'bg-opacity-60 pointer-events-auto' : 'bg-opacity-0'" @click="clickBackground" />
-    <div class="absolute top-0 right-0 w-64 h-full bg-bg transform transition-transform py-6 pointer-events-auto" :class="show ? '' : 'translate-x-64'" @click.stop>
-      <div class="px-6 mb-4">
-        <p v-if="user" class="text-base" v-html="$getString('HeaderWelcome', [username])" />
+    <div class="absolute top-0 right-0 w-72 h-full bg-bg border-l border-border transform transition-transform py-5 pointer-events-auto flex flex-col" :class="show ? '' : 'translate-x-72'" @click.stop>
+      <div class="px-5 mb-5 flex items-center gap-3">
+        <img src="/Logo.png" alt="" class="h-10 w-10" />
+        <div class="min-w-0">
+          <p class="font-semibold text-fg">Night<span class="text-accent">shelf</span></p>
+          <p v-if="user" class="font-mono text-xxs uppercase tracking-widest text-fg-muted truncate">{{ username }}</p>
+          <p v-else class="font-mono text-xxs uppercase tracking-widest text-error">server: offline</p>
+        </div>
       </div>
 
-      <div class="w-full overflow-y-auto">
+      <div class="w-full overflow-y-auto flex-grow">
         <template v-for="item in navItems">
-          <button v-if="item.action" :key="item.text" :tabindex="show ? 0 : -1" class="w-full hover:bg-bg/60 flex items-center py-3 px-6 text-fg-muted" @click="clickAction(item.action)">
-            <span class="material-symbols fill text-lg">{{ item.icon }}</span>
-            <p class="pl-4">{{ item.text }}</p>
+          <button
+            v-if="item.action"
+            :key="'a-' + item.text"
+            :tabindex="show ? 0 : -1"
+            type="button"
+            class="w-full flex items-center py-3 px-5 text-fg-muted border-l-2 border-transparent hover:bg-secondary/40"
+            @click="clickAction(item.action)"
+          >
+            <ui-ph-icon :name="item.icon" :size="20" />
+            <p class="pl-3 text-sm">{{ item.text }}</p>
           </button>
-          <nuxt-link v-else :to="item.to" :key="item.text" :tabindex="show ? 0 : -1" class="w-full hover:bg-bg/60 flex items-center py-3 px-6 text-fg" :class="currentRoutePath.startsWith(item.to) ? 'bg-bg-hover/50' : 'text-fg-muted'">
-            <span class="material-symbols fill text-lg">{{ item.icon }}</span>
-            <p class="pl-4">{{ item.text }}</p>
+          <nuxt-link
+            v-else
+            :key="'l-' + item.text"
+            :to="item.to"
+            :tabindex="show ? 0 : -1"
+            class="w-full flex items-center py-3 px-5 border-l-2"
+            :class="isActive(item.to) ? 'border-accent bg-secondary/50 text-fg' : 'border-transparent text-fg-muted hover:bg-secondary/30'"
+          >
+            <ui-ph-icon :name="item.icon" :size="20" :class="isActive(item.to) ? 'text-accent' : ''" />
+            <p class="pl-3 text-sm">{{ item.text }}</p>
           </nuxt-link>
         </template>
       </div>
-      <div class="absolute bottom-0 left-0 w-full py-6 px-6 text-fg">
-        <div v-if="serverConnectionConfig" class="mb-4 flex justify-center">
-          <p class="text-xs text-fg-muted" style="word-break: break-word">{{ serverConnectionConfig.address }} (v{{ serverSettings.version }})</p>
+
+      <div class="px-5 pt-4 border-t border-border text-fg">
+        <div v-if="serverConnectionConfig" class="mb-3">
+          <p class="text-xxs font-mono text-fg-muted break-all">{{ serverConnectionConfig.address }} · v{{ serverSettings.version }}</p>
         </div>
         <div class="flex items-center">
-          <p class="text-xs">{{ $config.version }}</p>
+          <p class="text-xxs font-mono text-fg-muted">{{ $config.version }}</p>
           <div class="flex-grow" />
-          <div v-if="user" class="flex items-center" @click="disconnect">
-            <p class="text-xs pr-2">{{ $strings.ButtonDisconnect }}</p>
-            <i class="material-symbols text-sm -mb-0.5">cloud_off</i>
-          </div>
+          <button v-if="user" type="button" class="flex items-center gap-2 text-fg-muted" @click="disconnect">
+            <ui-status-dot tone="offline" :size="7" />
+            <span class="text-xs">{{ $strings.ButtonDisconnect }}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -79,9 +99,6 @@ export default {
     username() {
       return this.user?.username || ''
     },
-    userIsAdminOrUp() {
-      return this.$store.getters['user/getIsAdminOrUp']
-    },
     navItems() {
       var items = [
         {
@@ -121,14 +138,12 @@ export default {
       if (this.$platform !== 'ios') {
         items.push({
           icon: 'folder',
-          iconOutlined: true,
           text: this.$strings.ButtonLocalMedia,
           to: '/localMedia/folders'
         })
       } else {
         items.push({
           icon: 'download',
-          iconOutlined: false,
           text: this.$strings.HeaderDownloads,
           to: '/downloads'
         })
@@ -141,7 +156,6 @@ export default {
 
       items.push({
         icon: 'bug_report',
-        iconOutlined: true,
         text: this.$strings.ButtonLogs,
         to: '/logs'
       })
@@ -162,9 +176,6 @@ export default {
 
       return items
     },
-    currentRoutePath() {
-      return this.$route.path
-    },
     isCastAvailable() {
       return this.$store.state.isCastAvailable
     },
@@ -173,6 +184,9 @@ export default {
     }
   },
   methods: {
+    isActive(to) {
+      return this.$route.path === to || this.$route.path.startsWith(to + '/')
+    },
     async clickAction(action) {
       await this.$hapticsImpact()
       if (action === 'logout') {
@@ -194,25 +208,13 @@ export default {
     clickBackground() {
       this.show = false
     },
-    async logout() {
-      await this.$store.dispatch('user/logout')
-    },
     async disconnect() {
-      await this.$hapticsImpact()
       await this.logout()
-
-      // Redirect to home page
-      if (this.$route.name !== 'bookshelf') {
-        this.$router.replace('/bookshelf')
-      }
-
-      // If player is open and not playing locally, then close the player
-      if (this.$store.getters['getIsPlayerOpen']) {
-        this.$eventBus.$emit('close-stream')
-      }
-
-      // Close side drawer
+      this.$router.push('/connect')
+    },
+    async logout() {
       this.show = false
+      await this.$store.dispatch('user/logout')
     },
     touchstart(e) {
       this.touchEvent = new TouchEvent(e)
@@ -220,9 +222,7 @@ export default {
     touchend(e) {
       if (!this.touchEvent) return
       this.touchEvent.setEndEvent(e)
-      if (this.touchEvent.isSwipeRight()) {
-        this.show = false
-      }
+      if (this.touchEvent.isSwipeLeft()) this.show = false
       this.touchEvent = null
     },
     registerListener() {
@@ -234,9 +234,8 @@ export default {
       document.removeEventListener('touchend', this.touchend)
     }
   },
-  mounted() {},
   beforeDestroy() {
-    this.show = false
+    this.removeListener()
   }
 }
 </script>

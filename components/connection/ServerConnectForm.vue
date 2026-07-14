@@ -1,18 +1,18 @@
 <template>
-  <div class="w-full max-w-md mx-auto px-2 sm:px-4 lg:px-8 z-10">
-    <div v-show="!loggedIn" class="mt-8 bg-primary overflow-hidden shadow rounded-lg px-4 py-6 w-full">
+  <div class="w-full max-w-md mx-auto z-10">
+    <div v-show="!loggedIn" class="bg-secondary/40 border border-border overflow-hidden rounded-lg px-4 py-5 w-full">
       <!-- list of server connection configs -->
       <template v-if="!showForm">
-        <div v-for="config in serverConnectionConfigs" :key="config.id" class="border-b border-fg/10 py-4">
+        <div v-for="config in serverConnectionConfigs" :key="config.id" class="border-b border-border py-4">
           <div class="flex items-center my-1 relative space-x-2" @click="connectToServer(config)">
             <div class="grow inline-flex items-center overflow-hidden">
-              <p class="text-base text-fg truncate">{{ config.name }}</p>
+              <p class="text-base text-fg truncate font-mono text-sm">{{ config.name }}</p>
             </div>
             <div class="h-full w-6 flex items-center" @click.stop="editServerConfig(config)">
-              <span class="material-symbols text-2xl text-fg-muted">more_vert</span>
+              <ui-ph-icon name="more_vert" :size="22" class="text-fg-muted" />
             </div>
             <div class="h-full w-6 flex items-center" @click.stop="removeServerConfigClick(config)">
-              <span class="material-symbols fill text-1.5xl text-fg-muted">delete</span>
+              <ui-ph-icon name="delete" :size="20" class="text-fg-muted" />
             </div>
           </div>
           <!-- warning message if server connection config is using an old user id -->
@@ -34,30 +34,34 @@
       <div v-else class="w-full">
         <!-- server address input -->
         <form v-if="!showAuth" @submit.prevent="submit(false)" novalidate class="w-full">
-          <div v-if="serverConnectionConfigs.length" class="flex items-center mb-4" @click="showServerList">
-            <span class="material-symbols text-fg-muted">arrow_back</span>
-          </div>
-          <h2 class="text-lg leading-7 mb-2">{{ $strings.LabelServerAddress }}</h2>
-          <ui-text-input v-model="serverConfig.address" :disabled="processing || !networkConnected || !!serverConfig.id" placeholder="http://55.55.55.55:13378" type="url" class="w-full h-10" />
+          <button v-if="serverConnectionConfigs.length" type="button" class="flex items-center mb-4 text-fg-muted" @click="showServerList">
+            <ui-ph-icon name="arrow_back" :size="22" />
+          </button>
+          <p class="font-mono text-xxs uppercase tracking-widest text-success mb-2">host</p>
+          <ui-text-input variant="prompt" v-model="serverConfig.address" :disabled="processing || !networkConnected || !!serverConfig.id" placeholder="http://55.55.55.55:13378" type="url" class="w-full" :autofocus="true" />
           <div class="flex justify-end items-center mt-6">
             <ui-btn :disabled="processing || !networkConnected" type="submit" :padding-x="3" class="h-10">{{ networkConnected ? $strings.ButtonSubmit : $strings.MessageNoNetworkConnection }}</ui-btn>
           </div>
         </form>
         <!-- username/password and auth methods -->
         <template v-else>
-          <div v-if="serverConfig.id" class="flex items-center mb-4" @click="showServerList">
-            <span class="material-symbols text-fg-muted">arrow_back</span>
-          </div>
+          <button v-if="serverConfig.id" type="button" class="flex items-center mb-4 text-fg-muted" @click="showServerList">
+            <ui-ph-icon name="arrow_back" :size="22" />
+          </button>
 
           <div class="flex items-center">
-            <p class="text-fg-muted">{{ serverConfig.address }}</p>
+            <p class="text-fg-muted font-mono text-xs truncate">{{ serverConfig.address }}</p>
             <div class="flex-grow" />
-            <span v-if="!serverConfig.id" class="material-symbols" style="font-size: 1.1rem" @click="editServerAddress">edit</span>
+            <button v-if="!serverConfig.id" type="button" class="text-fg-muted" @click="editServerAddress">
+              <ui-ph-icon name="edit" :size="18" />
+            </button>
           </div>
-          <div class="w-full h-px bg-fg/10 my-2" />
-          <form v-if="isLocalAuthEnabled" @submit.prevent="submitAuth" class="pt-3">
-            <ui-text-input v-model="serverConfig.username" :disabled="processing" :placeholder="$strings.LabelUsername" class="w-full mb-2 text-lg" />
-            <ui-text-input v-model="password" type="password" :disabled="processing" :placeholder="$strings.LabelPassword" class="w-full mb-2 text-lg" />
+          <div class="w-full h-px bg-border my-3" />
+          <form v-if="isLocalAuthEnabled" @submit.prevent="submitAuth" class="pt-1">
+            <p class="font-mono text-xxs uppercase tracking-widest text-success mb-2">user</p>
+            <ui-text-input variant="prompt" v-model="serverConfig.username" :disabled="processing" :placeholder="$strings.LabelUsername" class="w-full mb-3" />
+            <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-2">pass</p>
+            <ui-text-input variant="prompt" v-model="password" type="password" :disabled="processing" :placeholder="$strings.LabelPassword" class="w-full mb-2" :autofocus="false" />
 
             <div class="flex items-center pt-2">
               <ui-icon-btn v-if="serverConfig.id" bg-color="error" icon="delete" type="button" @click="removeServerConfigClick(serverConfig)" />
@@ -65,15 +69,15 @@
               <ui-btn :disabled="processing || !networkConnected" type="submit" class="mt-1 h-10">{{ networkConnected ? $strings.ButtonSubmit : $strings.MessageNoNetworkConnection }}</ui-btn>
             </div>
           </form>
-          <div v-if="isLocalAuthEnabled && isOpenIDAuthEnabled" class="w-full h-px bg-fg/10 my-4" />
+          <div v-if="isLocalAuthEnabled && isOpenIDAuthEnabled" class="w-full h-px bg-border my-4" />
           <ui-btn v-if="isOpenIDAuthEnabled" :disabled="processing" class="h-10 w-full" @click="clickLoginWithOpenId">{{ oauth.buttonText }}</ui-btn>
         </template>
       </div>
 
       <!-- auth error message -->
-      <div v-show="error" class="w-full rounded-lg bg-red-600 bg-opacity-10 border border-error border-opacity-50 py-3 px-2 flex items-center mt-4">
-        <span class="material-symbols mr-2 text-error" style="font-size: 1.1rem">warning</span>
-        <p class="text-error">{{ error }}</p>
+      <div v-show="error" class="w-full rounded-lg border border-error/50 py-3 px-2 flex items-center mt-4 gap-2">
+        <ui-status-dot tone="offline" :size="8" />
+        <p class="text-error text-sm">{{ error }}</p>
       </div>
     </div>
 
@@ -726,7 +730,7 @@ export default {
         console.error('[ServerConnectForm] Received empty response')
         return false
       } else if (!('isInit' in statusData.data) || !('language' in statusData.data)) {
-        this.error = 'This does not seem to be a Audiobookshelf server'
+        this.error = 'This does not seem to be an Audiobookshelf server'
         console.error('[ServerConnectForm] Received as response from Server:\n', statusData)
         return false
         //    TODO: delete the if above and comment the ones below out, as soon as the backend is ready to introduce a version check
