@@ -29,6 +29,7 @@
     "@capacitor/preferences": "^7.0.0",
     "@capacitor/status-bar": "^7.0.0",
     "@nuxtjs/axios": "^5.13.6",
+    "@phosphor-icons/core": "^2.1.1",
     "@teckel/vue-pdf": "^4.3.5",
     "buffer": "^6.0.3",
     "cordova-plugin-screen-orientation": "^3.0.4",

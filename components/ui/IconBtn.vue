@@ -5,12 +5,19 @@
         <path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
       </svg>
     </div>
+    <ph-icon v-else-if="hasPhIcon" :name="icon" class="text-2xl" />
     <span v-else class="material-symbols text-2xl" :class="{ fill: !outlined }" :style="{ fontSize }">{{ icon }}</span>
   </button>
 </template>
 
 <script>
+import PhIcon from '@/components/ui/PhIcon.vue'
+import { iconPaths } from '@/assets/icons/phosphor-map'
+
 export default {
+  components: {
+    PhIcon
+  },
   props: {
     icon: String,
     type: {
@@ -30,6 +37,9 @@ export default {
     return {}
   },
   computed: {
+    hasPhIcon() {
+      return Boolean(iconPaths[this.icon])
+    },
     className() {
       var classes = []
       if (!this.borderless) {
@@ -78,7 +88,8 @@ button.icon-btn:hover:not(:disabled)::before {
 button.icon-btn:disabled::before {
   background-color: rgba(0, 0, 0, 0.2);
 }
-button.icon-btn:disabled span {
+button.icon-btn:disabled span,
+button.icon-btn:disabled .ph-icon {
   color: #777;
 }
 </style>
