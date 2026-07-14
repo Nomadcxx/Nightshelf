@@ -49,3 +49,19 @@
 .menu-leave-active {
   opacity: 0;
 }
+
+@keyframes nightshelf-synthwave {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 200% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .synthwave-progress__fill {
+    animation: none !important;
+    background-position: 50% 50% !important;
+  }
+}

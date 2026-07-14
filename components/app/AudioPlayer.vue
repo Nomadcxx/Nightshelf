@@ -23,9 +23,7 @@
       </div>
       <div class="w-full">
         <div class="h-1 w-full bg-track/50 relative rounded-full">
-          <div ref="totalReadyTrack" class="h-full bg-track-buffered absolute top-0 left-0 pointer-events-none rounded-full" />
-          <div ref="totalBufferedTrack" class="h-full bg-track absolute top-0 left-0 pointer-events-none rounded-full" />
-          <div ref="totalPlayedTrack" class="h-full bg-track-cursor absolute top-0 left-0 pointer-events-none rounded-full" />
+          <ui-synthwave-progress :progress="totalTrackProgress" :buffered="totalTrackBufferedProgress" :playing="isProgressAnimating" variant="full" />
         </div>
       </div>
     </div>
@@ -69,22 +67,25 @@
 
       <div id="playerControls" class="absolute right-0 bottom-0 mx-auto" style="max-width: 414px">
         <div class="flex items-center max-w-full" :class="playerSettings.lockUi ? 'justify-center' : 'justify-between'">
-          <span v-show="showFullscreen && !playerSettings.lockUi" class="material-symbols next-icon text-fg cursor-pointer" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" @click.stop="jumpChapterStart">first_page</span>
+          <ui-icon-btn v-show="showFullscreen && !playerSettings.lockUi" class="next-icon text-fg cursor-pointer" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" icon="skip_previous" borderless @click="jumpChapterStart" />
           <div v-show="!playerSettings.lockUi" class="jump-icon text-fg cursor-pointer flex flex-col items-center" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" @click.stop="jumpBackwards">
             <span class="material-symbols text-3xl leading-none">replay</span>
             <span v-if="showFullscreen" class="jump-label text-[10px] font-semibold leading-tight">{{ jumpBackwardsLabel }}</span>
           </div>
-          <div class="play-btn cursor-pointer shadow-sm flex items-center justify-center rounded-full text-primary mx-4 relative overflow-hidden" :style="{ backgroundColor: coverRgb }" :class="{ 'animate-spin': seekLoading }" @mousedown.prevent @mouseup.prevent @click.stop="playPauseClick">
-            <div v-if="!coverBgIsLight" class="absolute top-0 left-0 w-full h-full bg-white bg-opacity-20 pointer-events-none" />
-
-            <span v-if="!showLoadingState" class="material-symbols fill" :class="{ 'text-white': coverRgb && !coverBgIsLight }">{{ seekLoading ? 'autorenew' : !isPlaying ? 'play_arrow' : 'pause' }}</span>
-            <widgets-spinner-icon v-else class="h-8 w-8" />
-          </div>
+          <ui-icon-btn
+            class="play-btn cursor-pointer shadow-sm text-primary mx-4 relative overflow-hidden"
+            :style="{ backgroundColor: coverRgb }"
+            :class="{ 'animate-spin': seekLoading, 'text-white': coverRgb && !coverBgIsLight }"
+            :icon="seekLoading ? 'autorenew' : !isPlaying ? 'play_arrow' : 'pause'"
+            :loading="showLoadingState"
+            borderless
+            @click="playPauseClick"
+          />
           <div v-show="!playerSettings.lockUi" class="jump-icon text-fg cursor-pointer flex flex-col items-center" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" @click.stop="jumpForward">
             <span class="material-symbols text-3xl leading-none">forward_media</span>
             <span v-if="showFullscreen" class="jump-label text-[10px] font-semibold leading-tight">{{ jumpForwardLabel }}</span>
           </div>
-          <span v-show="showFullscreen && !playerSettings.lockUi" class="material-symbols next-icon text-fg cursor-pointer" :class="nextChapter && !showLoadingState ? 'text-opacity-75' : 'text-opacity-10'" @click.stop="jumpNextChapter">last_page</span>
+          <ui-icon-btn v-show="showFullscreen && !playerSettings.lockUi" class="next-icon text-fg cursor-pointer" :class="nextChapter && !showLoadingState ? 'text-opacity-75' : 'text-opacity-10'" icon="skip_next" borderless @click="jumpNextChapter" />
         </div>
       </div>
 
@@ -94,12 +95,10 @@
           <div class="flex-grow" />
           <p class="font-mono text-fg" style="font-size: 0.8rem">{{ timeRemainingPretty }}</p>
         </div>
-        <div ref="track" class="h-1.5 w-full bg-track/50 relative rounded-full" :class="{ 'animate-pulse': showLoadingState }" @click.stop>
-          <div ref="readyTrack" class="h-full bg-track-buffered absolute top-0 left-0 rounded-full pointer-events-none" />
-          <div ref="bufferedTrack" class="h-full bg-track absolute top-0 left-0 rounded-full pointer-events-none" />
-          <div ref="playedTrack" class="h-full bg-track-cursor absolute top-0 left-0 rounded-full pointer-events-none" />
-          <div ref="trackCursor" class="h-7 w-7 rounded-full absolute pointer-events-auto flex items-center justify-center" :style="{ top: '-11px' }" :class="{ 'opacity-0': playerSettings.lockUi || !showFullscreen }" @touchstart="touchstartCursor">
-            <div class="bg-track-cursor rounded-full w-3.5 h-3.5 pointer-events-none" />
+        <div ref="track" class="h-1.5 w-full relative rounded-full" :class="{ 'animate-pulse': showLoadingState }" @click.stop>
+          <ui-synthwave-progress :progress="trackProgress" :buffered="trackBufferedProgress" :playing="isProgressAnimating" :variant="showFullscreen ? 'full' : 'mini'" />
+          <div ref="trackCursor" class="h-7 w-7 rounded-full absolute pointer-events-auto flex items-center justify-center" :style="{ top: '-11px', left: `${trackCursorLeft}px` }" :class="{ 'opacity-0': playerSettings.lockUi || !showFullscreen }" @touchstart="touchstartCursor">
+            <div class="rounded-full w-3.5 h-3.5 pointer-events-none" style="background: #04d1f9; box-shadow: 0 0 8px rgb(4 209 249 / 0.75)" />
           </div>
         </div>
       </div>
@@ -146,6 +145,12 @@ export default {
       isEnded: false,
       volume: 0.5,
       readyTrackWidth: 0,
+      readyProgress: 0,
+      trackProgress: 0,
+      bufferedProgress: 0,
+      totalTrackProgress: 0,
+      totalBufferedProgress: 0,
+      totalReadyProgress: 0,
       seekedTime: 0,
       seekLoading: false,
       touchStartY: 0,
@@ -273,6 +278,18 @@ export default {
     },
     showLoadingState() {
       return this.isLoading || this.isCheckingServerProgress
+    },
+    isProgressAnimating() {
+      return this.isPlaying && !this.showLoadingState
+    },
+    trackBufferedProgress() {
+      return Math.max(this.readyProgress, this.bufferedProgress)
+    },
+    totalTrackBufferedProgress() {
+      return Math.max(this.totalReadyProgress, this.totalBufferedProgress)
+    },
+    trackCursorLeft() {
+      return this.trackProgress * this.trackWidth - 14
     },
     showCastBtn() {
       return this.$store.state.isCastAvailable
@@ -531,14 +548,9 @@ export default {
       this.updateReadyTrack()
     },
     updateReadyTrack() {
-      if (this.playerSettings.useChapterTrack) {
-        if (this.$refs.totalReadyTrack) {
-          this.$refs.totalReadyTrack.style.width = this.readyTrackWidth + 'px'
-        }
-        this.$refs.readyTrack.style.width = this.trackWidth + 'px'
-      } else {
-        this.$refs.readyTrack.style.width = this.readyTrackWidth + 'px'
-      }
+      const readyProgress = this.trackWidth ? this.readyTrackWidth / this.trackWidth : 0
+      this.totalReadyProgress = Math.min(1, Math.max(0, readyProgress))
+      this.readyProgress = this.playerSettings.useChapterTrack ? 1 : this.totalReadyProgress
     },
     updateTimestamp() {
       const ts = this.$refs.currentTimestamp
@@ -558,18 +570,10 @@ export default {
       ts.innerText = this.$secondsToTimestamp(currentTime)
     },
     timeupdate() {
-      if (!this.$refs.playedTrack) {
-        console.error('Invalid no played track ref')
-        return
-      }
       this.$emit('updateTime', this.currentTime)
 
       if (this.seekLoading) {
         this.seekLoading = false
-        if (this.$refs.playedTrack) {
-          this.$refs.playedTrack.classList.remove('bg-yellow-300')
-          this.$refs.playedTrack.classList.add('bg-gray-200')
-        }
       }
 
       this.updateTimestamp()
@@ -589,22 +593,10 @@ export default {
         bufferedPercent = Math.max(0, Math.min(1, (this.bufferedTime - this.currentChapter.start) / this.currentChapterDuration))
       }
 
-      const ptWidth = Math.round(percentDone * this.trackWidth)
-      if (this.$refs.playedTrack) {
-        this.$refs.playedTrack.style.width = ptWidth + 'px'
-      }
-      if (this.$refs.bufferedTrack) {
-        this.$refs.bufferedTrack.style.width = Math.round(bufferedPercent * this.trackWidth) + 'px'
-      }
-
-      if (this.$refs.trackCursor) {
-        this.$refs.trackCursor.style.left = ptWidth - 14 + 'px'
-      }
-
-      if (this.playerSettings.useChapterTrack) {
-        if (this.$refs.totalPlayedTrack) this.$refs.totalPlayedTrack.style.width = Math.round(totalPercentDone * this.trackWidth) + 'px'
-        if (this.$refs.totalBufferedTrack) this.$refs.totalBufferedTrack.style.width = Math.round(totalBufferedPercent * this.trackWidth) + 'px'
-      }
+      this.trackProgress = Math.min(1, Math.max(0, percentDone))
+      this.bufferedProgress = Math.min(1, Math.max(0, bufferedPercent))
+      this.totalTrackProgress = Math.min(1, Math.max(0, totalPercentDone))
+      this.totalBufferedProgress = Math.min(1, Math.max(0, totalBufferedPercent))
     },
     seek(time) {
       if (this.showLoadingState) return
@@ -618,13 +610,11 @@ export default {
 
       AbsAudioPlayer.seek({ value: Math.floor(time) })
 
-      if (this.$refs.playedTrack) {
-        const perc = time / this.totalDuration
-        const ptWidth = Math.round(perc * this.trackWidth)
-        this.$refs.playedTrack.style.width = ptWidth + 'px'
-
-        this.$refs.playedTrack.classList.remove('bg-gray-200')
-        this.$refs.playedTrack.classList.add('bg-yellow-300')
+      this.totalTrackProgress = Math.min(1, Math.max(0, time / this.totalDuration))
+      if (this.playerSettings.useChapterTrack && this.currentChapter) {
+        this.trackProgress = Math.min(1, Math.max(0, (time - this.currentChapter.start) / this.currentChapterDuration))
+      } else {
+        this.trackProgress = this.totalTrackProgress
       }
     },
     async touchstartCursor(e) {
@@ -1122,6 +1112,10 @@ export default {
 
   font-size: 1.5rem;
 }
+#playerControls .play-btn .ph-icon {
+  height: 1.5rem;
+  width: 1.5rem;
+}
 
 .fullscreen .cover-wrapper {
   margin: 0 auto;
@@ -1146,6 +1140,10 @@ export default {
 .fullscreen #playerControls .next-icon {
   font-size: 2rem;
 }
+.fullscreen #playerControls .next-icon .ph-icon {
+  height: 2rem;
+  width: 2rem;
+}
 .fullscreen #playerControls .play-btn {
   height: 65px;
   width: 65px;
@@ -1154,5 +1152,9 @@ export default {
 }
 .fullscreen #playerControls .play-btn .material-symbols {
   font-size: 2.1rem;
+}
+.fullscreen #playerControls .play-btn .ph-icon {
+  height: 2.1rem;
+  width: 2.1rem;
 }
 </style>
