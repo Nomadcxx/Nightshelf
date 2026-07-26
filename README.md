@@ -22,10 +22,6 @@
 
 ---
 
-<div align="center">
-  <img src="docs/screenshots/home-hero.png" alt="Home screen showing the book in progress with time remaining" width="480" />
-</div>
-
 ## Features
 
 - **Resume hero**: whatever you are part-way through sits at the top of Home with time remaining and one control
@@ -90,9 +86,7 @@ Touching any launcher or notification artwork means running `./scripts/sync-debu
 
 ## Status
 
-Beta, running daily against a 1,928-item library on a Pixel 8 Pro.
-
-Not there yet: release signing, iOS, and the F-Droid build. F-Droid needs a Cast-free product flavour first, because the ExoPlayer Cast extension pulls in nine `com.google.android.gms` and `com.google.firebase` artifacts and their policy rejects proprietary Google libraries.
+Beta, running daily against a 1,928-item library on a Pixel 8 Pro. Not there yet: release signing, iOS, and any store listing.
 
 ## Licence
 
