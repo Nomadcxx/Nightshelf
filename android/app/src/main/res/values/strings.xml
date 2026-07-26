@@ -11,4 +11,11 @@
     <string name="action_skip_forward">Skip Forward</string>
     <string name="action_skip_backward">Skip Backward</string>
     <string name="action_change_speed">Change Playback Speed</string>
+
+    <!-- Android Auto browse tabs. Localisable because these are read by the
+         driver at a glance and must match the phone's language. -->
+    <string name="auto_browse_continue">Continue</string>
+    <string name="auto_browse_recent">Recent</string>
+    <string name="auto_browse_downloads">Downloads</string>
+    <string name="auto_browse_libraries">Libraries</string>
 </resources>

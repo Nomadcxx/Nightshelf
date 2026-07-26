@@ -1,9 +1,12 @@
 <!--
-  Splash mark.
+  NightShelf adaptive icon foreground.
 
-  Android masks windowSplashScreenAnimatedIcon to the centre two thirds of the
-  canvas — a 36dp radius in this 108dp viewport. Same fit as the launcher
-  foreground, for the same reason.
+  Paths are the master artwork verbatim. The group transform exists because the
+  artwork's own centre is (256,289) — it sits low on the 512 canvas — and at
+  full size it overflows the centre 72dp of the 108dp viewport that Android
+  guarantees to be visible. Scaling to 0.78 about that centre and lifting it
+  onto (256,256) keeps the whole silhouette, including the book's lower point,
+  inside every launcher mask.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -13,8 +16,8 @@
   <group
       android:pivotX="256"
       android:pivotY="289"
-      android:scaleX="0.74"
-      android:scaleY="0.74"
+      android:scaleX="0.78"
+      android:scaleY="0.78"
       android:translateY="-33">
     <path android:strokeColor="#7CFFB2" android:strokeWidth="24" android:strokeLineCap="round" android:pathData="M164,158 C218,124 294,124 348,158"/>
     <path android:strokeColor="#7CFFB2" android:strokeWidth="22" android:strokeLineCap="round" android:pathData="M191,202 C230,178 282,178 321,202"/>

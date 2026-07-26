@@ -9,4 +9,12 @@ for dir in mipmap-mdpi mipmap-hdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi mip
   rm -rf "$DEBUG/$dir"
   cp -a "$MAIN/$dir" "$DEBUG/"
 done
-echo "Synced debug mipmaps from main."
+
+# The debug source set also carries its own copies of identity drawables, which
+# override main for debug builds in exactly the same silent way the mipmaps do.
+mkdir -p "$DEBUG/drawable"
+for f in icon_monochrome.xml ic_launcher_foreground.xml; do
+  [ -f "$MAIN/drawable/$f" ] && cp -a "$MAIN/drawable/$f" "$DEBUG/drawable/$f"
+done
+
+echo "Synced debug mipmaps and identity drawables from main."

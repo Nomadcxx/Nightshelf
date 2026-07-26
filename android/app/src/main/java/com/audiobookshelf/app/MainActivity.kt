@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.webkit.WebView
 import androidx.core.app.ActivityCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.updateLayoutParams
 import com.anggrayudi.storage.SimpleStorage
 import com.anggrayudi.storage.SimpleStorageHelper
@@ -52,6 +53,13 @@ class MainActivity : BridgeActivity() {
     registerPlugin(AbsFileSystem::class.java)
     registerPlugin(AbsDatabase::class.java)
     registerPlugin(AbsLogger::class.java)
+
+    // Must run before super.onCreate. The splash theme was declared but never
+    // installed, so `postSplashScreenTheme` never took effect: on Android 12+
+    // the activity kept the splash theme for its whole life and never picked up
+    // AppTheme.NoActionBar's status and navigation bar colours. On API 24-30
+    // the backport did nothing at all and there was no splash.
+    installSplashScreen()
 
     super.onCreate(savedInstanceState)
     Log.d(tag, "onCreate")

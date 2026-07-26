@@ -9,7 +9,7 @@
     <clip>
       <shape android:shape="rectangle">
         <corners android:radius="2dp" />
-        <solid android:color="@color/nightshelf_progress" />
+        <gradient android:angle="0" android:startColor="#37F499" android:centerColor="#04D1F9" android:endColor="#A48CF2" />
       </shape>
     </clip>
   </item>

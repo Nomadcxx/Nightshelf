@@ -25,7 +25,11 @@ fun getUriToDrawable(context: Context, @AnyRes drawableId: Int): Uri {
  * @return - uri
  */
 fun getUriToAbsIconDrawable(context: Context, absIconName: String): Uri {
-  val drawableId = when(absIconName) {
+  // The web client sends hyphenated names ("microphone-1"); this map was keyed
+  // on underscores, so every microphone library silently fell through to the
+  // generic folder icon. Normalising both separators fixes that and makes the
+  // lookup insensitive to which form a future caller uses.
+  val drawableId = when (absIconName.trim().lowercase().replace('_', '-')) {
     "audiobookshelf" -> R.drawable.abs_audiobookshelf
     "authors" -> R.drawable.abs_authors
     "book-1" -> R.drawable.abs_book_1
@@ -36,9 +40,9 @@ fun getUriToAbsIconDrawable(context: Context, absIconName: String): Uri {
     "file-picture" -> R.drawable.abs_file_picture
     "headphones" -> R.drawable.abs_headphones
     "heart" -> R.drawable.abs_heart
-    "microphone_1" -> R.drawable.abs_microphone_1
-    "microphone_2" -> R.drawable.abs_microphone_2
-    "microphone_3" -> R.drawable.abs_microphone_3
+    "microphone-1" -> R.drawable.abs_microphone_1
+    "microphone-2" -> R.drawable.abs_microphone_2
+    "microphone-3" -> R.drawable.abs_microphone_3
     "music" -> R.drawable.abs_music
     "podcast" -> R.drawable.abs_podcast
     "radio" -> R.drawable.abs_radio

@@ -41,6 +41,16 @@ class ApiHandler(var ctx:Context) {
     fun checkAbsDatabaseNotifyListenersInitted():Boolean {
       return ::absDatabaseNotifyListeners.isInitialized
     }
+
+    /** Page size when walking a whole library. */
+    private const val LIBRARY_ITEMS_PAGE_SIZE = 200
+
+    /**
+     * Hard ceiling on pages walked in one call. At the page size above this is
+     * 20,000 items — far past any real library — and exists purely so a server
+     * that keeps returning full pages cannot spin this forever.
+     */
+    private const val MAX_LIBRARY_ITEM_PAGES = 100
   }
 
   private var defaultClient = OkHttpClient()
@@ -510,17 +520,50 @@ class ApiHandler(var ctx:Context) {
     }
   }
 
+  /**
+   * Fetch every item in a library, following the server's paging.
+   *
+   * This previously issued a single `limit=100` request with no page parameter,
+   * so a library with more than 100 items was silently truncated and everything
+   * past the first page was unreachable from Android Auto.
+   */
   fun getLibraryItems(libraryId:String, cb: (List<LibraryItem>) -> Unit) {
-    getRequest("/api/libraries/$libraryId/items?limit=100&minified=1", null, null) {
-      val items = mutableListOf<LibraryItem>()
+    val collected = mutableListOf<LibraryItem>()
+    fetchLibraryItemsPage(libraryId, 0, collected, cb)
+  }
+
+  private fun fetchLibraryItemsPage(
+    libraryId: String,
+    page: Int,
+    collected: MutableList<LibraryItem>,
+    cb: (List<LibraryItem>) -> Unit
+  ) {
+    getRequest("/api/libraries/$libraryId/items?limit=$LIBRARY_ITEMS_PAGE_SIZE&page=$page&minified=1", null, null) {
+      var receivedOnThisPage = 0
       if (it.has("results")) {
         val array = it.getJSONArray("results")
+        receivedOnThisPage = array.length()
         for (i in 0 until array.length()) {
           val item = jacksonMapper.readValue<LibraryItem>(array.get(i).toString())
-          items.add(item)
+          collected.add(item)
         }
       }
-      cb(items)
+
+      val total = if (it.has("total")) it.getInt("total") else collected.size
+      // Stop on an empty or short page as well as on reaching the total: a
+      // server that reports a stale total must not put us in an endless loop.
+      val hasMore = receivedOnThisPage >= LIBRARY_ITEMS_PAGE_SIZE &&
+        collected.size < total &&
+        page + 1 < MAX_LIBRARY_ITEM_PAGES
+
+      if (hasMore) {
+        fetchLibraryItemsPage(libraryId, page + 1, collected, cb)
+      } else {
+        if (collected.size < total) {
+          Log.w(tag, "getLibraryItems: stopped at ${collected.size} of $total items for library $libraryId")
+        }
+        cb(collected)
+      }
     }
   }
 

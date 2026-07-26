@@ -17,9 +17,18 @@
     <item name="android:navigationBarColor">@color/background_dark</item>
   </style>
 
-  <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
-    <item name="android:windowBackground">@color/background_dark</item>
-    <item name="android:windowDisablePreview">true</item>
+  <!--
+    The launch theme, for every API level. androidx.core:core-splashscreen
+    backports these attributes to API 21, so there is one definition rather than
+    a v31 fork that leaves older devices with no splash at all.
+
+    `windowDisablePreview` used to be set here, which suppressed the launch
+    window outright — that is why nothing appeared on API 24-30.
+  -->
+  <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+    <item name="windowSplashScreenBackground">@color/background_dark</item>
+    <item name="windowSplashScreenAnimatedIcon">@drawable/nightshelf_splash_mark</item>
+    <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
   </style>
 
   <style name="MediaPlayerWidgetTheme" parent="Theme.AppCompat.DayNight">

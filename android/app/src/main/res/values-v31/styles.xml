@@ -1,10 +1,7 @@
 <resources>
 
-  <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-    <item name="windowSplashScreenBackground">@color/background_dark</item>
-    <item name="windowSplashScreenAnimatedIcon">@drawable/nightshelf_splash_mark</item>
-    <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
-  </style>
+  <!-- AppTheme.NoActionBarLaunch is defined once in values/styles.xml; the
+       splashscreen compat library covers v31 and below from that one style. -->
 
   <style name="Widget.Android.AppWidget.Container" parent="android:Widget">
     <item name="android:id">@android:id/background</item>
