@@ -96,3 +96,11 @@ sw.*
 .superpowers/
 # Git worktrees
 .worktrees/
+
+# Agent tooling, not part of the app
+.agents/
+skills-lock.json
+.claude/
+
+# Internal working notes: specs, plans, handovers, audits
+docs/superpowers/

@@ -1,7 +1,7 @@
 {
   "name": "nightshelf",
   "version": "0.13.0-beta",
-  "author": "advplyr",
+  "author": "Nomadcxx",
   "scripts": {
     "dev": "nuxt --hostname 0.0.0.0 --port 1337",
     "build": "nuxt build",
@@ -49,5 +49,18 @@
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.33",
     "tailwindcss": "^3.4.1"
-  }
+  },
+  "description": "Android client for a self-hosted Audiobookshelf server. Fork of audiobookshelf-app.",
+  "contributors": [
+    "advplyr and the Audiobookshelf contributors (upstream: audiobookshelf-app)"
+  ],
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nomadcxx/nightshelf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Nomadcxx/nightshelf/issues"
+  },
+  "homepage": "https://github.com/Nomadcxx/nightshelf#readme"
 }
