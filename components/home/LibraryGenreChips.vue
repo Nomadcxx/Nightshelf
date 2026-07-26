@@ -1,25 +1,16 @@
 <template>
   <div class="w-full">
-    <div v-if="isLoading" class="px-2 py-2 flex items-center gap-2">
+    <div v-if="isLoading" class="min-h-12 px-3 flex items-center gap-2 border-y border-border bg-bg">
       <widgets-loading-spinner size="la-sm" />
-      <p class="font-mono text-xxs uppercase tracking-wider text-fg-muted">Loading genres</p>
+      <p class="font-mono text-xs uppercase tracking-wider text-fg-muted">Loading genres</p>
     </div>
-    <div v-else-if="chips.length" class="overflow-x-auto px-2 py-2 flex gap-2 items-center">
-      <button
-        v-for="chip in chips"
-        :key="chip.value"
-        type="button"
-        class="flex-none px-2.5 py-1 rounded-full border font-mono text-xxs uppercase tracking-wider"
-        :class="chip.value === activeFilter ? 'border-success text-success bg-success/10' : 'border-border text-fg-muted'"
-        @click="select(chip.value)"
-      >
-        {{ chip.label }}
-      </button>
-    </div>
+    <ui-facet-strip v-else-if="chips.length" prompt="Genre" aria-label="Filter library by genre" :items="chips" :value="activeFilter" @select="select" />
   </div>
 </template>
 
 <script>
+import { selectQuickGenres } from '@/utils/libraryGenreChips'
+
 export default {
   props: {
     filterBy: {
@@ -39,7 +30,7 @@ export default {
     },
     chips() {
       const items = [{ value: 'all', label: 'All' }]
-      for (const genre of this.genres.slice(0, 12)) {
+      for (const genre of selectQuickGenres(this.genres, this.activeFilter, 12)) {
         items.push({
           value: `genres.${this.$encode(genre)}`,
           label: genre

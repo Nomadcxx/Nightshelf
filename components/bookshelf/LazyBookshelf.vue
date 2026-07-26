@@ -1,5 +1,5 @@
 <template>
-  <div id="bookshelf" class="w-full max-w-full h-full bg-secondary">
+  <div id="bookshelf" class="w-full max-w-full h-full bg-secondary" :class="{ 'is-view-changing': isViewChanging }" :style="{ '--view-fade-ms': viewFadeMs + 'ms' }">
     <template v-for="shelf in totalShelves">
       <div :key="shelf" class="w-full px-2 relative" :class="showBookshelfListView || altViewEnabled ? '' : 'bookshelfRow'" :id="`shelf-${shelf - 1}`" :style="{ height: shelfHeight + 'px' }">
         <div v-if="!showBookshelfListView && !altViewEnabled" class="w-full absolute bottom-0 left-0 z-30 bookshelfDivider" style="min-height: 16px" :class="`h-${shelfDividerHeightIndex}`" />
@@ -7,21 +7,28 @@
       </div>
     </template>
 
-    <div v-show="!entities.length && initialized" class="w-full py-16 text-center text-xl">
-      <div v-if="page === 'collections'" class="py-4">{{ $strings.MessageNoCollections }}</div>
-      <div v-else class="py-4 capitalize">No {{ entityName }}</div>
-      <ui-btn v-if="hasFilter" @click="clearFilter">{{ $strings.ButtonClearFilter }}</ui-btn>
+    <!-- Loading, offline, error, empty and no-matches are five different
+         situations. Previously a failed fetch left this blank forever, because
+         `initialized` never flipped. -->
+    <div v-if="viewState !== 'ready'" class="w-full absolute top-0 left-0 right-0">
+      <ui-state-message :state="viewState" :title-key="emptyTitleKey" @retry="retryFetch" />
+      <div v-if="viewState === 'noResults' && hasFilter" class="w-full flex justify-center pb-8">
+        <ui-btn @click="clearFilter">{{ $strings.ButtonClearFilter }}</ui-btn>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import bookshelfCardsHelpers from '@/mixins/bookshelfCardsHelpers'
+import { resolveViewState } from '@/utils/appStates'
+import { shouldAnimateViewChange, viewTransitionDuration } from '@/utils/viewTransition'
 
 export default {
   props: {
     page: String,
-    seriesId: String
+    seriesId: String,
+    viewMode: String
   },
   mixins: [bookshelfCardsHelpers],
   data() {
@@ -45,18 +52,55 @@ export default {
       pagesLoaded: {},
       isFirstInit: false,
       pendingReset: false,
-      localLibraryItems: []
+      localLibraryItems: [],
+      fetchError: null,
+      isViewChanging: false,
+      viewChangeTimer: null
     }
   },
   watch: {
-    showBookshelfListView(newVal) {
-      this.resetEntities()
+    showBookshelfListView(newVal, oldVal) {
+      // One crossfade over the whole container. A transition group across a
+      // thousand recycled cards would be both slow and visually chaotic.
+      if (
+        shouldAnimateViewChange({
+          from: oldVal === undefined ? null : String(oldVal),
+          to: String(newVal),
+          motionMode: this.motionMode,
+          itemCount: this.entities.length
+        })
+      ) {
+        this.runViewChange()
+      } else {
+        this.resetEntities()
+      }
     },
     seriesId() {
       this.resetEntities()
     }
   },
   computed: {
+    motionMode() {
+      return this.$store.getters['globals/motionMode']
+    },
+    viewFadeMs() {
+      return viewTransitionDuration(this.motionMode)
+    },
+    viewState() {
+      return resolveViewState({
+        isLoading: !this.initialized && this.isFetchingEntities,
+        error: this.fetchError,
+        isOffline: !this.$store.state.networkConnected,
+        itemCount: this.entities.length,
+        hasFilter: this.hasFilter
+      })
+    },
+    emptyTitleKey() {
+      if (this.viewState !== 'empty') return null
+      if (this.page === 'collections') return 'MessageNoCollections'
+      if (this.page === 'series') return 'MessageNoSeries'
+      return 'MessageBookshelfEmpty'
+    },
     user() {
       return this.$store.state.user.user
     },
@@ -71,6 +115,7 @@ export default {
       return this.$store.state.globals.bookshelfListView
     },
     showBookshelfListView() {
+      if (this.page === 'books' && this.viewMode) return this.viewMode === 'compact'
       return this.isBookEntity && this.bookshelfListView
     },
     sortingIgnorePrefix() {
@@ -104,21 +149,30 @@ export default {
     bookCoverAspectRatio() {
       return this.$store.getters['libraries/getBookCoverAspectRatio']
     },
+    /**
+     * How many covers to fit across. Derived from a target column count rather
+     * than from a cover size, because the grid's job is density: the previous
+     * code solved for "about 100px" and landed on two columns per phone screen.
+     */
+    targetColumns() {
+      const w = typeof window !== 'undefined' ? window.innerWidth : 412
+      if (w < 340) return 2
+      if (w < 600) return 3
+      if (w < 900) return 5
+      return 7
+    },
     bookWidth() {
-      const availableWidth = window.innerWidth - 16
-      let coverSize = 100
+      const available = (typeof window !== 'undefined' ? window.innerWidth : 412) - this.shelfEdge * 2
+      const cols = this.targetColumns
+      // Solve for the widest cover that still leaves a full gap between columns.
+      let coverSize = Math.floor((available - this.shelfGap * (cols - 1)) / cols)
 
-      // Smaller screens fill width with 2 items per row
-      if (availableWidth <= 400) {
-        coverSize = Math.floor(availableWidth / 2 - 24)
-        if (coverSize < 120) {
-          // Fallback to 1 item per row
-          coverSize = Math.min(availableWidth - 24, 200)
-        }
-        if (this.isCoverSquareAspectRatio || this.entityName === 'playlists') coverSize /= 1.6
+      // Series and collection cards are double-width, so they get half the count.
+      if (!this.isBookEntity && this.entityName !== 'playlists') {
+        coverSize = Math.floor((available - this.shelfGap) / 2)
       }
 
-      if (this.isCoverSquareAspectRatio || this.entityName === 'playlists') return coverSize * 1.6
+      if (this.isCoverSquareAspectRatio || this.entityName === 'playlists') return coverSize
       return coverSize
     },
     bookHeight() {
@@ -148,12 +202,29 @@ export default {
       }
       return this.entityHeight + 40
     },
+    shelfEdge() {
+      if (typeof window === 'undefined') return 14
+      const parsed = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--shelf-edge'))
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : 14
+    },
+    shelfGap() {
+      // Read from the same token the rails use, so density is tuned in one
+      // place. This was a bare 24 baked into the layout maths, which meant the
+      // gap could not be changed without changing items-per-row.
+      if (typeof window === 'undefined') return 8
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--shelf-gap')
+      const parsed = parseFloat(raw)
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : 8
+    },
     totalEntityCardWidth() {
       if (this.showBookshelfListView) return this.entityWidth
-      // Includes margin
-      return this.entityWidth + 24
+      // Includes the inter-card gutter
+      return this.entityWidth + this.shelfGap
     },
     altViewEnabled() {
+      // Grid is the hunting mode — titles are what make 1,900 covers navigable,
+      // so they are on regardless of the global alt-view preference.
+      if (this.viewMode === 'grid') return true
       return this.$store.getters['getAltViewEnabled']
     },
     sizeMultiplier() {
@@ -182,6 +253,9 @@ export default {
 
       const payload = await this.$nativeHttp.get(`/api/libraries/${this.currentLibraryId}/${entityPath}${fullQueryString}`).catch((error) => {
         console.error('failed to fetch books', error)
+        // Recorded rather than swallowed: without this the shelf stays
+        // uninitialised and shows a blank page with no explanation.
+        this.fetchError = error || new Error('Failed to load library')
         return null
       })
 
@@ -193,6 +267,7 @@ export default {
       }
       if (payload && payload.results) {
         console.log('Received payload', payload)
+        this.fetchError = null
         if (!this.initialized) {
           this.initialized = true
           this.totalEntities = payload.total
@@ -285,6 +360,21 @@ export default {
       }
       this.$eventBus.$emit('bookshelf-total-entities', this.totalEntities)
     },
+    runViewChange() {
+      clearTimeout(this.viewChangeTimer)
+      this.isViewChanging = true
+      // Rebuild while the container is faded out, then release it. The rebuild
+      // is synchronous enough that a single timer covers both halves.
+      this.viewChangeTimer = setTimeout(async () => {
+        await this.resetEntities()
+        this.isViewChanging = false
+        this.viewChangeTimer = null
+      }, this.viewFadeMs)
+    },
+    retryFetch() {
+      this.fetchError = null
+      this.resetEntities()
+    },
     async resetEntities() {
       if (this.isFetchingEntities) {
         this.pendingReset = true
@@ -299,6 +389,7 @@ export default {
       this.totalEntities = 0
       this.currentPage = 0
       this.initialized = false
+      this.fetchError = null
 
       this.initSizeData()
       if (this.user) {
@@ -552,6 +643,9 @@ export default {
   },
   beforeDestroy() {
     this.removeListeners()
+    // A pending view change would otherwise rebuild entities into a component
+    // that no longer exists.
+    clearTimeout(this.viewChangeTimer)
 
     // Set bookshelf scroll position for specific bookshelf page and query
     if (window['bookshelf-wrapper']) {
@@ -560,3 +654,13 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+#bookshelf {
+  transition: opacity var(--view-fade-ms, 220ms) var(--ease-night-move);
+}
+
+#bookshelf.is-view-changing {
+  opacity: 0;
+}
+</style>

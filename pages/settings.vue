@@ -10,6 +10,11 @@
               <ui-text-input :value="themeOption" readonly append-icon="expand_more" class="settings-readonly-value" style="max-width: 200px" />
             </div>
           </div>
+          <div class="py-3">
+            <p class="mb-2 text-sm">{{ $strings.LabelDefaultLibraryView }}</p>
+            <ui-facet-strip prompt="VIEW" :aria-label="$strings.LabelDefaultLibraryView" :value="libraryViewMode" :items="libraryViewModeOptions" @select="setLibraryViewMode" />
+            <p class="mt-2 text-xs leading-relaxed text-fg-muted">{{ $strings.MessageDefaultLibraryViewDescription }}</p>
+          </div>
           <div class="flex items-center py-3">
             <div class="w-10 flex justify-center" @click="toggleEnableAltView">
               <ui-toggle-switch v-model="enableBookshelfView" @input="saveSettings" />
@@ -27,6 +32,12 @@
             <p class="pr-4 w-36">{{ $strings.LabelHapticFeedback }}</p>
             <div @click.stop="showHapticFeedbackOptions">
               <ui-text-input :value="hapticFeedbackOption" readonly append-icon="expand_more" class="settings-readonly-value" style="max-width: 200px" />
+            </div>
+          </div>
+          <div class="py-3 flex items-center">
+            <p class="pr-4 w-36">{{ $strings.LabelMotionAndEffects }}</p>
+            <div @click.stop="showMotionPreferenceOptions">
+              <ui-text-input :value="motionPreferenceOption" readonly append-icon="expand_more" class="settings-readonly-value" style="max-width: 200px" />
             </div>
           </div>
         </div>
@@ -227,6 +238,7 @@ export default {
         shakeSensitivity: 'MEDIUM',
         lockOrientation: 0,
         hapticFeedback: 'LIGHT',
+        motionPreference: 'SYSTEM',
         autoSleepTimer: false,
         autoSleepTimerStartTime: '22:00',
         autoSleepTimerEndTime: '06:00',
@@ -243,6 +255,7 @@ export default {
         androidAutoBrowseSeriesSequenceOrder: 'ASC'
       },
       theme: 'night',
+      libraryViewMode: 'rails',
       lockCurrentOrientation: false,
       settingInfo: {
         disableShakeToResetSleepTimer: {
@@ -278,6 +291,20 @@ export default {
           message: this.$strings.LabelAndroidAutoBrowseLimitForGroupingHelp
         }
       },
+      motionPreferenceItems: [
+        {
+          text: this.$strings.LabelMotionSystem,
+          value: 'SYSTEM'
+        },
+        {
+          text: this.$strings.LabelMotionFull,
+          value: 'FULL'
+        },
+        {
+          text: this.$strings.LabelMotionReduced,
+          value: 'REDUCED'
+        }
+      ],
       hapticFeedbackItems: [
         {
           text: this.$strings.LabelOff,
@@ -399,12 +426,23 @@ export default {
         }
       ]
     },
+    libraryViewModeOptions() {
+      return [
+        { value: 'rails', label: this.$strings.LabelCuratedRails },
+        { value: 'grid', label: this.$strings.LabelCoverGrid },
+        { value: 'compact', label: this.$strings.LabelCompactList }
+      ]
+    },
     shakeSensitivityOption() {
       const item = this.shakeSensitivityItems.find((i) => i.value === this.settings.shakeSensitivity)
       return item?.text || 'Error'
     },
     hapticFeedbackOption() {
       const item = this.hapticFeedbackItems.find((i) => i.value === this.settings.hapticFeedback)
+      return item?.text || 'Error'
+    },
+    motionPreferenceOption() {
+      const item = this.motionPreferenceItems.find((i) => i.value === this.settings.motionPreference)
       return item?.text || 'Error'
     },
     themeOption() {
@@ -434,6 +472,7 @@ export default {
     moreMenuItems() {
       if (this.moreMenuSetting === 'shakeSensitivity') return this.shakeSensitivityItems
       else if (this.moreMenuSetting === 'hapticFeedback') return this.hapticFeedbackItems
+      else if (this.moreMenuSetting === 'motionPreference') return this.motionPreferenceItems
       else if (this.moreMenuSetting === 'theme') return this.themeOptionItems
       else if (this.moreMenuSetting === 'downloadUsingCellular') return this.downloadUsingCellularItems
       else if (this.moreMenuSetting === 'streamingUsingCellular') return this.streamingUsingCellularItems
@@ -459,10 +498,17 @@ export default {
       if (this.moreMenuSetting === 'androidAutoBrowseSeriesSequenceOrder') return this.settings.androidAutoBrowseSeriesSequenceOrder
       if (this.moreMenuSetting === 'shakeSensitivity') return this.settings.shakeSensitivity
       if (this.moreMenuSetting === 'hapticFeedback') return this.settings.hapticFeedback
+      if (this.moreMenuSetting === 'motionPreference') return this.settings.motionPreference
       return null
     }
   },
   methods: {
+    async setLibraryViewMode(mode) {
+      this.libraryViewMode = mode
+      this.$store.commit('globals/setLibraryViewMode', mode)
+      await this.$localStore.setLibraryViewMode(mode)
+      await this.$hapticsImpact()
+    },
     sleepTimerLengthModalSelection(value) {
       this.settings.sleepTimerLength = value
       this.saveSettings()
@@ -479,6 +525,10 @@ export default {
     },
     showHapticFeedbackOptions() {
       this.moreMenuSetting = 'hapticFeedback'
+      this.showMoreMenuDialog = true
+    },
+    showMotionPreferenceOptions() {
+      this.moreMenuSetting = 'motionPreference'
       this.showMoreMenuDialog = true
     },
     showShakeSensitivityOptions() {
@@ -517,6 +567,9 @@ export default {
       } else if (this.moreMenuSetting === 'hapticFeedback') {
         this.settings.hapticFeedback = action
         this.hapticFeedbackUpdated(action)
+      } else if (this.moreMenuSetting === 'motionPreference') {
+        this.settings.motionPreference = action
+        this.motionPreferenceUpdated(action)
       } else if (this.moreMenuSetting === 'theme') {
         this.theme = action
         this.saveTheme(action)
@@ -553,6 +606,15 @@ export default {
     hapticFeedbackUpdated(val) {
       this.$store.commit('globals/setHapticFeedback', val)
       this.saveSettings()
+    },
+    /**
+     * Motion is a device preference rather than a server-synced setting, so it
+     * persists through localStore. The store commit updates data-motion on the
+     * root immediately — no reload needed.
+     */
+    motionPreferenceUpdated(val) {
+      this.$store.commit('globals/setMotionPreference', val)
+      this.$localStore.setMotionPreference(val)
     },
     showInfo(setting) {
       if (this.settingInfo[setting]) {
@@ -651,6 +713,9 @@ export default {
       this.settings.lockOrientation = deviceSettings.lockOrientation || 'NONE'
       this.lockCurrentOrientation = this.settings.lockOrientation !== 'NONE'
       this.settings.hapticFeedback = deviceSettings.hapticFeedback || 'LIGHT'
+      // Motion lives in localStore, not deviceSettings, so read it from the store
+      // where the default layout already resolved it on startup.
+      this.settings.motionPreference = this.$store.state.globals.motionPreference || 'SYSTEM'
 
       this.settings.disableShakeToResetSleepTimer = !!deviceSettings.disableShakeToResetSleepTimer
       this.settings.shakeSensitivity = deviceSettings.shakeSensitivity || 'MEDIUM'
@@ -676,6 +741,8 @@ export default {
     async init() {
       this.loading = true
       this.theme = await this.$applyTheme(await this.$localStore.getTheme())
+      this.libraryViewMode = await this.$localStore.getLibraryViewMode()
+      this.$store.commit('globals/setLibraryViewMode', this.libraryViewMode)
       this.deviceData = await this.$db.getDeviceData()
       this.$store.commit('setDeviceData', this.deviceData)
       this.setDeviceSettings()

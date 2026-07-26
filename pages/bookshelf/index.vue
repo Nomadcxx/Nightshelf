@@ -9,9 +9,12 @@
       <p class="pl-4">{{ $strings.MessageLoadingServerData }}</p>
     </div>
 
-    <div class="w-full" :class="{ 'py-4': true }">
+    <div class="w-full pb-4">
+      <!-- The one thing you're part-way through, stated before any browsing. -->
+      <home-resume-hero v-if="resumeEntity" :entity="resumeEntity" />
+
       <template v-for="(shelf, index) in displayedShelves">
-        <bookshelf-shelf :key="shelf.id" :label="getShelfLabel(shelf)" :entities="shelf.entities" :type="shelf.type" :style="{ zIndex: shelves.length - index }" />
+        <bookshelf-shelf :key="shelf.id" :label="getShelfLabel(shelf)" :entities="shelfEntities(shelf)" :type="shelf.type" :style="{ zIndex: shelves.length - index }" />
       </template>
     </div>
 
@@ -107,6 +110,19 @@ export default {
     displayedShelves() {
       return this.shelves
     },
+    /**
+     * The shelf the hero is drawn from — the server's own "continue listening"
+     * grouping, so the hero always agrees with what the API considers in
+     * progress rather than guessing from progress records.
+     */
+    continueShelf() {
+      // Matched on either key the server may send, so a change to one does not
+      // silently drop the hero.
+      return this.shelves.find((s) => s.id === 'continue-listening' || s.id === 'continue-reading' || s.labelStringKey === 'LabelContinueListening' || s.labelStringKey === 'LabelContinueReading') || null
+    },
+    resumeEntity() {
+      return this.continueShelf?.entities?.[0] || null
+    },
     attemptingConnection() {
       return this.$store.state.attemptingConnection
     },
@@ -115,6 +131,15 @@ export default {
     }
   },
   methods: {
+    /**
+     * The hero already shows the first continue-listening item, so the rail
+     * beneath it starts at the second — otherwise the same cover appears twice
+     * within one screen.
+     */
+    shelfEntities(shelf) {
+      if (this.resumeEntity && shelf === this.continueShelf) return shelf.entities.slice(1)
+      return shelf.entities
+    },
     getShelfLabel(shelf) {
       if (shelf.labelStringKey && this.$strings[shelf.labelStringKey]) return this.$strings[shelf.labelStringKey]
       return shelf.label

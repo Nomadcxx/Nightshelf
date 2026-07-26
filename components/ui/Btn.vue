@@ -85,7 +85,7 @@ export default {
   width: 100%;
   height: 100%;
   background-color: rgba(255, 255, 255, 0);
-  transition: all 0.1s ease-in-out;
+  transition: background-color 0.1s ease-in-out;
 }
 .btn:hover:not(:disabled)::before {
   background-color: rgba(255, 255, 255, 0.1);

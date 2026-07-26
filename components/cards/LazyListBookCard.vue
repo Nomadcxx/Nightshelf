@@ -1,14 +1,33 @@
 <template>
-  <div ref="card" :id="`book-card-${index}`" :style="{ minWidth: width + 'px', maxWidth: width + 'px', height: height + 'px' }" class="rounded-sm z-10 cursor-pointer py-1" @click="clickCard">
-    <div class="h-full flex relative">
-      <div class="list-card-cover relative">
+  <div
+    ref="card"
+    :id="`book-card-${index}`"
+    :style="{ minWidth: width + 'px', maxWidth: width + 'px', height: height + 'px' }"
+    class="ns-cover-surface z-10 cursor-pointer py-1"
+    :class="[isPressed ? 'is-pressed' : '', isPressPending || isPressed ? 'is-active' : '']"
+    @click="clickCard"
+    @pointerdown="onPressPointerDown"
+    @pointermove="onPressPointerMove"
+    @pointerup="onPressPointerUp"
+    @pointercancel="onPressPointerCancel"
+    @lostpointercapture="onPressLostCapture"
+    role="button"
+    :aria-label="shelfCardLabel"
+    tabindex="0"
+    @contextmenu="onPressContextMenu"
+    @keydown="onPressKeydown"
+  >
+    <!-- Tinted fill instead of a stroke: in a list the row separation comes
+         from the surface, not from an outline around every item. -->
+    <div class="h-full flex relative overflow-hidden rounded-xl bg-secondary/60">
+      <div class="list-card-cover relative overflow-hidden rounded-l-xl">
         <!-- When cover image does not fill -->
         <div v-show="showCoverBg" class="absolute top-0 left-0 w-full h-full overflow-hidden rounded-sm bg-primary">
           <div class="absolute cover-bg" ref="coverBg" />
         </div>
 
         <div class="w-full h-full absolute top-0 left-0">
-          <img v-show="libraryItem" ref="cover" :src="bookCoverSrc" class="w-full h-full transition-opacity duration-300" :class="showCoverBg ? 'object-contain' : 'object-fill'" @load="imageLoaded" :style="{ opacity: imageReady ? 1 : 0 }" />
+          <img v-show="libraryItem" ref="cover" :src="bookCoverSrc" class="w-full h-full transition-opacity duration-300" :class="showCoverBg ? 'object-contain' : 'object-fill'" @load="imageLoaded" @error="imageError" :style="{ opacity: imageReady ? 1 : 0 }" />
         </div>
 
         <!-- No progress shown for collapsed series or podcasts in library -->
@@ -49,8 +68,11 @@
 
 <script>
 import { Capacitor } from '@capacitor/core'
+import libraryPressInteraction from '@/mixins/libraryPressInteraction'
+import shelfEntityPeek from '@/mixins/shelfEntityPeek'
 
 export default {
+  mixins: [libraryPressInteraction, shelfEntityPeek],
   props: {
     index: Number,
     width: {
@@ -127,7 +149,7 @@ export default {
       return this._libraryItem.numEpisodesIncomplete || 0
     },
     placeholderUrl() {
-      return '/book_placeholder.jpg'
+      return '/book_placeholder_nightshelf.svg'
     },
     bookCoverSrc() {
       if (this.isLocal) {
@@ -284,7 +306,33 @@ export default {
       // Server books may have a local library item
       this.localLibraryItem = localLibraryItem
     },
+    peekSource() {
+      if (this.collapsedSeries) {
+        return {
+          entityType: 'series',
+          series: { id: this.collapsedSeries.id, name: this.collapsedSeries.name, books: (this.collapsedSeries.libraryItemIds || []).map((id) => ({ id })) }
+        }
+      }
+      return {
+        libraryItem: this.libraryItem,
+        mediaProgress: this.userProgress,
+        seriesId: this.series?.id || null
+      }
+    },
+    peekContext() {
+      return { canSelect: true }
+    },
+    peekCoverSrc() {
+      return this.bookCoverSrc
+    },
     clickCard(e) {
+      // Swallow the synthetic click that follows a committed hold.
+      if (this.onPressClick()) {
+        e.stopPropagation()
+        e.preventDefault()
+        return
+      }
+      if (this.$hapticsTap) this.$hapticsTap()
       if (this.isSelectionMode) {
         e.stopPropagation()
         e.preventDefault()
@@ -293,7 +341,7 @@ export default {
         var router = this.$router || this.$nuxt.$router
         if (router) {
           if (this.collapsedSeries) router.push(`/bookshelf/series/${this.collapsedSeries.id}`)
-          else router.push(`/item/${this.libraryItemId}`)
+          else this.navigateWithCoverContinuity(`/item/${this.libraryItemId}`, this.libraryItemId)
         }
       }
     },
@@ -383,6 +431,10 @@ export default {
           this.showCoverBg = false
         }
       }
+    },
+    imageError() {
+      if (!this.$refs.cover || this.$refs.cover.src.endsWith(this.placeholderUrl)) return
+      this.$refs.cover.src = this.placeholderUrl
     },
     setCSSProperties() {
       document.documentElement.style.setProperty('--list-card-cover-width', this.coverWidth + 'px')

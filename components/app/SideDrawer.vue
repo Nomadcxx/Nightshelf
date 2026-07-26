@@ -1,7 +1,7 @@
 <template>
   <div class="fixed top-0 left-0 right-0 layout-wrapper w-full z-50 overflow-hidden pointer-events-none">
-    <div class="absolute top-0 left-0 w-full h-full bg-black transition-opacity duration-200" :class="show ? 'bg-opacity-60 pointer-events-auto' : 'bg-opacity-0'" @click="clickBackground" />
-    <div class="absolute top-0 left-0 w-72 h-full bg-bg border-r border-border transform transition-transform py-5 pointer-events-auto flex flex-col" :class="show ? '' : '-translate-x-72'" @click.stop>
+    <div class="absolute top-0 left-0 w-full h-full bg-black transition-opacity duration-200" :class="show ? 'bg-opacity-30 pointer-events-auto' : 'bg-opacity-0'" @click="clickBackground" />
+    <div class="nightglass-drawer absolute top-2 bottom-2 left-2 w-72 transform transition-transform py-5 pointer-events-auto flex flex-col overflow-hidden" :class="show ? '' : '-translate-x-80'" @click.stop>
       <div class="px-5 mb-5 flex items-center gap-3">
         <img src="/Logo.png" alt="" class="h-10 w-10" />
         <div class="min-w-0">
@@ -18,7 +18,8 @@
             :key="'a-' + item.text"
             :tabindex="show ? 0 : -1"
             type="button"
-            class="w-full flex items-center py-3 px-5 text-fg-muted border-l-2 border-transparent hover:bg-secondary/40"
+            class="nightglass-drawer__item mx-3 min-h-12 flex items-center px-4 rounded-xl border border-transparent hover:bg-secondary/40"
+            style="width: calc(100% - 1.5rem)"
             @click="clickAction(item.action)"
           >
             <ui-status-dot v-if="item.statusDot" :tone="item.statusDot" :size="8" />
@@ -30,8 +31,9 @@
             :key="'l-' + item.text"
             :to="item.to"
             :tabindex="show ? 0 : -1"
-            class="w-full flex items-center py-3 px-5 border-l-2"
-            :class="isActive(item.to) ? 'border-accent bg-secondary/50 text-fg' : 'border-transparent text-fg-muted hover:bg-secondary/30'"
+            class="nightglass-drawer__item mx-3 min-h-12 flex items-center px-4 rounded-xl border"
+            style="width: calc(100% - 1.5rem)"
+            :class="isActive(item.to) ? 'nightglass-drawer__selected border-accent/40 text-fg' : 'border-transparent hover:bg-secondary/30'"
           >
             <ui-status-dot v-if="item.statusDot" :tone="item.statusDot" :size="8" />
             <ui-ph-icon v-else :name="item.icon" :size="20" :class="isActive(item.to) ? 'text-accent' : ''" />
@@ -241,3 +243,33 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.nightglass-drawer {
+  border: 1px solid rgb(var(--color-border) / 0.9);
+  border-radius: 0 24px 24px 0;
+  background: linear-gradient(135deg, rgb(var(--color-secondary) / 0.52), rgb(var(--color-bg) / 0.4));
+  box-shadow: 14px 0 38px rgb(0 0 0 / 0.42), inset 1px 0 0 rgb(var(--color-fg) / 0.06);
+  backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nightglass-drawer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgb(var(--color-fg) / 0.09), transparent 30%, rgb(var(--color-accent) / 0.07));
+}
+
+.nightglass-drawer__selected {
+  background: linear-gradient(120deg, rgb(var(--color-accent) / 0.18), rgb(4 209 249 / 0.08));
+  box-shadow: inset 0 0 0 1px rgb(var(--color-accent) / 0.12);
+}
+.nightglass-drawer__item {
+  color: rgb(var(--color-fg) / 0.86);
+}
+.nightglass-drawer__selected.nightglass-drawer__item {
+  color: rgb(var(--color-fg));
+}
+</style>

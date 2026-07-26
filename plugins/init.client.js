@@ -329,6 +329,11 @@ export default ({ store, app }, inject) => {
 
   // Android only
   App.addListener('backButton', async ({ canGoBack }) => {
+    // Peek sits above everything else, so back must dismiss it first.
+    if (store.state.globals.peekSession) {
+      eventBus.$emit('close-peek')
+      return
+    }
     if (store.state.globals.isModalOpen) {
       eventBus.$emit('close-modal')
       return

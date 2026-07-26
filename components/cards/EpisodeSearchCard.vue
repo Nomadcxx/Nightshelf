@@ -1,5 +1,17 @@
 <template>
-  <div class="flex h-full px-1 overflow-hidden">
+  <div
+    ref="card"
+    class="flex h-full px-1 overflow-hidden"
+    :class="{ 'is-pressed': isPressed }"
+    @click="onCardClick"
+    @pointerdown="onPressPointerDown"
+    @pointermove="onPressPointerMove"
+    @pointerup="onPressPointerUp"
+    @pointercancel="onPressPointerCancel"
+    @lostpointercapture="onPressLostCapture"
+    @contextmenu="onPressContextMenu"
+    @keydown="onPressKeydown"
+  >
     <covers-book-cover :library-item="libraryItem" :width="coverWidth" :book-cover-aspect-ratio="bookCoverAspectRatio" />
     <div class="grow px-2 audiobookSearchCardContent">
       <p class="truncate text-sm text-fg">{{ title }}</p>
@@ -10,7 +22,11 @@
 </template>
 
 <script>
+import libraryPressInteraction from '@/mixins/libraryPressInteraction'
+import shelfEntityPeek from '@/mixins/shelfEntityPeek'
+
 export default {
+  mixins: [libraryPressInteraction, shelfEntityPeek],
   props: {
     episode: {
       type: Object,
@@ -20,9 +36,6 @@ export default {
       type: Object,
       default: () => {}
     }
-  },
-  data() {
-    return {}
   },
   computed: {
     bookCoverAspectRatio() {
@@ -54,8 +67,19 @@ export default {
       return this.mediaMetadata.author
     }
   },
-  methods: {},
-  mounted() {}
+  methods: {
+    peekSource() {
+      return { entityType: 'episode', libraryItem: this.libraryItem, episode: this.episode }
+    },
+    onCardClick(e) {
+      // Runs before the wrapping nuxt-link's handler, so a committed hold
+      // opens Peek without also navigating.
+      if (this.onPressClick()) {
+        e.stopPropagation()
+        e.preventDefault()
+      }
+    }
+  }
 }
 </script>
 
@@ -65,5 +89,11 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+</style>
+
+<style scoped>
+.is-pressed {
+  opacity: 0.65;
 }
 </style>

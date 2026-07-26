@@ -1,47 +1,50 @@
 <template>
   <modals-modal v-model="show" width="90%" height="100%">
-    <template #outer>
-      <div v-show="selected !== 'all'" class="absolute top-12 left-4 z-40">
-        <ui-btn class="text-lg border-yellow-400 border-opacity-40 h-10" :padding-y="0" @click="clearSelected">{{ $strings.ButtonClearFilter }}</ui-btn>
-      </div>
-    </template>
     <div class="w-full h-full overflow-hidden absolute top-0 left-0 flex items-center justify-center" @click="show = false">
-      <div class="w-full overflow-x-hidden overflow-y-auto bg-primary rounded-lg border border-fg/20 mt-8" style="max-height: 75%" @click.stop>
-        <ul v-show="!sublist" class="h-full w-full" role="listbox" aria-labelledby="listbox-label">
+      <section class="relative w-full overflow-hidden bg-secondary border border-border mt-8" style="max-height: 76%" :aria-label="$strings.HeaderFilterLibrary" @click.stop>
+        <div class="absolute inset-y-0 left-0 w-1 bg-success" aria-hidden="true" />
+        <header class="min-h-14 pl-5 pr-3 flex items-center gap-3 border-b border-border bg-bg">
+          <p class="font-mono text-sm uppercase tracking-[0.16em] text-fg">{{ $strings.HeaderFilterLibrary }}</p>
+          <div class="flex-grow" />
+          <button v-if="selected !== 'all'" type="button" class="min-h-12 px-3 font-mono text-xs uppercase tracking-wider text-success focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click="clearSelected">
+            {{ $strings.ButtonClearFilter }}
+          </button>
+        </header>
+
+        <ul v-show="!sublist" class="w-full max-h-[64vh] overflow-y-auto overscroll-contain pl-1" role="listbox" :aria-label="$strings.HeaderFilterLibrary">
           <template v-for="item in items">
-            <li :key="item.value" class="text-fg select-none relative py-4 pr-9 cursor-pointer" :class="item.value === selected ? 'bg-bg bg-opacity-50' : ''" role="option" @click="clickedOption(item)">
-              <div class="flex items-center justify-between">
-                <span class="font-normal ml-3 block truncate text-lg">{{ item.text }}</span>
-              </div>
-              <div v-if="item.sublist" class="absolute right-1 top-0 bottom-0 h-full flex items-center">
-                <span class="material-symbols text-2xl">arrow_right</span>
-              </div>
+            <li :key="item.value" :aria-selected="isItemSelected(item) ? 'true' : 'false'" role="option">
+              <button type="button" class="relative w-full min-h-12 px-4 flex items-center gap-3 border-b border-border text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent" :class="isItemSelected(item) ? 'bg-success/10 text-success' : 'text-fg'" @click="clickedOption(item)">
+                <span v-if="isItemSelected(item)" class="absolute inset-y-2 left-0 w-0.5 bg-success" aria-hidden="true" />
+                <span class="min-w-0 flex-1 truncate font-mono text-xs uppercase tracking-[0.12em]">{{ item.text }}</span>
+                <ui-ph-icon v-if="item.sublist" name="arrow_forward" :size="20" class="flex-none text-fg-muted" />
+                <ui-ph-icon v-else-if="isItemSelected(item)" name="check" :size="20" class="flex-none" />
+              </button>
             </li>
           </template>
         </ul>
-        <ul v-show="sublist" class="h-full w-full rounded-lg" role="listbox" aria-labelledby="listbox-label">
-          <li class="text-fg select-none relative py-3 pl-9 cursor-pointer" role="option" @click="sublist = null">
-            <div class="absolute left-1 top-0 bottom-0 h-full flex items-center">
-              <span class="material-symbols text-2xl">arrow_left</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="font-normal ml-3 block truncate text-lg">{{ $strings.ButtonBack }}</span>
-            </div>
+
+        <ul v-show="sublist" class="w-full max-h-[64vh] overflow-y-auto overscroll-contain pl-1" role="listbox" :aria-label="sublist">
+          <li role="option">
+            <button type="button" class="w-full min-h-12 px-4 flex items-center gap-3 border-b border-border text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent" @click="sublist = null">
+              <ui-ph-icon name="arrow_back" :size="20" class="flex-none text-success" />
+              <span class="font-mono text-xs uppercase tracking-[0.12em]">{{ $strings.ButtonBack }}</span>
+            </button>
           </li>
-          <li v-if="!sublistItems.length" class="text-gray-400 select-none relative px-2" role="option">
-            <div class="flex items-center justify-center">
-              <span class="font-normal block truncate py-5 text-lg">No {{ sublist }} items</span>
-            </div>
+          <li v-if="!sublistItems.length" class="min-h-16 px-4 flex items-center font-mono text-xs uppercase tracking-wider text-fg-muted" role="option">
+            No {{ sublist }} items
           </li>
           <template v-for="item in sublistItems">
-            <li :key="item.value" class="text-fg select-none relative px-4 cursor-pointer" :class="`${sublist}.${item.value}` === selected ? 'bg-bg bg-opacity-50' : ''" role="option" @click="clickedSublistOption(item.value)">
-              <div class="flex items-center">
-                <span class="font-normal truncate py-3 text-base">{{ item.text }}</span>
-              </div>
+            <li :key="item.value" :aria-selected="`${sublist}.${item.value}` === selected ? 'true' : 'false'" role="option">
+              <button type="button" class="relative w-full min-h-12 px-4 flex items-center gap-3 border-b border-border text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent" :class="`${sublist}.${item.value}` === selected ? 'bg-success/10 text-success' : 'text-fg'" @click="clickedSublistOption(item.value)">
+                <span v-if="`${sublist}.${item.value}` === selected" class="absolute inset-y-2 left-0 w-0.5 bg-success" aria-hidden="true" />
+                <span class="min-w-0 flex-1 truncate text-sm">{{ item.text }}</span>
+                <ui-ph-icon v-if="`${sublist}.${item.value}` === selected" name="check" :size="20" class="flex-none" />
+              </button>
             </li>
           </template>
         </ul>
-      </div>
+      </section>
     </div>
   </modals-modal>
 </template>
@@ -273,6 +276,9 @@ export default {
     }
   },
   methods: {
+    isItemSelected(item) {
+      return item.value === this.selected || (item.sublist && this.selected?.startsWith(`${item.value}.`))
+    },
     async clearSelected() {
       await this.$hapticsImpact()
       this.selected = 'all'

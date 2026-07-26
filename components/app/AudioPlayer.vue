@@ -1,20 +1,24 @@
 <template>
   <div v-if="playbackSession" id="streamContainer" class="fixed top-0 left-0 layout-wrapper right-0 z-50 pointer-events-none" :class="{ fullscreen: showFullscreen, 'ios-player': $platform === 'ios', 'web-player': $platform === 'web' }">
-    <div v-if="showFullscreen" class="w-full h-full z-10 absolute top-0 left-0 pointer-events-auto terminal-player-bg" :style="{ backgroundColor: coverRgb }">
-      <div class="w-full h-full absolute top-0 left-0 pointer-events-none" style="background: var(--gradient-audio-player)" />
+    <div v-if="showFullscreen" class="w-full h-full z-10 absolute top-0 left-0 pointer-events-auto terminal-player-bg">
+      <div class="nightglass-player-accent-rail absolute pointer-events-none" aria-hidden="true" />
 
-      <div class="top-4 left-4 absolute cursor-pointer z-20" :class="coverFgClass" @click="collapseFullscreen">
-        <ui-ph-icon name="keyboard_arrow_down" :size="36" />
-      </div>
-      <div v-show="showCastBtn" class="top-5 right-14 absolute cursor-pointer z-20" :class="coverFgClass" @click="castClick">
-        <ui-ph-icon :name="isCasting ? 'cast_connected' : 'cast'" :size="26" />
-      </div>
-      <div class="top-5 right-4 absolute cursor-pointer z-20" :class="coverFgClass" @click="showMoreMenuDialog = true">
-        <ui-ph-icon name="more_vert" :size="26" />
-      </div>
-      <p class="top-5 absolute left-0 right-0 mx-auto text-center font-mono uppercase tracking-[0.22em] text-success" style="font-size: 10px">
-        {{ isDirectPlayMethod ? $strings.LabelPlaybackDirect : isLocalPlayMethod ? $strings.LabelPlaybackLocal : $strings.LabelPlaybackTranscode }}
-      </p>
+      <section class="nightglass-full-header absolute z-20 flex items-center pointer-events-auto">
+        <button type="button" :aria-label="$strings.ButtonCollapsePlayer" class="nightglass-full-header__control h-12 w-12 flex items-center justify-center text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click="collapseFullscreen">
+          <ui-ph-icon name="keyboard_arrow_down" :size="34" />
+        </button>
+        <p class="nightglass-full-header__status absolute left-16 right-28 mx-auto text-center font-mono uppercase tracking-[0.22em] text-success" style="font-size: 10px">
+          {{ isDirectPlayMethod ? $strings.LabelPlaybackDirect : isLocalPlayMethod ? $strings.LabelPlaybackLocal : $strings.LabelPlaybackTranscode }}
+        </p>
+        <div class="ml-auto flex items-center gap-1">
+          <button v-show="showCastBtn" type="button" :aria-label="$strings.ButtonCast" class="nightglass-full-header__control h-12 w-12 flex items-center justify-center text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click="castClick">
+            <ui-ph-icon :name="isCasting ? 'cast_connected' : 'cast'" :size="26" />
+          </button>
+          <button type="button" :aria-label="$strings.ButtonMoreOptions" class="nightglass-full-header__control h-12 w-12 flex items-center justify-center text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click="showMoreMenuDialog = true">
+            <ui-ph-icon name="more_vert" :size="26" />
+          </button>
+        </div>
+      </section>
     </div>
 
     <div v-if="playerSettings.useChapterTrack && playerSettings.useTotalTrack && showFullscreen" class="absolute total-track w-full z-30 px-6">
@@ -26,15 +30,15 @@
         <span class="text-success">]</span>
       </div>
       <div class="w-full mt-1">
-        <div class="h-1 w-full bg-track/50 relative" style="border-radius: 1px">
+        <div class="h-4 w-full relative">
           <ui-synthwave-progress :progress="totalTrackProgress" :buffered="totalTrackBufferedProgress" :playing="isProgressAnimating" variant="full" />
         </div>
       </div>
     </div>
 
-    <div class="cover-wrapper absolute z-30 pointer-events-auto" :class="{ 'terminal-cover': showFullscreen }" @click="clickContainer">
+    <div v-if="showFullscreen" class="cover-wrapper terminal-cover absolute z-30 pointer-events-auto" @click="clickContainer">
       <div class="w-full h-full flex justify-center">
-        <covers-book-cover v-if="libraryItem || localLibraryItemCoverSrc" ref="cover" :library-item="libraryItem" :download-cover="localLibraryItemCoverSrc" :width="bookCoverWidth" :book-cover-aspect-ratio="bookCoverAspectRatio" raw @imageLoaded="coverImageLoaded" />
+        <covers-book-cover v-if="libraryItem || localLibraryItemCoverSrc" ref="cover" :library-item="libraryItem" :download-cover="localLibraryItemCoverSrc" :width="bookCoverWidth" :book-cover-aspect-ratio="bookCoverAspectRatio" raw />
       </div>
 
       <div v-if="syncStatus === $constants.SyncStatus.FAILED" class="absolute top-0 left-0 w-full h-full flex items-center justify-center z-30" @click.stop="showSyncsFailedDialog">
@@ -42,41 +46,41 @@
       </div>
     </div>
 
-    <div class="title-author-texts absolute z-30 left-0 right-0 overflow-hidden" @click="clickTitleAndAuthor">
+    <div v-if="showFullscreen" class="title-author-texts terminal-title-panel absolute z-30 left-0 right-0 overflow-hidden" @click="clickTitleAndAuthor">
       <div ref="titlewrapper" class="overflow-hidden relative">
         <p class="title-text whitespace-nowrap"></p>
       </div>
       <p class="author-text text-fg text-opacity-75 truncate font-mono" :class="{ 'text-xxs uppercase tracking-widest': showFullscreen }">{{ authorName }}</p>
     </div>
 
-    <div id="playerContent" class="playerContainer w-full z-20 absolute bottom-0 left-0 right-0 p-2 pointer-events-auto transition-all" :class="{ 'terminal-mini-strip': !showFullscreen }" :style="{ backgroundColor: showFullscreen ? '' : 'rgb(var(--color-bg) / 0.96)' }" @click="clickContainer">
+    <div v-if="showFullscreen" id="playerContent" class="playerContainer w-full z-20 absolute bottom-0 left-0 right-0 p-2 pointer-events-auto transition-all" @click="clickContainer">
       <div v-if="showFullscreen" class="absolute bottom-4 left-0 right-0 w-full pb-4 pt-2 mx-auto px-6" style="max-width: 414px">
-        <div class="flex items-center justify-between pointer-events-auto">
-          <ui-ph-icon
-            v-if="!isPodcast && serverLibraryItemId && socketConnected"
-            name="bookmark"
-            :size="28"
-            class="text-fg-muted cursor-pointer"
-            :weight="bookmarks.length ? 'fill' : 'regular'"
-            @click.native="$emit('showBookmarks')"
-          />
-          <span v-else class="inline-block" style="width: 28px; height: 28px; opacity: 0" aria-hidden="true" />
+        <div class="nightglass-player-actions flex items-center justify-between pointer-events-auto">
+          <svg class="nightglass-player-actions__notch" viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M18 1 H163 C175 1 176 22 200 22 C224 22 225 1 237 1 H382" />
+          </svg>
+          <button v-if="!isPodcast && serverLibraryItemId && socketConnected" type="button" :aria-label="$strings.LabelYourBookmarks" class="h-12 w-12 flex items-center justify-center text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click.stop="$emit('showBookmarks')">
+            <ui-ph-icon name="bookmark" :size="28" :weight="bookmarks.length ? 'fill' : 'regular'" />
+          </button>
+          <span v-else class="inline-block h-12 w-12" style="opacity: 0" aria-hidden="true" />
 
-          <span class="font-mono text-fg-muted cursor-pointer tracking-wider" style="font-size: 1.15rem" @click="$emit('selectPlaybackSpeed')">{{ currentPlaybackRate }}x</span>
-          <ui-ph-icon v-if="!sleepTimerRunning" name="moon" :size="26" class="text-fg-muted cursor-pointer" @click.native.stop="$emit('showSleepTimer')" />
-          <div v-else class="h-7 min-w-7 flex items-center justify-around cursor-pointer" @click.stop="$emit('showSleepTimer')">
+          <button type="button" :aria-label="$strings.LabelPlaybackSpeed" class="h-12 min-w-12 px-2 font-mono text-fg-muted tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" style="font-size: 1.15rem" @click.stop="$emit('selectPlaybackSpeed')">{{ currentPlaybackRate }}x</button>
+          <button v-if="!sleepTimerRunning" type="button" :aria-label="$strings.LabelSleepTimer" class="h-12 w-12 flex items-center justify-center text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click.stop="$emit('showSleepTimer')">
+            <ui-ph-icon name="moon" :size="26" />
+          </button>
+          <button v-else type="button" :aria-label="$strings.LabelSleepTimer" class="h-12 min-w-12 px-2 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click.stop="$emit('showSleepTimer')">
             <p class="text-sm font-mono text-success">{{ sleepTimeRemainingPretty }}</p>
-          </div>
+          </button>
 
-          <ui-ph-icon name="format_list_bulleted" :size="28" class="text-fg cursor-pointer" :class="chapters.length ? 'text-opacity-75' : 'text-opacity-10'" @click.native="clickChaptersBtn" />
+          <button type="button" :aria-label="$strings.LabelChapters" class="h-12 w-12 flex items-center justify-center text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" :class="chapters.length ? 'text-opacity-75' : 'text-opacity-10'" @click.stop="clickChaptersBtn">
+            <ui-ph-icon name="format_list_bulleted" :size="28" />
+          </button>
         </div>
       </div>
-      <div v-else class="terminal-mini-border absolute top-0 left-0 right-0 h-px bg-border pointer-events-none" />
-
       <div id="playerControls" class="absolute right-0 bottom-0 mx-auto" style="max-width: 414px">
         <div class="flex items-center max-w-full" :class="playerSettings.lockUi ? 'justify-center' : 'justify-between'">
-          <ui-icon-btn v-show="showFullscreen && !playerSettings.lockUi" class="next-icon text-fg cursor-pointer" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" icon="skip_previous" borderless @click="jumpChapterStart" />
-          <div v-show="!playerSettings.lockUi" class="jump-icon text-fg cursor-pointer flex flex-col items-center" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" @click.stop="jumpBackwards">
+          <ui-icon-btn v-show="showFullscreen && !playerSettings.lockUi" class="next-icon text-fg cursor-pointer" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" icon="skip_previous" :aria-label="$strings.ButtonPreviousChapter" large borderless @click="jumpChapterStart" />
+          <div v-show="!playerSettings.lockUi" class="jump-icon min-h-12 min-w-12 text-fg cursor-pointer flex flex-col items-center justify-center" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" @click.stop="jumpBackwards">
             <ui-ph-icon name="replay" :size="showFullscreen ? 32 : 24" />
             <span v-if="showFullscreen" class="jump-label text-[10px] font-mono uppercase tracking-wider leading-tight">{{ jumpBackwardsLabel }}</span>
           </div>
@@ -88,11 +92,11 @@
             borderless
             @click="playPauseClick"
           />
-          <div v-show="!playerSettings.lockUi" class="jump-icon text-fg cursor-pointer flex flex-col items-center" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" @click.stop="jumpForward">
+          <div v-show="!playerSettings.lockUi" class="jump-icon min-h-12 min-w-12 text-fg cursor-pointer flex flex-col items-center justify-center" :class="showLoadingState ? 'text-opacity-10' : 'text-opacity-75'" @click.stop="jumpForward">
             <ui-ph-icon name="forward_media" :size="showFullscreen ? 32 : 24" />
             <span v-if="showFullscreen" class="jump-label text-[10px] font-mono uppercase tracking-wider leading-tight">{{ jumpForwardLabel }}</span>
           </div>
-          <ui-icon-btn v-show="showFullscreen && !playerSettings.lockUi" class="next-icon text-fg cursor-pointer" :class="nextChapter && !showLoadingState ? 'text-opacity-75' : 'text-opacity-10'" icon="skip_next" borderless @click="jumpNextChapter" />
+          <ui-icon-btn v-show="showFullscreen && !playerSettings.lockUi" class="next-icon text-fg cursor-pointer" :class="nextChapter && !showLoadingState ? 'text-opacity-75' : 'text-opacity-10'" icon="skip_next" :aria-label="$strings.ButtonNextChapter" large borderless @click="jumpNextChapter" />
         </div>
       </div>
 
@@ -104,14 +108,50 @@
           <p class="font-mono text-fg" style="font-size: 0.75rem">{{ timeRemainingPretty }}</p>
           <span v-if="showFullscreen" class="font-mono text-success" style="font-size: 0.75rem">]</span>
         </div>
-        <div ref="track" class="h-1.5 w-full relative" style="border-radius: 1px" :class="{ 'animate-pulse': showLoadingState }" @click.stop>
+        <div ref="track" class="h-4 w-full relative" :class="{ 'animate-pulse': showLoadingState }" @click.stop>
           <ui-synthwave-progress :progress="trackProgress" :buffered="trackBufferedProgress" :playing="isProgressAnimating" :variant="showFullscreen ? 'full' : 'mini'" />
-          <div ref="trackCursor" class="h-7 w-7 absolute pointer-events-auto flex items-center justify-center" :style="{ top: '-11px', left: `${trackCursorLeft}px` }" :class="{ 'opacity-0': playerSettings.lockUi || !showFullscreen }" @touchstart="touchstartCursor">
-            <div class="w-3 h-3 pointer-events-none" style="border-radius: 1px; background: #04d1f9; box-shadow: 0 0 8px rgb(4 209 249 / 0.75)" />
+          <div ref="trackCursor" class="h-7 w-7 absolute pointer-events-auto flex items-center justify-center" :style="{ top: '-6px', left: `${trackCursorLeft}px` }" :class="{ 'opacity-0': playerSettings.lockUi || !showFullscreen }" @touchstart="touchstartCursor">
+            <div class="synthwave-playhead pointer-events-none" />
           </div>
         </div>
       </div>
     </div>
+
+    <section v-else class="nightglass-mini-player pointer-events-auto" :aria-label="title" @click="clickContainer">
+      <button type="button" class="nightglass-mini-player__cover" :aria-label="title" @click.stop="clickContainer">
+        <covers-book-cover v-if="libraryItem || localLibraryItemCoverSrc" :library-item="libraryItem" :download-cover="localLibraryItemCoverSrc" :width="bookCoverWidth" :book-cover-aspect-ratio="bookCoverAspectRatio" raw />
+      </button>
+
+      <button type="button" class="nightglass-mini-player__metadata min-w-0 text-left" @click.stop="clickContainer">
+        <div ref="titlewrapper" class="overflow-hidden relative">
+          <p class="title-text truncate text-sm text-fg">{{ title }}</p>
+        </div>
+        <p class="mt-0.5 truncate font-mono text-xxs uppercase tracking-wider text-fg-muted">{{ authorName }}</p>
+      </button>
+
+      <div class="nightglass-mini-player__controls" @click.stop>
+        <button type="button" :aria-label="jumpBackwardsLabel" class="h-12 w-12 flex items-center justify-center text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" :disabled="showLoadingState" @click="jumpBackwards">
+          <ui-ph-icon name="replay" :size="25" />
+        </button>
+        <button type="button" :aria-label="!isPlaying ? $strings.ButtonPlay : $strings.ButtonPause" class="h-12 w-12 flex items-center justify-center border border-success/60 rounded-lg text-success bg-bg/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" :disabled="showLoadingState" @click="playPauseClick">
+          <ui-ph-icon :name="seekLoading ? 'autorenew' : !isPlaying ? 'play_arrow' : 'pause'" :size="28" />
+        </button>
+        <button type="button" :aria-label="jumpForwardLabel" class="h-12 w-12 flex items-center justify-center text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" :disabled="showLoadingState" @click="jumpForward">
+          <ui-ph-icon name="forward_media" :size="25" />
+        </button>
+      </div>
+
+      <div ref="track" class="nightglass-mini-player__track" :class="{ 'animate-pulse': showLoadingState }" @click.stop>
+        <div class="flex items-center font-mono text-xxs text-fg-muted">
+          <p ref="currentTimestamp">0:00</p>
+          <div class="flex-grow" />
+          <p>{{ timeRemainingPretty }}</p>
+        </div>
+        <div class="h-4 w-full">
+          <ui-synthwave-progress :progress="trackProgress" :buffered="trackBufferedProgress" :playing="isProgressAnimating" variant="mini" />
+        </div>
+      </div>
+    </section>
 
     <modals-chapters-modal v-model="showChapterModal" :current-chapter="currentChapter" :chapters="chapters" :playback-rate="currentPlaybackRate" @select="selectChapter" />
     <modals-dialog v-model="showMoreMenuDialog" :items="menuItems" width="80vw" @action="clickMenuAction" />
@@ -122,7 +162,6 @@
 import { Capacitor } from '@capacitor/core'
 import { AbsAudioPlayer } from '@/plugins/capacitor'
 import { Dialog } from '@capacitor/dialog'
-import { getAverageColorFromCoverUrl } from '@/utils/coverAverageColor'
 import WrappingMarquee from '@/assets/WrappingMarquee.js'
 import jumpLabelMixin from '@/mixins/jumpLabel'
 
@@ -178,8 +217,6 @@ export default {
       draggingCurrentTime: 0,
       syncStatus: 0,
       showMoreMenuDialog: false,
-      coverRgb: 'rgb(55, 56, 56)',
-      coverBgIsLight: false,
       titleMarquee: null,
       isRefreshingUI: false
     }
@@ -188,7 +225,7 @@ export default {
     showFullscreen(val) {
       this.updateScreenSize()
       this.$store.commit('setPlayerFullscreen', !!val)
-      document.querySelector('body').style.backgroundColor = this.showFullscreen ? this.coverRgb : ''
+      document.querySelector('body').style.backgroundColor = this.showFullscreen ? 'rgb(var(--color-bg))' : ''
     },
     bookCoverAspectRatio() {
       this.updateScreenSize()
@@ -198,12 +235,6 @@ export default {
     }
   },
   computed: {
-    theme() {
-      return document.documentElement.dataset.theme || 'night'
-    },
-    coverFgClass() {
-      return this.coverBgIsLight && this.theme !== 'black' ? 'text-black text-opacity-75' : 'text-fg'
-    },
     menuItems() {
       const items = []
       // TODO: Implement on iOS
@@ -269,11 +300,9 @@ export default {
     fullscreenBookCoverWidth() {
       if (this.windowWidth < this.windowHeight) {
         // Portrait
-        let sideSpace = 20
-        if (this.bookCoverAspectRatio === 1.6) sideSpace += (this.windowWidth - sideSpace) * 0.375
-
-        const availableHeight = this.windowHeight - 400
-        let width = this.windowWidth - sideSpace
+        const maxWidth = this.bookCoverAspectRatio === 1 ? 320 : 270
+        const availableHeight = this.windowHeight - 480
+        let width = Math.min(this.windowWidth - 48, maxWidth)
         const totalHeight = width * this.bookCoverAspectRatio
         if (totalHeight > availableHeight) {
           width = availableHeight / this.bookCoverAspectRatio
@@ -439,17 +468,6 @@ export default {
       if (!this.chapters.length) return
       this.showChapterModal = true
     },
-    async coverImageLoaded(fullCoverUrl) {
-      if (!fullCoverUrl) return
-      const avg = await getAverageColorFromCoverUrl(this, fullCoverUrl)
-      if (!avg) {
-        this.coverRgb = 'rgb(55, 56, 56)'
-        this.coverBgIsLight = false
-      } else {
-        this.coverRgb = avg.rgba
-        this.coverBgIsLight = avg.isLight
-      }
-    },
     clickTitleAndAuthor() {
       if (!this.showFullscreen) return
       const llid = this.serverLibraryItemId || this.libraryItem?.id || this.localLibraryItem?.id
@@ -480,6 +498,7 @@ export default {
 
       // Update track for total time bar if useChapterTrack is set
       this.$nextTick(() => {
+        this.initializeTitleMarquee()
         this.updateTrack()
       })
     },
@@ -488,6 +507,16 @@ export default {
       if (this.titleMarquee) this.titleMarquee.reset()
 
       this.forceCloseDropdownMenu()
+      this.$nextTick(() => {
+        this.initializeTitleMarquee()
+        if (this.$refs.track) this.trackWidth = this.$refs.track.clientWidth
+      })
+    },
+    initializeTitleMarquee() {
+      if (!this.$refs.titlewrapper) return
+      if (this.titleMarquee) this.titleMarquee.reset()
+      this.titleMarquee = new WrappingMarquee(this.$refs.titlewrapper)
+      this.titleMarquee.init(this.title)
     },
     async jumpNextChapter() {
       await this.$hapticsImpact()
@@ -866,9 +895,7 @@ export default {
 
       // Set track width
       this.$nextTick(() => {
-        if (this.titleMarquee) this.titleMarquee.reset()
-        this.titleMarquee = new WrappingMarquee(this.$refs.titlewrapper)
-        this.titleMarquee.init(this.title)
+        this.initializeTitleMarquee()
 
         if (this.$refs.track) {
           this.trackWidth = this.$refs.track.clientWidth
@@ -1023,7 +1050,70 @@ export default {
   box-shadow: 0px -8px 8px #11111155;
 }
 .fullscreen #playerContent {
-  box-shadow: none;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: auto;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border) / 0.96);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgb(var(--color-secondary) / 0.58), rgb(var(--color-bg) / 0.38));
+  box-shadow: 0 18px 48px rgb(0 0 0 / 0.38), inset 0 1px 0 rgb(var(--color-fg) / 0.11), inset 0 -1px 0 rgb(var(--color-accent) / 0.08);
+  backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+}
+
+.terminal-player-bg {
+  background:
+    radial-gradient(circle at 18% 28%, rgb(var(--color-success) / 0.12), transparent 34%),
+    radial-gradient(circle at 84% 56%, rgb(var(--color-accent) / 0.1), transparent 42%),
+    linear-gradient(180deg, rgb(var(--color-bg) / 0.4), rgb(var(--color-bg) / 0.58));
+  backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+}
+
+.nightglass-full-header {
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  height: 56px;
+  padding: 4px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border) / 0.95);
+  border-radius: 20px;
+  background: linear-gradient(110deg, rgb(var(--color-secondary) / 0.58), rgb(var(--color-bg) / 0.34));
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.28), inset 0 1px 0 rgb(var(--color-fg) / 0.12);
+  backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+}
+.nightglass-full-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgb(var(--color-fg) / 0.06), transparent 42%, rgb(var(--color-accent) / 0.08));
+}
+.nightglass-full-header__control {
+  border-radius: 15px;
+  background: rgb(var(--color-bg) / 0.16);
+  transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+.nightglass-full-header__control:active {
+  transform: scale(0.94);
+  background: rgb(var(--color-fg) / 0.1);
+}
+.nightglass-full-header__status {
+  pointer-events: none;
+}
+.nightglass-player-accent-rail {
+  top: 82px;
+  bottom: 224px;
+  left: 12px;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(var(--color-success)), rgb(var(--color-accent) / 0.3));
+  box-shadow: 0 0 14px rgb(var(--color-success) / 0.5);
 }
 
 #playerTrack {
@@ -1048,9 +1138,17 @@ export default {
 }
 
 .total-track {
-  bottom: 215px;
-  left: 0;
-  right: 0;
+  bottom: 224px;
+  left: 12px;
+  right: 12px;
+  width: auto;
+  padding: 10px 16px;
+  border: 1px solid rgb(var(--color-border) / 0.88);
+  border-radius: 18px;
+  background: linear-gradient(120deg, rgb(var(--color-secondary) / 0.48), rgb(var(--color-bg) / 0.3));
+  box-shadow: 0 10px 26px rgb(0 0 0 / 0.25), inset 0 1px 0 rgb(var(--color-fg) / 0.08);
+  backdrop-filter: blur(var(--glass-shelf-blur)) saturate(var(--glass-shelf-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-shelf-blur)) saturate(var(--glass-shelf-saturate));
 }
 
 .title-author-texts {
@@ -1081,8 +1179,17 @@ export default {
   width: 80%;
   left: 10%;
   text-align: center;
-  padding-bottom: calc(((260px - var(--cover-image-height)) / 260) * 40);
+  padding: 10px 16px;
   pointer-events: auto;
+}
+.terminal-title-panel {
+  background: linear-gradient(90deg, rgb(var(--color-secondary) / 0.56), rgb(var(--color-bg) / 0.4));
+  border: 1px solid rgb(var(--color-border) / 0.92);
+  border-left: 2px solid rgb(var(--color-success));
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.25), inset 0 1px 0 rgb(var(--color-fg) / 0.09);
+  backdrop-filter: blur(var(--glass-shelf-blur)) saturate(var(--glass-shelf-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-shelf-blur)) saturate(var(--glass-shelf-saturate));
 }
 .fullscreen .title-author-texts .title-text {
   font-size: clamp(0.8rem, calc(var(--cover-image-height) / 260 * 20), 1.3rem);
@@ -1135,22 +1242,132 @@ export default {
   width: var(--cover-image-width);
   left: calc(50% - (calc(var(--cover-image-width)) / 2));
   bottom: calc(50% + 120px - (calc(var(--cover-image-height)) / 2));
-  border-radius: 2px;
+  border-radius: 24px;
   overflow: hidden;
 }
 .terminal-cover {
-  border: 1px solid rgb(var(--color-fg) / 0.35);
-  box-shadow: 0 0 0 1px rgb(var(--color-success) / 0.12);
+  border: 1px solid rgb(var(--color-fg) / 0.42);
+  box-shadow: 0 18px 46px rgb(0 0 0 / 0.34), 0 0 0 1px rgb(var(--color-success) / 0.2), inset 0 1px 0 rgb(var(--color-fg) / 0.12);
 }
-.terminal-mini-strip {
-  border-top: 1px solid rgb(var(--color-border));
-  backdrop-filter: blur(8px);
+.nightglass-mini-player {
+  position: absolute;
+  z-index: 20;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  height: 114px;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 148px;
+  grid-template-rows: 56px 36px;
+  column-gap: 10px;
+  row-gap: 4px;
+  padding: 10px 10px 8px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border) / 0.95);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgb(var(--color-secondary) / 0.44), rgb(var(--color-bg) / 0.3));
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.42), inset 0 1px 0 rgb(var(--color-fg) / 0.09);
+  backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease, background 260ms ease, box-shadow 260ms ease;
+}
+.nightglass-mini-player::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgb(var(--color-fg) / 0.06), transparent 44%, rgb(var(--color-accent) / 0.08));
+}
+.nightglass-mini-player__cover {
+  grid-column: 1;
+  grid-row: 1;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 12px;
+  background: rgb(var(--color-bg) / 0.45);
+}
+.nightglass-mini-player__metadata {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 48px;
+  align-self: center;
+  overflow: hidden;
+}
+.nightglass-mini-player__controls {
+  grid-column: 3;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 48px);
+  column-gap: 2px;
+  align-self: center;
+  justify-self: end;
+}
+.nightglass-mini-player__track {
+  grid-column: 2 / 4;
+  grid-row: 2;
+  min-width: 0;
+  overflow: hidden;
+  align-self: stretch;
 }
 .terminal-play-btn {
   border: 1px solid rgb(var(--color-success) / 0.55) !important;
-  border-radius: 2px !important;
-  background: rgb(var(--color-bg) / 0.85) !important;
-  box-shadow: none !important;
+  border-radius: 20px !important;
+  background: linear-gradient(145deg, rgb(var(--color-success) / 0.16), rgb(var(--color-bg) / 0.48)) !important;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.3), inset 0 1px 0 rgb(var(--color-fg) / 0.12), 0 0 18px rgb(var(--color-success) / 0.1) !important;
+}
+
+.nightglass-player-actions {
+  position: relative;
+  min-height: 52px;
+  padding: 2px 6px;
+  border: 1px solid rgb(var(--color-border) / 0.62);
+  border-top-color: transparent;
+  border-radius: 18px;
+  background: rgb(var(--color-bg) / 0.16);
+  box-shadow: inset 0 -1px 0 rgb(var(--color-accent) / 0.035);
+}
+.nightglass-player-actions__notch {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  z-index: 0;
+  width: 100%;
+  height: 24px;
+  overflow: visible;
+  pointer-events: none;
+}
+.nightglass-player-actions__notch path {
+  fill: none;
+  stroke: rgb(var(--color-border) / 0.72);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.nightglass-player-actions > button,
+.nightglass-player-actions > span {
+  position: relative;
+  z-index: 1;
+}
+.nightglass-player-actions > button {
+  border-radius: 14px;
+  transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+.nightglass-player-actions > button:active {
+  transform: scale(0.94);
+  background: rgb(var(--color-fg) / 0.08);
+}
+.synthwave-playhead {
+  width: 3px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent 0%, #37f499 18%, #04d1f9 50%, #a48cf2 82%, transparent 100%);
+  box-shadow: 0 0 7px rgb(4 209 249 / 0.72), 0 0 13px rgb(55 244 153 / 0.2);
 }
 
 .fullscreen #playerControls {
@@ -1162,9 +1379,14 @@ export default {
 }
 .fullscreen #playerControls .jump-icon {
   font-size: 2.4rem;
+  border: 1px solid rgb(var(--color-border) / 0.5);
+  border-radius: 16px;
+  background: rgb(var(--color-bg) / 0.14);
 }
 .fullscreen #playerControls .next-icon {
   font-size: 2rem;
+  border-radius: 16px;
+  background: rgb(var(--color-bg) / 0.14);
 }
 .fullscreen #playerControls .next-icon .ph-icon {
   height: 2rem;

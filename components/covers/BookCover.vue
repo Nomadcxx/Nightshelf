@@ -1,41 +1,31 @@
 <template>
-  <div class="relative rounded-sm overflow-hidden" :style="{ height: height + 'px', width: width + 'px', maxWidth: width + 'px', minWidth: width + 'px' }">
-    <div class="w-full h-full relative" :class="{ 'bg-bg': !noBg }">
-      <div v-show="showCoverBg" class="absolute top-0 left-0 w-full h-full overflow-hidden rounded-sm bg-primary">
-        <div class="absolute cover-bg" ref="coverBg" />
-      </div>
-
-      <img v-if="fullCoverUrl" ref="cover" :src="fullCoverUrl" loading="lazy" @error="imageError" @load="imageLoaded" class="w-full h-full absolute top-0 left-0 z-10 duration-300 transition-opacity" :style="{ opacity: imageReady ? 1 : 0 }" :class="(showCoverBg && hasCover) || noBg ? 'object-contain' : 'object-fill'" />
-
-      <div v-show="loading && libraryItem" class="absolute top-0 left-0 h-full w-full flex items-center justify-center">
-        <p class="text-center" :style="{ fontSize: 0.75 * sizeMultiplier + 'rem' }">{{ title }}</p>
-        <div class="absolute top-2 right-2">
-          <widgets-loading-spinner />
-        </div>
-      </div>
-    </div>
-
-    <div v-if="imageFailed" class="absolute top-0 left-0 right-0 bottom-0 w-full h-full bg-red-100" :style="{ padding: placeholderCoverPadding + 'rem' }">
-      <div class="w-full h-full border-2 border-error flex flex-col items-center justify-center">
-        <img src="/Logo.png" loading="lazy" class="mb-2" :style="{ height: 64 * sizeMultiplier + 'px' }" />
-        <p class="text-centertext-error" :style="{ fontSize: titleFontSize + 'rem' }">Invalid Cover</p>
-      </div>
-    </div>
-
-    <div v-if="!hasCover" class="absolute top-0 left-0 right-0 bottom-0 w-full h-full flex items-center justify-center z-10" :style="{ padding: placeholderCoverPadding + 'rem' }">
-      <div>
-        <p class="text-centertruncate leading-none origin-center" style="color: rgb(247 223 187); font-size: 0.8rem" :style="{ transform: `scale(${sizeMultiplier})` }">{{ titleCleaned }}</p>
-      </div>
-    </div>
-    <div v-if="!hasCover" class="absolute left-0 right-0 w-full flex items-center justify-center z-10" :style="{ padding: placeholderCoverPadding + 'rem', bottom: authorBottom + 'rem' }">
-      <p class="text-centertruncate leading-none origin-center" style="color: rgb(247 223 187); opacity: 0.75; font-size: 0.6rem" :style="{ transform: `scale(${sizeMultiplier})` }">{{ authorCleaned }}</p>
-    </div>
-  </div>
+  <covers-library-cover-surface
+    :src="fullCoverUrl"
+    :placeholder-src="placeholderUrl"
+    :width="width"
+    :height="height"
+    :cover-aspect-ratio="bookCoverAspectRatio"
+    :title="title"
+    :subtitle="author"
+    :has-cover="hasCover"
+    :no-fill="noBg"
+    :flat="flat"
+    :object-fit="noBg ? 'contain' : 'fill'"
+    @image-loaded="onImageLoaded"
+  />
 </template>
 
 <script>
 import { Capacitor } from '@capacitor/core'
 
+/**
+ * Book artwork wherever a card is not doing its own layout — search results,
+ * detail pages, group covers.
+ *
+ * This resolves *which* image to show; LibraryCoverSurface decides how it is
+ * presented. Keeping those separate is what stops the aspect-ratio fill rule
+ * and the decode fade from being reimplemented per call site.
+ */
 export default {
   props: {
     libraryItem: {
@@ -49,20 +39,9 @@ export default {
     bookCoverAspectRatio: Number,
     downloadCover: String,
     raw: Boolean,
-    noBg: Boolean
-  },
-  data() {
-    return {
-      loading: true,
-      imageFailed: false,
-      showCoverBg: false,
-      imageReady: false
-    }
-  },
-  watch: {
-    cover() {
-      this.imageFailed = false
-    }
+    noBg: Boolean,
+    /** Set when this cover is one tile of a composite series/collection cover. */
+    flat: Boolean
   },
   computed: {
     isLocal() {
@@ -71,9 +50,6 @@ export default {
     },
     localCover() {
       return this.libraryItem?.coverContentUrl || null
-    },
-    squareAspectRatio() {
-      return this.bookCoverAspectRatio === 1
     },
     height() {
       return this.width * this.bookCoverAspectRatio
@@ -88,26 +64,14 @@ export default {
     title() {
       return this.mediaMetadata.title || 'No Title'
     },
-    titleCleaned() {
-      if (this.title.length > 60) {
-        return this.title.slice(0, 57) + '...'
-      }
-      return this.title
-    },
     authors() {
       return this.mediaMetadata.authors || []
     },
     author() {
       return this.authors.map((au) => au.name).join(', ')
     },
-    authorCleaned() {
-      if (this.author.length > 30) {
-        return this.author.slice(0, 27) + '...'
-      }
-      return this.author
-    },
     placeholderUrl() {
-      return '/book_placeholder.jpg'
+      return '/book_placeholder_nightshelf.svg'
     },
     fullCoverUrl() {
       if (this.isLocal) {
@@ -116,67 +80,17 @@ export default {
       }
       if (this.downloadCover) return this.downloadCover
       if (!this.libraryItem) return null
-      var store = this.$store || this.$nuxt.$store
+      const store = this.$store || this.$nuxt.$store
       return store.getters['globals/getLibraryItemCoverSrc'](this.libraryItem, this.placeholderUrl, this.raw)
     },
-    cover() {
-      return this.media.coverPath || this.placeholderUrl
-    },
     hasCover() {
-      return (!!this.media.coverPath && !this.isLocal) || this.localCover || this.downloadCover
-    },
-    sizeMultiplier() {
-      var baseSize = this.squareAspectRatio ? 128 : 96
-      return this.width / baseSize
-    },
-    titleFontSize() {
-      return 0.75 * this.sizeMultiplier
-    },
-    authorFontSize() {
-      return 0.6 * this.sizeMultiplier
-    },
-    placeholderCoverPadding() {
-      if (this.sizeMultiplier < 0.5) return 0
-      return this.sizeMultiplier
-    },
-    authorBottom() {
-      return 0.75 * this.sizeMultiplier
+      return (!!this.media.coverPath && !this.isLocal) || !!this.localCover || !!this.downloadCover
     }
   },
   methods: {
-    setCoverBg() {
-      if (this.$refs.coverBg) {
-        this.$refs.coverBg.style.backgroundImage = `url("${this.fullCoverUrl}")`
-      }
-    },
-    imageLoaded() {
-      this.loading = false
-      this.$nextTick(() => {
-        this.imageReady = true
-      })
-      if (!this.noBg && this.$refs.cover && this.cover !== this.placeholderUrl) {
-        var { naturalWidth, naturalHeight } = this.$refs.cover
-        var aspectRatio = naturalHeight / naturalWidth
-        var arDiff = Math.abs(aspectRatio - this.bookCoverAspectRatio)
-
-        // If image aspect ratio is <= 1.45 or >= 1.75 then use cover bg, otherwise stretch to fit
-        if (arDiff > 0.15) {
-          this.showCoverBg = true
-          this.$nextTick(this.setCoverBg)
-        } else {
-          this.showCoverBg = false
-        }
-      }
-
-      this.$emit('imageLoaded', this.fullCoverUrl)
-    },
-    imageError(err) {
-      this.loading = false
-      console.error('ImgError', err)
-      this.imageFailed = true
+    onImageLoaded(src) {
+      this.$emit('imageLoaded', src)
     }
-  },
-  mounted() {}
+  }
 }
 </script>
-

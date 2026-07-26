@@ -1,7 +1,23 @@
 <template>
-  <div ref="card" :id="`series-card-${index}`" :style="{ width: width + 'px', height: height + 'px' }" class="rounded-sm cursor-pointer z-30" @click="clickCard">
-    <div class="absolute top-0 left-0 w-full box-shadow-book shadow-height" />
-    <div class="w-full h-full bg-primary relative rounded overflow-hidden">
+  <div
+    ref="card"
+    :id="`series-card-${index}`"
+    :style="{ width: width + 'px', height: height + 'px' }"
+    class="ns-cover-surface cursor-pointer z-30"
+    :class="[isPressed ? 'is-pressed' : '', isPressPending || isPressed ? 'is-active' : '']"
+    @click="clickCard"
+    @pointerdown="onPressPointerDown"
+    @pointermove="onPressPointerMove"
+    @pointerup="onPressPointerUp"
+    @pointercancel="onPressPointerCancel"
+    @lostpointercapture="onPressLostCapture"
+    role="button"
+    :aria-label="shelfCardLabel"
+    tabindex="0"
+    @contextmenu="onPressContextMenu"
+    @keydown="onPressKeydown"
+  >
+    <div class="w-full h-full bg-primary relative overflow-hidden" style="border-radius: inherit">
       <covers-group-cover v-if="series" ref="cover" :id="seriesId" :name="title" :book-items="books" :width="width" :height="height" :book-cover-aspect-ratio="bookCoverAspectRatio" />
     </div>
 
@@ -21,7 +37,11 @@
 </template>
 
 <script>
+import libraryPressInteraction from '@/mixins/libraryPressInteraction'
+import shelfEntityPeek from '@/mixins/shelfEntityPeek'
+
 export default {
+  mixins: [libraryPressInteraction, shelfEntityPeek],
   props: {
     index: Number,
     width: Number,
@@ -95,7 +115,21 @@ export default {
     setSelectionMode(val) {
       this.isSelectionMode = val
     },
-    clickCard() {
+    peekSource() {
+      if (!this.series) return null
+      return { entityType: 'series', series: this.series, progress: this.seriesPercentInProgress, isFinished: this.isSeriesFinished }
+    },
+    peekContext() {
+      return { canSelect: false }
+    },
+    clickCard(e) {
+      if (this.onPressClick()) {
+        if (e) {
+          e.stopPropagation()
+          e.preventDefault()
+        }
+        return
+      }
       if (!this.series) return
       var router = this.$router || this.$nuxt.$router
       router.push(`/bookshelf/series/${this.seriesId}`)

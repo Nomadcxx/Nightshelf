@@ -12,11 +12,13 @@
         {{ $strings.MessageBookshelfEmpty }}
       </div>
     </div>
-    <bookshelf-lazy-bookshelf v-else page="books" />
+    <bookshelf-lazy-bookshelf v-else page="books" :view-mode="viewMode" />
   </div>
 </template>
 
 <script>
+import { buildLibraryItemsQuery, getLibraryItemsTotal } from '@/utils/libraryItemsQuery'
+
 export default {
   async asyncData({ store, query }) {
     if (query.filter) {
@@ -26,7 +28,8 @@ export default {
   data() {
     return {
       shelves: [],
-      isLoading: false
+      isLoading: false,
+      fetchRequestId: 0
     }
   },
   computed: {
@@ -38,6 +41,26 @@ export default {
     },
     filterBy() {
       return this.$store.getters['user/getUserSetting']('mobileFilterBy') || 'all'
+    },
+    orderBy() {
+      return this.$store.getters['user/getUserSetting']('mobileOrderBy')
+    },
+    orderDesc() {
+      return this.$store.getters['user/getUserSetting']('mobileOrderDesc')
+    },
+    collapseSeries() {
+      return this.$store.getters['user/getUserSetting']('collapseSeries')
+    },
+    currentLibraryMediaType() {
+      return this.$store.getters['libraries/getCurrentLibraryMediaType']
+    },
+    libraryItemsQuery() {
+      return buildLibraryItemsQuery({
+        filterBy: this.filterBy,
+        orderBy: this.orderBy,
+        orderDesc: this.orderDesc,
+        collapseSeries: this.collapseSeries
+      })
     }
   },
   watch: {
@@ -47,7 +70,7 @@ export default {
     currentLibraryId() {
       if (this.viewMode === 'rails') this.fetchRails()
     },
-    filterBy() {
+    libraryItemsQuery() {
       if (this.viewMode === 'rails') this.fetchRails()
     }
   },
@@ -56,43 +79,56 @@ export default {
       if (shelf.labelStringKey && this.$strings[shelf.labelStringKey]) return this.$strings[shelf.labelStringKey]
       return shelf.label
     },
-    countUniqueShelfEntities(shelves) {
-      const ids = new Set()
-      for (const shelf of shelves) {
-        for (const entity of shelf.entities || []) {
-          const id = entity.id || entity.recentEpisode?.id
-          if (id) ids.add(id)
-        }
-      }
-      return ids.size
+    getAllItemsLabel(total) {
+      const label = this.currentLibraryMediaType === 'podcast' ? this.$strings.LabelAllPodcasts : this.$strings.LabelAllBooks
+      return `${label} · ${this.$formatNumber(total)}`
     },
-    emitTotalEntities() {
-      this.$eventBus.$emit('bookshelf-total-entities', this.countUniqueShelfEntities(this.shelves))
+    emitTotalEntities(total) {
+      this.$eventBus.$emit('bookshelf-total-entities', total)
     },
     async fetchRails() {
+      const requestId = ++this.fetchRequestId
       if (!this.currentLibraryId) {
         this.shelves = []
-        this.emitTotalEntities()
+        this.emitTotalEntities(0)
         return
       }
       this.isLoading = true
-      const categories = await this.$nativeHttp.get(`/api/libraries/${this.currentLibraryId}/personalized?limit=24&include=rssfeed,numEpisodesIncomplete`).catch(() => null)
+      this.emitTotalEntities(0)
+
+      const [categories, itemsPayload] = await Promise.all([
+        this.$nativeHttp.get(`/api/libraries/${this.currentLibraryId}/personalized?limit=24&include=rssfeed,numEpisodesIncomplete`).catch(() => null),
+        this.$nativeHttp.get(`/api/libraries/${this.currentLibraryId}/items?${this.libraryItemsQuery}`).catch(() => null)
+      ])
+
+      if (requestId !== this.fetchRequestId) return
       this.isLoading = false
-      if (!Array.isArray(categories)) {
+
+      const total = getLibraryItemsTotal(itemsPayload)
+      if (total === null) {
         this.shelves = []
-        this.emitTotalEntities()
+        this.emitTotalEntities(0)
         return
       }
-      let shelves = categories.filter((c) => c.entities?.length)
-      // When a genre chip/filter is active, keep shelves whose label/id matches when possible;
-      // otherwise fall through to dense grid for accurate filtered hunting.
-      if (this.filterBy && this.filterBy !== 'all' && this.filterBy.startsWith('genres.')) {
-        const genreToken = decodeURIComponent(this.filterBy.replace(/^genres\./, '')).toLowerCase()
-        const filtered = shelves.filter((s) => String(s.label || s.id || '').toLowerCase().includes(genreToken))
-        if (filtered.length) shelves = filtered
+
+      const allItemsShelf = itemsPayload.results.length
+        ? [
+            {
+              id: 'all-library-items',
+              label: this.getAllItemsLabel(total),
+              type: this.currentLibraryMediaType,
+              entities: itemsPayload.results
+            }
+          ]
+        : []
+
+      if (this.filterBy && this.filterBy !== 'all') {
+        this.shelves = allItemsShelf
+      } else {
+        const personalizedShelves = Array.isArray(categories) ? categories.filter((category) => category.entities?.length) : []
+        this.shelves = [...allItemsShelf, ...personalizedShelves]
       }
-      this.shelves = shelves
-      this.emitTotalEntities()
+      this.emitTotalEntities(total)
     }
   },
   async mounted() {

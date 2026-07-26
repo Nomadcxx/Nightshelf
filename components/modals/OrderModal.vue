@@ -1,19 +1,22 @@
 <template>
   <modals-modal v-model="show" width="90%">
-    <div class="w-full h-full bg-primary rounded-lg border border-fg/20">
-      <ul class="w-full rounded-lg text-base max-h-[70vh] overflow-y-auto overscroll-contain" role="listbox" aria-labelledby="listbox-label">
+    <section class="relative w-full overflow-hidden bg-secondary border border-border" :aria-label="sortTitle">
+      <div class="absolute inset-y-0 left-0 w-1 bg-accent" aria-hidden="true" />
+      <header class="min-h-14 pl-5 pr-4 flex items-center border-b border-border bg-bg">
+        <p class="font-mono text-sm uppercase tracking-[0.16em] text-fg">{{ sortTitle }}</p>
+      </header>
+      <ul class="w-full max-h-[68vh] overflow-y-auto overscroll-contain pl-1" role="listbox" :aria-label="sortTitle">
         <template v-for="item in items">
-          <li :key="item.value" class="text-fg select-none relative py-4 pr-9 cursor-pointer" :class="item.value === selected ? 'bg-bg bg-opacity-50' : ''" role="option" @click="clickedOption(item.value)">
-            <div class="flex items-center">
-              <span class="font-normal ml-3 block truncate text-lg">{{ item.text }}</span>
-            </div>
-            <span v-if="item.value === selected" class="text-yellow-300 absolute inset-y-0 right-0 flex items-center pr-4">
-              <span class="material-symbols text-3xl">{{ descending ? 'south' : 'north' }}</span>
-            </span>
+          <li :key="item.value" :aria-selected="item.value === selected ? 'true' : 'false'" role="option">
+            <button type="button" class="relative w-full min-h-12 px-4 flex items-center gap-3 border-b border-border text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent" :class="item.value === selected ? 'bg-accent/10 text-accent' : 'text-fg'" @click="clickedOption(item.value)">
+              <span v-if="item.value === selected" class="absolute inset-y-2 left-0 w-0.5 bg-accent" aria-hidden="true" />
+              <span class="min-w-0 flex-1 truncate text-sm">{{ item.text }}</span>
+              <span v-if="item.value === selected" class="flex-none font-mono text-xs uppercase tracking-wider">{{ descending ? 'Desc' : 'Asc' }}</span>
+            </button>
           </li>
         </template>
       </ul>
-    </div>
+    </section>
   </modals-modal>
 </template>
 
@@ -166,6 +169,9 @@ export default {
     },
     isPodcast() {
       return this.$store.getters['libraries/getCurrentLibraryMediaType'] === 'podcast'
+    },
+    sortTitle() {
+      return this.episodes ? this.$strings.HeaderSortItems : this.$strings.HeaderSortLibrary
     },
     items() {
       if (this.episodes) return this.episodeItems

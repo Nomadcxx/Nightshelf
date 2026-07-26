@@ -4,7 +4,7 @@
   </div>
   <div v-else id="item-page" class="w-full h-full overflow-y-auto overflow-x-hidden relative bg-bg">
     <!-- cover -->
-    <div class="w-full flex justify-center relative">
+    <div class="nightglass-detail-cover-stage w-full flex justify-center relative">
       <div style="width: 0; transform: translateX(-50vw); overflow: visible">
         <div style="width: 150vw; overflow: hidden">
           <div id="coverBg" style="filter: blur(5vw)">
@@ -12,10 +12,18 @@
           </div>
         </div>
       </div>
-      <div class="relative" @click="showFullscreenCover = true">
-        <covers-book-cover :library-item="libraryItem" :width="coverWidth" :book-cover-aspect-ratio="bookCoverAspectRatio" no-bg raw />
-        <div v-if="!isPodcast" class="absolute bottom-0 left-0 h-1 z-10 box-shadow-progressbar" :class="userIsFinished ? 'bg-success' : 'bg-yellow-400'" :style="{ width: coverWidth * progressPercent + 'px' }"></div>
-      </div>
+      <button type="button" class="nightglass-detail-cover-frame relative focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" :aria-label="$strings.LabelOpenCoverArt" @click="showFullscreenCover = true">
+        <!-- Landing point for the shelf cover's view transition. The name is
+             bound rather than fixed so it only matches the card the user
+             actually pressed. -->
+        <span class="nightglass-detail-cover relative block" :style="coverTransitionStyle">
+          <covers-book-cover :library-item="libraryItem" :width="coverWidth" :book-cover-aspect-ratio="bookCoverAspectRatio" no-bg raw />
+        </span>
+        <span class="nightglass-detail-cover-frame__footer flex items-center justify-between" aria-hidden="true">
+          <span>{{ $strings.LabelCoverArt }}</span>
+          <span>{{ $strings.LabelTapToExpand }}</span>
+        </span>
+      </button>
     </div>
 
     <div class="relative">
@@ -25,18 +33,17 @@
         <div class="w-full h-full absolute top-0 left-0" style="background: var(--gradient-item-page)" />
       </div>
 
-      <div class="relative z-10 px-3 py-4">
-        <!-- title -->
-        <div class="text-center mb-2">
-          <div class="flex items-center justify-center">
-            <h1 class="text-xl font-semibold">{{ title }}</h1>
+      <main class="nightglass-detail-content relative z-10 px-3 pb-40">
+        <section class="nightglass-detail__summary" :aria-label="isPodcast ? $strings.LabelPodcastDetails : $strings.LabelBookDetails">
+          <p class="nightglass-detail__eyebrow">{{ isPodcast ? $strings.LabelPodcastDetails : $strings.LabelBookDetails }}</p>
+          <div class="flex items-center justify-center gap-1">
+            <h1 class="nightglass-detail__title">{{ title }}</h1>
             <widgets-explicit-indicator v-if="isExplicit" />
             <widgets-abridged-indicator v-if="isAbridged" />
           </div>
-          <p v-if="subtitle" class="text-fg text-base">{{ subtitle }}</p>
-        </div>
+          <p v-if="subtitle" class="nightglass-detail__subtitle">{{ subtitle }}</p>
 
-        <div v-if="hasLocal" class="mx-1">
+          <div v-if="hasLocal" class="mt-4">
           <div v-if="currentServerConnectionConfigId && !isLocalMatchingServerAddress" class="w-full rounded-md bg-warning/10 border border-warning p-4">
             <p class="text-sm">{{ $getString('MessageMediaLinkedToADifferentServer', [localLibraryItem.serverAddress]) }}</p>
           </div>
@@ -46,114 +53,141 @@
           <div v-else-if="currentServerConnectionConfigId && !isLocalMatchingConnectionConfig" class="w-full rounded-md bg-warning/10 border border-warning p-4">
             <p class="text-sm">Media is linked to a different server connection config. Downloaded User Id: {{ localLibraryItem.serverUserId }}. Downloaded Server Address: {{ localLibraryItem.serverAddress }}. Currently connected User Id: {{ user.id }}. Currently connected server address: {{ currentServerAddress }}.</p>
           </div>
-        </div>
+          </div>
 
-        <!-- action buttons -->
-        <div class="col-span-full">
-          <div v-if="showPlay || showRead" class="flex mt-4 -mx-1">
-            <ui-btn v-if="showPlay" color="success" class="flex items-center justify-center flex-grow mx-1" :loading="playerIsStartingForThisMedia" :padding-x="4" @click="playClick">
-              <span class="material-symbols text-2xl fill">{{ playerIsPlaying ? 'pause' : 'play_arrow' }}</span>
+          <div class="col-span-full">
+          <div v-if="showPlay || showRead" class="nightglass-detail__actions flex mt-5">
+            <ui-btn v-if="showPlay" color="success" class="nightglass-detail__primary flex items-center justify-center flex-grow" :loading="playerIsStartingForThisMedia" :padding-x="4" @click="playClick">
+              <ui-ph-icon :name="playerIsPlaying ? 'pause' : 'play_arrow'" :size="24" />
               <span class="px-1 text-sm">{{ playerIsPlaying ? $strings.ButtonPause : isPodcast ? $strings.ButtonNextEpisode : hasLocal ? $strings.ButtonPlay : $strings.ButtonStream }}</span>
             </ui-btn>
-            <ui-btn v-if="showRead" color="info" class="flex items-center justify-center mx-1" :class="showPlay ? '' : 'flex-grow'" :padding-x="2" @click="readBook">
-              <span class="material-symbols text-2xl">auto_stories</span>
+            <ui-btn v-if="showRead" color="info" class="nightglass-detail__secondary flex items-center justify-center" :class="showPlay ? '' : 'flex-grow'" :padding-x="2" @click="readBook">
+              <ui-ph-icon name="auto_stories" :size="24" />
               <span v-if="!showPlay" class="px-2 text-base">{{ $strings.ButtonRead }} {{ ebookFormat }}</span>
             </ui-btn>
-            <ui-btn v-if="showDownload" :color="downloadItem ? 'warning' : 'primary'" class="flex items-center justify-center mx-1" :padding-x="2" @click="downloadClick">
-              <span class="material-symbols text-2xl" :class="downloadItem || startingDownload ? 'animate-pulse' : ''">{{ downloadItem || startingDownload ? 'downloading' : 'download' }}</span>
+            <ui-btn v-if="showDownload" :color="downloadItem ? 'warning' : 'primary'" class="nightglass-detail__secondary flex items-center justify-center" :padding-x="2" :aria-label="downloadItem || startingDownload ? $strings.MessageDownloading : $strings.LabelDownload" @click="downloadClick">
+              <ui-ph-icon name="download" :size="24" :class="downloadItem || startingDownload ? 'animate-pulse' : ''" />
             </ui-btn>
-            <ui-btn color="primary" class="flex items-center justify-center mx-1" :padding-x="2" @click="moreButtonPress">
-              <span class="material-symbols text-2xl">more_vert</span>
+            <ui-btn color="primary" class="nightglass-detail__secondary flex items-center justify-center" :padding-x="2" :aria-label="$strings.ButtonMoreOptions" @click="moreButtonPress">
+              <ui-ph-icon name="more_vert" :size="24" />
             </ui-btn>
           </div>
-          <ui-btn v-else-if="isMissing" color="error" :padding-x="4" small class="mt-4 flex items-center justify-center w-full" @click="clickMissingButton">
-            <span class="material-symbols">error</span>
+          <ui-btn v-else-if="isMissing" color="error" :padding-x="4" small class="nightglass-detail__primary mt-4 flex items-center justify-center w-full" @click="clickMissingButton">
+            <ui-ph-icon name="error" :size="22" />
             <span class="px-1 text-base">{{ $strings.LabelMissing }}</span>
           </ui-btn>
 
-          <div v-if="!isPodcast && progressPercent > 0" class="px-4 py-2 bg-primary text-sm font-semibold rounded-md text-fg mt-4 text-center">
-            <p>{{ $strings.LabelYourProgress }}: {{ Math.round(progressPercent * 100) }}%</p>
-            <p v-if="!useEBookProgress && !userIsFinished" class="text-fg-muted text-xs">{{ $getString('LabelTimeRemaining', [$elapsedPretty(userTimeRemaining)]) }}</p>
-            <p v-else-if="userIsFinished" class="text-fg-muted text-xs">{{ $strings.LabelFinished }} {{ $formatDate(userProgressFinishedAt) }}</p>
+          <div v-if="!isPodcast && progressPercent > 0" class="nightglass-detail__progress mt-4">
+            <div class="flex items-end justify-between gap-4">
+              <div class="min-w-0 text-left">
+                <p class="nightglass-detail__eyebrow">{{ $strings.LabelYourProgress }}</p>
+                <p v-if="!useEBookProgress && !userIsFinished" class="mt-1 text-sm text-fg-muted">{{ $getString('LabelTimeRemaining', [$elapsedPretty(userTimeRemaining)]) }}</p>
+                <p v-else-if="userIsFinished" class="mt-1 text-sm text-fg-muted">{{ $strings.LabelFinished }} {{ $formatDate(userProgressFinishedAt) }}</p>
+              </div>
+              <p class="font-mono text-xl text-success">{{ Math.round(progressPercent * 100) }}%</p>
+            </div>
+            <div class="mt-2 h-4 w-full">
+              <ui-synthwave-progress :progress="progressPercent" :playing="playerIsPlaying" variant="full" />
+            </div>
           </div>
         </div>
+        </section>
 
         <div v-if="downloadItem" class="py-3">
           <p v-if="downloadItem.itemProgress == 1" class="text-center text-lg">{{ $strings.MessageDownloadCompleteProcessing }}</p>
           <p v-else class="text-center text-lg">{{ $strings.MessageDownloading }} ({{ Math.round(downloadItem.itemProgress * 100) }}%)</p>
         </div>
 
-        <!-- metadata -->
-        <div id="metadata" class="grid gap-2 my-2" style>
-          <div v-if="podcastAuthor || bookAuthors?.length" class="text-fg-muted uppercase text-sm">{{ $strings.LabelAuthor }}</div>
-          <div v-if="podcastAuthor" class="text-sm">{{ podcastAuthor }}</div>
-          <div v-else-if="bookAuthors?.length" class="text-sm">
+        <section id="metadata" class="nightglass-detail__facts" :aria-label="$strings.LabelMediaDetails">
+          <div v-if="podcastAuthor || bookAuthors?.length" class="nightglass-detail__fact">
+            <p class="nightglass-detail__fact-label">{{ $strings.LabelAuthor }}</p>
+            <p v-if="podcastAuthor" class="nightglass-detail__fact-value">{{ podcastAuthor }}</p>
+            <p v-else-if="bookAuthors?.length" class="nightglass-detail__fact-value">
             <template v-for="(author, index) in bookAuthors">
               <nuxt-link :key="author.id" :to="`/bookshelf/library?filter=authors.${$encode(author.id)}`" class="underline whitespace-nowrap">{{ author.name }}</nuxt-link
               ><span :key="`${author.id}-comma`" v-if="index < bookAuthors.length - 1">, </span>
             </template>
+            </p>
           </div>
 
-          <div v-if="podcastType" class="text-fg-muted uppercase text-sm">{{ $strings.LabelType }}</div>
-          <div v-if="podcastType" class="text-sm capitalize">{{ podcastType }}</div>
+          <div v-if="podcastType" class="nightglass-detail__fact">
+            <p class="nightglass-detail__fact-label">{{ $strings.LabelType }}</p>
+            <p class="nightglass-detail__fact-value capitalize">{{ podcastType }}</p>
+          </div>
 
-          <div v-if="series?.length" class="text-fg-muted uppercase text-sm">{{ $strings.LabelSeries }}</div>
-          <div v-if="series?.length" class="text-sm">
+          <div v-if="series?.length" class="nightglass-detail__fact">
+            <p class="nightglass-detail__fact-label">{{ $strings.LabelSeries }}</p>
+            <p class="nightglass-detail__fact-value">
             <template v-for="(series, index) in seriesList">
               <nuxt-link :key="series.id" :to="`/bookshelf/series/${series.id}`" class="underline whitespace-nowrap">{{ series.text }}</nuxt-link
               ><span :key="`${series.id}-comma`" v-if="index < seriesList.length - 1">, </span>
             </template>
+            </p>
           </div>
 
-          <div v-if="numTracks" class="text-fg-muted uppercase text-sm">{{ $strings.LabelDuration }}</div>
-          <div v-if="numTracks" class="text-sm">{{ $elapsedPretty(duration) }}</div>
+          <div v-if="numTracks" class="nightglass-detail__fact">
+            <p class="nightglass-detail__fact-label">{{ $strings.LabelDuration }}</p>
+            <p class="nightglass-detail__fact-value">{{ $elapsedPretty(duration) }}</p>
+          </div>
 
-          <div v-if="narrators?.length" class="text-fg-muted uppercase text-sm">{{ $strings.LabelNarrators }}</div>
-          <div v-if="narrators?.length" class="text-sm">
+          <div v-if="narrators?.length" class="nightglass-detail__fact">
+            <p class="nightglass-detail__fact-label">{{ $strings.LabelNarrators }}</p>
+            <p class="nightglass-detail__fact-value">
             <template v-for="(narrator, index) in narrators">
               <nuxt-link :key="narrator" :to="`/bookshelf/library?filter=narrators.${$encode(narrator)}`" class="underline whitespace-nowrap">{{ narrator }}</nuxt-link
               ><span :key="index" v-if="index < narrators.length - 1">, </span>
             </template>
+            </p>
           </div>
 
-          <div v-if="genres.length" class="text-fg-muted uppercase text-sm">{{ $strings.LabelGenres }}</div>
-          <div v-if="genres.length" class="text-sm">
+          <div v-if="genres.length" class="nightglass-detail__fact nightglass-detail__fact--wide">
+            <p class="nightglass-detail__fact-label">{{ $strings.LabelGenres }}</p>
+            <p class="nightglass-detail__fact-value">
             <template v-for="(genre, index) in genres">
               <nuxt-link :key="genre" :to="`/bookshelf/library?filter=genres.${$encode(genre)}`" class="underline whitespace-nowrap">{{ genre }}</nuxt-link
               ><span :key="index" v-if="index < genres.length - 1">, </span>
             </template>
+            </p>
           </div>
 
-          <div v-if="tags.length" class="text-fg-muted uppercase text-sm">{{ $strings.LabelTags }}</div>
-          <div v-if="tags.length" class="text-sm">
+          <div v-if="tags.length" class="nightglass-detail__fact nightglass-detail__fact--wide">
+            <p class="nightglass-detail__fact-label">{{ $strings.LabelTags }}</p>
+            <p class="nightglass-detail__fact-value">
             <template v-for="(tag, index) in tags">
               <nuxt-link :key="tag" :to="`/bookshelf/library?filter=tags.${$encode(tag)}`" class="underline whitespace-nowrap">{{ tag }}</nuxt-link
               ><span :key="index" v-if="index < tags.length - 1">, </span>
             </template>
+            </p>
           </div>
 
-          <div v-if="publishedYear" class="text-fg-muted uppercase text-sm">{{ $strings.LabelPublishYear }}</div>
-          <div v-if="publishedYear" class="text-sm">{{ publishedYear }}</div>
-        </div>
+          <div v-if="publishedYear" class="nightglass-detail__fact">
+            <p class="nightglass-detail__fact-label">{{ $strings.LabelPublishYear }}</p>
+            <p class="nightglass-detail__fact-value">{{ publishedYear }}</p>
+          </div>
+        </section>
 
-        <div v-if="description" class="w-full py-2">
-          <div ref="description" class="default-style less-spacing text-sm text-justify whitespace-pre-line font-light" :class="{ 'line-clamp-4': !showFullDescription }" style="hyphens: auto" v-html="description" />
+        <section v-if="description" class="nightglass-detail__description">
+          <div>
+            <p class="nightglass-detail__eyebrow">{{ $strings.LabelDescription }}</p>
+            <h2 class="mt-1 text-lg font-semibold">{{ $strings.LabelAboutThisTitle }}</h2>
+          </div>
 
-          <div v-if="descriptionClamped" class="text-fg text-sm py-2" @click="showFullDescription = !showFullDescription">
+          <div ref="description" class="nightglass-detail__description-copy default-style less-spacing whitespace-pre-line" :class="{ 'line-clamp-5': !showFullDescription }" v-html="description" />
+
+          <button v-if="descriptionClamped" type="button" class="nightglass-detail__read-toggle mt-3 h-12 w-full flex items-center justify-center gap-2 rounded-xl font-mono text-sm uppercase tracking-wider text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" :aria-expanded="showFullDescription ? 'true' : 'false'" @click="showFullDescription = !showFullDescription">
             {{ showFullDescription ? $strings.ButtonReadLess : $strings.ButtonReadMore }}
-            <span class="material-symbols !align-middle text-base -mt-px">{{ showFullDescription ? 'arrow_drop_up' : 'arrow_drop_down' }}</span>
-          </div>
-        </div>
+            <ui-ph-icon name="keyboard_arrow_down" :size="20" :class="{ 'rotate-180': showFullDescription }" />
+          </button>
+        </section>
 
         <!-- tables -->
-        <tables-podcast-episodes-table v-if="isPodcast" :library-item="libraryItem" :local-library-item-id="localLibraryItemId" :episodes="episodes" :local-episodes="localLibraryItemEpisodes" :is-local="isLocal" />
-
-        <tables-chapters-table v-if="numChapters" :library-item="libraryItem" @playAtTimestamp="playAtTimestamp" />
-
-        <tables-tracks-table v-if="numTracks" :tracks="tracks" :library-item-id="libraryItemId" />
-
-        <tables-ebook-files-table v-if="ebookFiles.length" :library-item="libraryItem" />
-      </div>
+        <div class="nightglass-detail__tables">
+          <div v-if="isPodcast" class="nightglass-detail__table-panel"><tables-podcast-episodes-table :library-item="libraryItem" :local-library-item-id="localLibraryItemId" :episodes="episodes" :local-episodes="localLibraryItemEpisodes" :is-local="isLocal" /></div>
+          <div v-if="numChapters" class="nightglass-detail__table-panel"><tables-chapters-table :library-item="libraryItem" @playAtTimestamp="playAtTimestamp" /></div>
+          <div v-if="numTracks" class="nightglass-detail__table-panel"><tables-tracks-table :tracks="tracks" :library-item-id="libraryItemId" /></div>
+          <div v-if="ebookFiles.length" class="nightglass-detail__table-panel"><tables-ebook-files-table :library-item="libraryItem" /></div>
+        </div>
+      </main>
     </div>
 
     <!-- modals -->
@@ -173,6 +207,7 @@
 import { Dialog } from '@capacitor/dialog'
 import { AbsFileSystem, AbsDownloader } from '@/plugins/capacitor'
 import { getAverageColorFromCoverUrl } from '@/utils/coverAverageColor'
+import { coverTransitionName } from '@/utils/viewTransition'
 import cellularPermissionHelpers from '@/mixins/cellularPermissionHelpers'
 
 export default {
@@ -226,6 +261,12 @@ export default {
   },
   mixins: [cellularPermissionHelpers],
   computed: {
+    coverTransitionStyle() {
+      // Reduced motion removes spatial travel, so the cover simply appears.
+      if (this.$store.getters['globals/motionMode'] === 'reduced') return null
+      const name = coverTransitionName(this.libraryItemId)
+      return name ? { viewTransitionName: name } : null
+    },
     isIos() {
       return this.$platform === 'ios'
     },
@@ -475,11 +516,8 @@ export default {
       return this.$store.state.isCasting
     },
     coverWidth() {
-      let width = this.windowWidth - 94
-      if (width > 325) return 325
-      else if (width < 0) return 175
-
-      if (width * this.bookCoverAspectRatio > 325) width = 325 / this.bookCoverAspectRatio
+      let width = Math.min(270, Math.max(175, this.windowWidth * 0.64))
+      if (width * this.bookCoverAspectRatio > 300) width = 300 / this.bookCoverAspectRatio
       return width
     },
     coverHeight() {
@@ -810,6 +848,251 @@ export default {
   transition: opacity 0.5s ease-in-out;
   height: var(--item-page-bg-gradient-height);
 }
+#item-page-bg-gradient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(var(--color-bg) / 0.7) 0%, rgb(var(--color-bg) / 0.9) 38%, rgb(var(--color-bg)) 100%);
+}
+
+.nightglass-detail-cover-stage {
+  isolation: isolate;
+  overflow: hidden;
+  padding: 12px 0 16px;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgb(var(--color-success) / 0.11), transparent 38%),
+    radial-gradient(ellipse at 68% 76%, rgb(var(--color-accent) / 0.09), transparent 34%),
+    linear-gradient(180deg, rgb(var(--color-secondary) / 0.36), rgb(var(--color-bg) / 0.92));
+}
+.nightglass-detail-cover-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgb(var(--color-fg) / 0.035), transparent 34%, rgb(var(--color-accent) / 0.04));
+}
+#coverBg {
+  opacity: 0;
+  pointer-events: none;
+}
+.nightglass-detail-cover-frame {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px 7px;
+  overflow: hidden;
+  color: rgb(var(--color-fg));
+  border: 1px solid rgb(var(--color-border) / 0.94);
+  border-radius: 32px;
+  background: linear-gradient(145deg, rgb(var(--color-secondary) / 0.6), rgb(var(--color-bg) / 0.3));
+  box-shadow: 0 24px 58px rgb(0 0 0 / 0.38), inset 0 1px 0 rgb(var(--color-fg) / 0.12), 0 0 0 1px rgb(var(--color-success) / 0.08);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  cursor: pointer;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease, box-shadow 220ms ease;
+}
+.nightglass-detail-cover-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgb(var(--color-fg) / 0.08), transparent 30%, transparent 72%, rgb(var(--color-accent) / 0.08));
+}
+.nightglass-detail-cover-frame:active {
+  transform: scale(0.985);
+  border-color: rgb(var(--color-success) / 0.54);
+  box-shadow: 0 16px 38px rgb(0 0 0 / 0.36), inset 0 1px 0 rgb(var(--color-fg) / 0.1), 0 0 20px rgb(var(--color-success) / 0.08);
+}
+.nightglass-detail-cover {
+  overflow: hidden;
+  z-index: 1;
+  border: 1px solid rgb(var(--color-fg) / 0.26);
+  border-radius: 23px;
+  box-shadow: 0 13px 32px rgb(0 0 0 / 0.34), 0 0 0 1px rgb(var(--color-success) / 0.12), inset 0 1px 0 rgb(var(--color-fg) / 0.1);
+}
+.nightglass-detail-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgb(var(--color-fg) / 0.07), transparent 28%, transparent 76%, rgb(var(--color-accent) / 0.08));
+}
+.nightglass-detail-cover-frame__footer {
+  position: relative;
+  z-index: 3;
+  min-height: 31px;
+  padding: 8px 5px 1px;
+  color: rgb(var(--color-fg) / 0.74);
+  font-family: 'JetBrains Mono', 'Ubuntu Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.nightglass-detail-cover-frame__footer span:first-child {
+  color: rgb(var(--color-success));
+}
+
+.nightglass-detail-content {
+  padding-top: 16px;
+}
+.nightglass-detail__summary,
+.nightglass-detail__facts,
+.nightglass-detail__description,
+.nightglass-detail__table-panel {
+  border: 1px solid rgb(var(--color-border) / 0.92);
+  background: linear-gradient(145deg, rgb(var(--color-secondary) / 0.6), rgb(var(--color-bg) / 0.34));
+  box-shadow: 0 16px 38px rgb(0 0 0 / 0.28), inset 0 1px 0 rgb(var(--color-fg) / 0.1);
+  backdrop-filter: blur(22px) saturate(128%);
+  -webkit-backdrop-filter: blur(22px) saturate(128%);
+}
+.nightglass-detail__summary {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 16px 16px;
+  border-radius: 28px;
+  text-align: center;
+}
+.nightglass-detail__summary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(125deg, rgb(var(--color-fg) / 0.055), transparent 40%, rgb(var(--color-accent) / 0.075));
+}
+.nightglass-detail__eyebrow,
+.nightglass-detail__fact-label {
+  color: rgb(var(--color-success));
+  font-family: 'JetBrains Mono', 'Ubuntu Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.nightglass-detail__title {
+  max-width: 28ch;
+  color: rgb(var(--color-fg));
+  font-size: clamp(1.35rem, 6vw, 2rem);
+  font-weight: 650;
+  line-height: 1.18;
+  text-wrap: balance;
+}
+.nightglass-detail__subtitle {
+  max-width: 42ch;
+  margin: 6px auto 0;
+  color: rgb(var(--color-fg) / 0.82);
+  font-size: 1rem;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+.nightglass-detail__actions {
+  gap: 8px;
+}
+.nightglass-detail__actions .btn,
+.nightglass-detail__primary.btn,
+.nightglass-detail__secondary.btn {
+  min-height: 52px;
+  border-radius: 16px;
+  box-shadow: 0 9px 22px rgb(0 0 0 / 0.24), inset 0 1px 0 rgb(var(--color-fg) / 0.11);
+}
+.nightglass-detail__primary.btn {
+  border-color: rgb(var(--color-success) / 0.72);
+  background: linear-gradient(110deg, rgb(var(--color-success) / 0.92), rgb(var(--color-success) / 0.68));
+}
+.nightglass-detail__secondary.btn {
+  min-width: 52px;
+  padding-right: 12px;
+  padding-left: 12px;
+  border-color: rgb(var(--color-border) / 0.94);
+  background: rgb(var(--color-bg) / 0.38);
+}
+.nightglass-detail__progress {
+  padding: 14px 16px 12px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  border-radius: 18px;
+  background: linear-gradient(120deg, rgb(var(--color-bg) / 0.22), rgb(var(--color-secondary) / 0.36));
+  box-shadow: inset 0 1px 0 rgb(var(--color-fg) / 0.07);
+  text-align: left;
+}
+
+.nightglass-detail__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+  padding: 8px;
+  border-radius: 24px;
+}
+.nightglass-detail__fact {
+  min-width: 0;
+  min-height: 76px;
+  padding: 12px;
+  border: 1px solid rgb(var(--color-border) / 0.58);
+  border-radius: 16px;
+  background: rgb(var(--color-bg) / 0.18);
+}
+.nightglass-detail__fact--wide {
+  grid-column: 1 / -1;
+}
+.nightglass-detail__fact-value {
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+  color: rgb(var(--color-fg) / 0.96);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.nightglass-detail__fact-value a {
+  color: inherit;
+  text-decoration-color: rgb(var(--color-accent) / 0.72);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.nightglass-detail__description {
+  margin-top: 16px;
+  padding: 20px;
+  border-radius: 28px;
+}
+.nightglass-detail__description-copy {
+  max-width: 68ch;
+  margin-top: 14px;
+  color: rgb(var(--color-fg) / 0.94);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.68;
+  text-align: left;
+  hyphens: none;
+}
+.nightglass-detail__read-toggle {
+  border: 1px solid rgb(var(--color-border) / 0.72);
+  background: rgb(var(--color-bg) / 0.22);
+  transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+.nightglass-detail__read-toggle:active {
+  transform: scale(0.98);
+  background: rgb(var(--color-fg) / 0.08);
+}
+.nightglass-detail__read-toggle .ph-icon {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nightglass-detail__tables {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+.nightglass-detail__table-panel {
+  overflow: hidden;
+  padding: 8px;
+  border-radius: 24px;
+}
 
 .title-container {
   width: calc(100% - 64px);
@@ -820,14 +1103,29 @@ export default {
   max-width: 150vw !important;
 }
 
-@media only screen and (max-width: 500px) {
-  #metadata {
-    grid-template-columns: auto 1fr;
+@media only screen and (min-width: 500px) {
+  .nightglass-detail-content {
+    max-width: 760px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+  .nightglass-detail__summary {
+    padding: 24px;
+  }
+  .nightglass-detail__facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .nightglass-detail__fact--wide {
+    grid-column: span 2;
   }
 }
-@media only screen and (min-width: 500px) {
-  #metadata {
-    grid-template-columns: auto 1fr auto 1fr;
+
+@media (prefers-reduced-motion: reduce) {
+  #item-page-bg-gradient,
+  .nightglass-detail-cover-frame,
+  .nightglass-detail__read-toggle,
+  .nightglass-detail__read-toggle .ph-icon {
+    transition: none;
   }
 }
 </style>

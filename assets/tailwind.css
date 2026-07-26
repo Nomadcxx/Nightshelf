@@ -10,7 +10,7 @@
     --color-bg: 33 35 55;
     --color-bg-hover: 50 52 73;
     --color-fg: 235 250 250;
-    --color-fg-muted: 91 92 102;
+    --color-fg-muted: 156 157 167; /* night: AA 4.52:1 on secondary */
     --color-primary: 33 35 55;
     --color-secondary: 50 52 73;
     --color-border: 69 71 89;
@@ -34,7 +34,7 @@
     --color-bg: 23 25 40;
     --color-bg-hover: 37 39 56;
     --color-fg: 216 230 230;
-    --color-fg-muted: 71 72 82;
+    --color-fg-muted: 140 142 156; /* black: AA 4.53:1 on secondary */
     --color-primary: 23 25 40;
     --color-secondary: 37 39 56;
     --color-border: 53 55 70;
@@ -59,7 +59,7 @@
     --color-bg: 33 35 55;
     --color-bg-hover: 50 52 73;
     --color-fg: 235 250 250;
-    --color-fg-muted: 91 92 102;
+    --color-fg-muted: 137 138 149; /* terminal: AA 4.51:1 on bg */
     --color-primary: 33 35 55;
     --color-secondary: 26 28 46;
     --color-border: 55 244 153;

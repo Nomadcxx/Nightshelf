@@ -1,5 +1,17 @@
 <template>
-  <div class="flex h-full px-1 overflow-hidden">
+  <div
+    ref="card"
+    class="flex h-full px-1 overflow-hidden"
+    :class="{ 'is-pressed': isPressed }"
+    @click="onCardClick"
+    @pointerdown="onPressPointerDown"
+    @pointermove="onPressPointerMove"
+    @pointerup="onPressPointerUp"
+    @pointercancel="onPressPointerCancel"
+    @lostpointercapture="onPressLostCapture"
+    @contextmenu="onPressContextMenu"
+    @keydown="onPressKeydown"
+  >
     <covers-book-cover :library-item="libraryItem" :width="coverWidth" :book-cover-aspect-ratio="bookCoverAspectRatio" />
     <div class="grow px-2 audiobookSearchCardContent">
       <p class="truncate text-sm text-fg">{{ title }}</p>
@@ -10,16 +22,17 @@
 </template>
 
 <script>
+import libraryPressInteraction from '@/mixins/libraryPressInteraction'
+import shelfEntityPeek from '@/mixins/shelfEntityPeek'
+
 export default {
+  mixins: [libraryPressInteraction, shelfEntityPeek],
   props: {
     libraryItem: {
       type: Object,
       default: () => {}
     },
     search: String
-  },
-  data() {
-    return {}
   },
   computed: {
     bookCoverAspectRatio() {
@@ -52,8 +65,20 @@ export default {
       return this.mediaMetadata.authorName
     }
   },
-  methods: {},
-  mounted() {}
+  methods: {
+    peekSource() {
+      return { libraryItem: this.libraryItem }
+    },
+    onCardClick(e) {
+      // Search results sit inside a nuxt-link. This handler runs before the
+      // link's, so stopping here is what prevents a committed hold from also
+      // navigating.
+      if (this.onPressClick()) {
+        e.stopPropagation()
+        e.preventDefault()
+      }
+    }
+  }
 }
 </script>
 
@@ -63,5 +88,11 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+</style>
+
+<style scoped>
+.is-pressed {
+  opacity: 0.65;
 }
 </style>

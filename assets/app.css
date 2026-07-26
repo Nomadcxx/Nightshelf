@@ -3,6 +3,7 @@
 @import './defaultStyles.css';
 @import './absicons.css';
 @import './transitions.css';
+@import './motion.css';
 
 * {
   -webkit-touch-callout: none;
@@ -31,9 +32,9 @@ textarea {
 }
 
 #content.playerOpen {
-  height: calc(100% - 184px);
-  min-height: calc(100% - 184px);
-  max-height: calc(100% - 184px);
+  height: calc(100% - 144px);
+  min-height: calc(100% - 144px);
+  max-height: calc(100% - 144px);
 }
 
 #bookshelf {

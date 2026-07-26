@@ -11,12 +11,7 @@
       </a>
     </div>
 
-    <div v-if="imageFailed" class="absolute top-0 left-0 right-0 bottom-0 w-full h-full bg-red-100" :style="{ padding: placeholderCoverPadding + 'rem' }">
-      <div class="w-full h-full border-2 border-error flex flex-col items-center justify-center">
-        <img src="/Logo.png" class="mb-2" :style="{ height: 64 * sizeMultiplier + 'px' }" />
-        <p class="text-centertext-error" :style="{ fontSize: sizeMultiplier + 'rem' }">Invalid Cover</p>
-      </div>
-    </div>
+    <img v-if="imageFailed" src="/book_placeholder_nightshelf.svg" alt="" class="absolute inset-0 w-full h-full object-cover" />
 
     <p v-if="!imageFailed && showResolution" class="absolute -bottom-5 left-0 right-0 mx-auto text-xs text-gray-300 text-center">{{ resolution }}</p>
   </div>
@@ -66,7 +61,7 @@ export default {
     },
     placeholderUrl() {
       const config = this.$config || this.$nuxt.$config
-      return `${config.routerBasePath}/book_placeholder.jpg`
+      return `${config.routerBasePath}/book_placeholder_nightshelf.svg`
     }
   },
   methods: {

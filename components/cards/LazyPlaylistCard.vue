@@ -1,7 +1,23 @@
 <template>
-  <div ref="card" :id="`playlist-card-${index}`" :style="{ width: width + 'px', height: height + 'px' }" class="absolute top-0 left-0 rounded-sm z-30 cursor-pointer" @click="clickCard">
-    <div class="absolute top-0 left-0 w-full box-shadow-book shadow-height" />
-    <div class="w-full h-full bg-primary relative rounded overflow-hidden">
+  <div
+    ref="card"
+    :id="`playlist-card-${index}`"
+    :style="{ width: width + 'px', height: height + 'px' }"
+    class="ns-cover-surface absolute top-0 left-0 z-30 cursor-pointer"
+    :class="[isPressed ? 'is-pressed' : '', isPressPending || isPressed ? 'is-active' : '']"
+    @click="clickCard"
+    @pointerdown="onPressPointerDown"
+    @pointermove="onPressPointerMove"
+    @pointerup="onPressPointerUp"
+    @pointercancel="onPressPointerCancel"
+    @lostpointercapture="onPressLostCapture"
+    role="button"
+    :aria-label="shelfCardLabel"
+    tabindex="0"
+    @contextmenu="onPressContextMenu"
+    @keydown="onPressKeydown"
+  >
+    <div class="w-full h-full bg-primary relative overflow-hidden" style="border-radius: inherit">
       <covers-playlist-cover ref="cover" :items="items" :width="width" :height="height" />
     </div>
     <div class="categoryPlacard absolute z-30 left-0 right-0 mx-auto -bottom-6 h-6 rounded-md text-center" :style="{ width: Math.min(160, width) + 'px' }">
@@ -13,7 +29,11 @@
 </template>
 
 <script>
+import libraryPressInteraction from '@/mixins/libraryPressInteraction'
+import shelfEntityPeek from '@/mixins/shelfEntityPeek'
+
 export default {
+  mixins: [libraryPressInteraction, shelfEntityPeek],
   props: {
     index: Number,
     width: Number,
@@ -60,7 +80,18 @@ export default {
     setSelectionMode(val) {
       this.isSelectionMode = val
     },
-    clickCard() {
+    peekSource() {
+      if (!this.playlist) return null
+      return { entityType: 'playlist', playlist: this.playlist }
+    },
+    clickCard(e) {
+      if (this.onPressClick()) {
+        if (e) {
+          e.stopPropagation()
+          e.preventDefault()
+        }
+        return
+      }
       if (!this.playlist) return
       var router = this.$router || this.$nuxt.$router
       router.push(`/playlist/${this.playlist.id}`)

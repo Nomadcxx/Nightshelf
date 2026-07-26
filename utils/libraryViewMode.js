@@ -1,7 +1,8 @@
 export function normalizeViewMode(mode) {
-  return mode === 'grid' ? 'grid' : 'rails'
+  return ['rails', 'grid', 'compact'].includes(mode) ? mode : 'rails'
 }
 
 export function toggleViewMode(mode) {
-  return normalizeViewMode(mode) === 'rails' ? 'grid' : 'rails'
+  const modes = ['rails', 'grid', 'compact']
+  return modes[(modes.indexOf(normalizeViewMode(mode)) + 1) % modes.length]
 }

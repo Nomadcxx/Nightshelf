@@ -31,25 +31,11 @@
     </div>
 
     <div v-else class="w-full overflow-x-hidden overflow-y-auto search-content px-4" @click.stop>
-      <div class="flex gap-2 overflow-x-auto pb-3">
-        <button
-          v-for="chip in chips"
-          :key="chip"
-          type="button"
-          class="flex-none px-2.5 py-1 rounded-full border font-mono text-xxs uppercase tracking-wider"
-          :class="chip === activeChip ? 'border-accent text-accent bg-accent/10' : 'border-border text-fg-muted'"
-          @click="activeChip = chip"
-        >
-          {{ chip }}
-        </button>
+      <div class="-mx-4 mb-3">
+        <ui-facet-strip prompt="Type" aria-label="Filter search results by type" :items="searchChipItems" :value="activeChip" @select="activeChip = $event" />
       </div>
 
-      <div v-show="isFetching" class="w-full py-8 flex justify-center">
-        <p class="text-lg text-fg-muted">{{ $strings.MessageFetching }}</p>
-      </div>
-      <div v-if="!isFetching && lastSearch && !totalResults" class="w-full py-8 flex justify-center">
-        <p class="text-lg text-fg-muted">{{ $strings.MessageNoItemsFound }}</p>
-      </div>
+      <ui-state-message v-if="searchViewState !== 'ready'" :state="searchViewState" compact @retry="runLastSearch" />
 
       <template v-if="showGroup('books') && bookResults.length">
         <p class="font-mono text-xxs uppercase tracking-widest text-fg-muted mb-1">{{ $strings.LabelBooks }}</p>
@@ -133,6 +119,7 @@
 
 <script>
 import { SEARCH_CHIPS, visibleGroups } from '@/utils/searchChips'
+import { resolveViewState } from '@/utils/appStates'
 
 export default {
   data() {
@@ -141,6 +128,7 @@ export default {
       searchTimeout: null,
       lastSearch: null,
       isFetching: false,
+      searchError: null,
       activeChip: 'all',
       chips: SEARCH_CHIPS,
       suggestionShelves: [],
@@ -160,6 +148,21 @@ export default {
     },
     totalResults() {
       return this.bookResults.length + this.seriesResults.length + this.authorResults.length + this.podcastResults.length + this.narratorResults.length + this.tagResults.length + this.episodeResults.length
+    },
+    searchChipItems() {
+      return this.chips.map((chip) => ({ value: chip, label: chip }))
+    },
+    searchViewState() {
+      // With no query typed the suggestion shelves own this space, so the
+      // state panel must stay out of the way.
+      if (!this.lastSearch) return 'ready'
+      return resolveViewState({
+        isLoading: this.isFetching,
+        error: this.searchError,
+        isOffline: !this.$store.state.networkConnected,
+        itemCount: this.totalResults,
+        hasQuery: true
+      })
     }
   },
   watch: {
@@ -210,6 +213,12 @@ export default {
         this.suggestionsLoading = false
       }
     },
+    runLastSearch() {
+      this.searchError = null
+      const value = this.lastSearch
+      this.lastSearch = null
+      this.runSearch(value)
+    },
     async runSearch(value) {
       if (this.isFetching && this.lastSearch === value) return
 
@@ -239,8 +248,12 @@ export default {
         return
       }
       this.isFetching = true
+      this.searchError = null
       const results = await this.$nativeHttp.get(`/api/libraries/${this.currentLibraryId}/search?q=${value}&limit=5`).catch((error) => {
         console.error('Search error', error)
+        // A failed search must say so; silently showing "no results" tells the
+        // user their library lacks something it may well contain.
+        this.searchError = error || new Error('Search failed')
         return null
       })
       if (value !== this.lastSearch) return

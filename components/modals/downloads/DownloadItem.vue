@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center justify-center">
     <img v-if="download.cover" :src="download.cover" class="w-10 h-16 object-contain" />
-    <img v-else src="/book_placeholder.jpg" class="w-10 h-16 object-contain" />
+    <img v-else src="/book_placeholder_nightshelf.svg" class="w-10 h-16 object-contain" />
     <div class="pl-2 w-2/3">
       <p class="font-normal truncate text-sm">{{ download.audiobook.book.title }}</p>
       <p class="font-normal truncate text-xs text-gray-400">{{ download.audiobook.book.author }}</p>

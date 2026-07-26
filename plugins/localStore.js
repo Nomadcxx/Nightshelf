@@ -1,4 +1,5 @@
 import { Preferences } from '@capacitor/preferences'
+import { normalizeMotionPreference, MOTION_PREFERENCE_DEFAULT } from '@/utils/motionPreference'
 
 class LocalStorage {
   constructor(vuexStore) {
@@ -80,7 +81,8 @@ class LocalStorage {
 
   async setLibraryViewMode(mode) {
     try {
-      await Preferences.set({ key: 'libraryViewMode', value: mode === 'grid' ? 'grid' : 'rails' })
+      const normalizedMode = ['rails', 'grid', 'compact'].includes(mode) ? mode : 'rails'
+      await Preferences.set({ key: 'libraryViewMode', value: normalizedMode })
     } catch (error) {
       console.error('[LocalStorage] Failed to set library view mode', error)
     }
@@ -89,10 +91,46 @@ class LocalStorage {
   async getLibraryViewMode() {
     try {
       var obj = (await Preferences.get({ key: 'libraryViewMode' })) || {}
-      return obj.value === 'grid' ? 'grid' : 'rails'
+      return ['rails', 'grid', 'compact'].includes(obj.value) ? obj.value : 'rails'
     } catch (error) {
       console.error('[LocalStorage] Failed to get library view mode', error)
       return 'rails'
+    }
+  }
+
+  async setMotionPreference(preference) {
+    try {
+      await Preferences.set({ key: 'motionPreference', value: normalizeMotionPreference(preference) })
+    } catch (error) {
+      console.error('[LocalStorage] Failed to set motion preference', error)
+    }
+  }
+
+  async getMotionPreference() {
+    try {
+      var obj = (await Preferences.get({ key: 'motionPreference' })) || {}
+      return normalizeMotionPreference(obj.value)
+    } catch (error) {
+      console.error('[LocalStorage] Failed to get motion preference', error)
+      return MOTION_PREFERENCE_DEFAULT
+    }
+  }
+
+  async setBookshelfNavCollapsed(collapsed) {
+    try {
+      await Preferences.set({ key: 'bookshelfNavCollapsed', value: collapsed ? '1' : '0' })
+    } catch (error) {
+      console.error('[LocalStorage] Failed to set bookshelf navigation state', error)
+    }
+  }
+
+  async getBookshelfNavCollapsed() {
+    try {
+      const obj = (await Preferences.get({ key: 'bookshelfNavCollapsed' })) || {}
+      return obj.value === '1'
+    } catch (error) {
+      console.error('[LocalStorage] Failed to get bookshelf navigation state', error)
+      return false
     }
   }
 

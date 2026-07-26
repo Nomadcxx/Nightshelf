@@ -2,9 +2,9 @@
   <div ref="wrapper" class="modal modal-bg w-full h-full max-h-screen fixed top-0 left-0 bg-primary bg-opacity-75 flex items-center justify-center z-50 opacity-0">
     <div class="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-black to-transparent opacity-90 pointer-events-none" />
 
-    <div class="absolute z-40 top-11 right-4 h-10 w-10 flex items-center justify-center cursor-pointer text-white hover:text-gray-300" @click="show = false">
-      <span class="material-symbols text-4xl">close</span>
-    </div>
+    <button type="button" :aria-label="$strings.ButtonClose" class="absolute z-40 top-10 right-3 h-12 w-12 flex items-center justify-center text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click="show = false">
+      <ui-ph-icon name="close" :size="28" />
+    </button>
     <slot name="outer" />
     <div ref="content" style="min-height: 200px" class="relative text-fg max-h-screen" :style="{ height: modalHeight, width: modalWidth, maxWidth: maxWidth }" v-click-outside="clickBg">
       <slot />

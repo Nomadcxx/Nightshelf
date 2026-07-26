@@ -11,6 +11,9 @@
     <modals-rssfeeds-rss-feed-modal />
     <app-side-drawer :key="currentLang" />
     <readers-reader />
+    <!-- Mounted once here, not per card: a virtualised shelf recycles the card
+         that opened Peek while the overlay is still on screen. -->
+    <modals-library-item-peek />
   </div>
 </template>
 
@@ -26,10 +29,17 @@ export default {
       disconnectTime: 0,
       socketDisconnectedTime: 0,
       timeLostFocus: 0,
-      currentLang: null
+      currentLang: null,
+      // Held so the OS listener can be detached on teardown. Not reactive.
+      motionMediaQuery: null
     }
   },
   watch: {
+    // Settings can change the preference at runtime; the root attribute has to
+    // follow without a reload.
+    resolvedMotionMode() {
+      this.applyMotionMode()
+    },
     networkConnected: {
       handler(newVal, oldVal) {
         if (!this.hasMounted) {
@@ -81,6 +91,9 @@ export default {
     }
   },
   computed: {
+    resolvedMotionMode() {
+      return this.$store.getters['globals/motionMode']
+    },
     isPlayerOpen() {
       return this.$store.getters['getIsPlayerOpen']
     },
@@ -112,6 +125,45 @@ export default {
     }
   },
   methods: {
+    /**
+     * Resolve the motion mode from the persisted app preference combined with
+     * the OS reduced-motion request, publish it as data-motion on <html>, and
+     * keep following the OS while the app runs.
+     */
+    async initMotionPreference() {
+      const stored = await this.$localStore.getMotionPreference()
+      this.$store.commit('globals/setMotionPreference', stored)
+
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        this.motionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+        this.applyOsMotionPreference(this.motionMediaQuery)
+        // Safari/older WebViews only expose the deprecated addListener.
+        if (this.motionMediaQuery.addEventListener) {
+          this.motionMediaQuery.addEventListener('change', this.applyOsMotionPreference)
+        } else if (this.motionMediaQuery.addListener) {
+          this.motionMediaQuery.addListener(this.applyOsMotionPreference)
+        }
+      }
+
+      this.applyMotionMode()
+    },
+    applyOsMotionPreference(event) {
+      this.$store.commit('globals/setOsPrefersReducedMotion', !!(event && event.matches))
+      this.applyMotionMode()
+    },
+    applyMotionMode() {
+      if (typeof document === 'undefined') return
+      document.documentElement.setAttribute('data-motion', this.$store.getters['globals/motionMode'])
+    },
+    teardownMotionPreference() {
+      if (!this.motionMediaQuery) return
+      if (this.motionMediaQuery.removeEventListener) {
+        this.motionMediaQuery.removeEventListener('change', this.applyOsMotionPreference)
+      } else if (this.motionMediaQuery.removeListener) {
+        this.motionMediaQuery.removeListener(this.applyOsMotionPreference)
+      }
+      this.motionMediaQuery = null
+    },
     initialStream(stream) {
       if (this.$refs.streamContainer?.audioPlayerReady) {
         this.$refs.streamContainer.streamOpen(stream)
@@ -350,6 +402,8 @@ export default {
     this.$eventBus.$on('change-lang', this.changeLanguage)
     document.addEventListener('visibilitychange', this.visibilityChanged)
 
+    await this.initMotionPreference()
+
     this.$socket.on('user_updated', this.userUpdated)
     this.$socket.on('user_media_progress_updated', this.userMediaProgressUpdated)
 
@@ -387,6 +441,7 @@ export default {
     document.removeEventListener('visibilitychange', this.visibilityChanged)
     this.$socket.off('user_updated', this.userUpdated)
     this.$socket.off('user_media_progress_updated', this.userMediaProgressUpdated)
+    this.teardownMotionPreference()
   }
 }
 </script>

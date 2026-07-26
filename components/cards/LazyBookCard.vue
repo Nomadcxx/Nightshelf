@@ -4,11 +4,20 @@
     tabindex="0"
     :id="`book-card-${index}`"
     :style="{ minWidth: width + 'px', maxWidth: width + 'px', height: height + 'px' }"
-    class="rounded-sm z-10 bg-primary cursor-pointer box-shadow-book"
-    :class="{ 'rail-item': isAltViewEnabled }"
+    class="ns-cover-surface z-10 bg-primary cursor-pointer overflow-visible"
+    :class="[isAltViewEnabled ? 'rail-item' : '', isPressed ? 'is-pressed' : '', isPressPending || isPressed ? 'is-active' : '']"
     @click="clickCard"
+    @pointerdown="onPressPointerDown"
+    @pointermove="onPressPointerMove"
+    @pointerup="onPressPointerUp"
+    @pointercancel="onPressPointerCancel"
+    @lostpointercapture="onPressLostCapture"
+    role="button"
+    :aria-label="shelfCardLabel"
+    @contextmenu="onPressContextMenu"
+    @keydown="onPressKeydown"
   >    <!-- When cover image does not fill -->
-    <div v-show="showCoverBg" class="absolute top-0 left-0 w-full h-full overflow-hidden rounded-sm bg-primary">
+    <div v-show="showCoverBg" class="absolute top-0 left-0 w-full h-full overflow-hidden rounded-xl bg-primary">
       <div class="absolute cover-bg" ref="coverBg" />
     </div>
 
@@ -31,12 +40,14 @@
       <p class="text-white" :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }">{{ booksInSeries }}</p>
     </div>
 
-    <div class="w-full h-full absolute top-0 left-0 rounded overflow-hidden z-10">
+    <!-- No border here: the radius and the ambient shadow separate the cover
+         from the shelf. A stroke on top of them reads as a frame around a frame. -->
+    <div class="w-full h-full absolute top-0 left-0 overflow-hidden z-10" style="border-radius: inherit">
       <div v-show="libraryItem && !imageReady" class="absolute top-0 left-0 w-full h-full flex items-center justify-center" :style="{ padding: sizeMultiplier * 0.5 + 'rem' }">
         <p :style="{ fontSize: sizeMultiplier * 0.8 + 'rem' }" class="text-fg-muted text-center">{{ title }}</p>
       </div>
 
-      <img v-show="libraryItem" ref="cover" :src="bookCoverSrc" class="w-full h-full transition-opacity duration-300" :class="showCoverBg ? 'object-contain' : 'object-fill'" @load="imageLoaded" :style="{ opacity: imageReady ? 1 : 0 }" />
+      <img v-show="libraryItem" ref="cover" :src="bookCoverSrc" class="w-full h-full transition-opacity duration-300" :class="showCoverBg ? 'object-contain' : 'object-fill'" @load="imageLoaded" @error="imageError" :style="{ opacity: imageReady ? 1 : 0 }" />
 
       <!-- Placeholder Cover Title & Author -->
       <div v-if="!hasCover" class="absolute top-0 left-0 right-0 bottom-0 w-full h-full flex items-center justify-center" :style="{ padding: placeholderCoverPadding + 'rem' }">
@@ -130,8 +141,11 @@
 
 <script>
 import { Capacitor } from '@capacitor/core'
+import libraryPressInteraction from '@/mixins/libraryPressInteraction'
+import shelfEntityPeek from '@/mixins/shelfEntityPeek'
 
 export default {
+  mixins: [libraryPressInteraction, shelfEntityPeek],
   props: {
     index: Number,
     width: {
@@ -194,7 +208,7 @@ export default {
       return this.mediaType === 'podcast'
     },
     placeholderUrl() {
-      return '/book_placeholder.jpg'
+      return '/book_placeholder_nightshelf.svg'
     },
     bookCoverSrc() {
       if (this.isLocal) {
@@ -510,7 +524,44 @@ export default {
 
       eventBus.$emit('play-item', { libraryItemId: this.libraryItemId, episodeId: this.recentEpisode.id })
     },
+    peekSource() {
+      // A collapsed series card stands for the series, not for the one book the
+      // server happened to return as its representative.
+      if (this.collapsedSeries) {
+        return {
+          entityType: 'series',
+          series: { id: this.collapsedSeries.id, name: this.collapsedSeries.name || this.displayTitle, books: this.libraryItemIdsInSeries.map((id) => ({ id })) }
+        }
+      }
+      if (this.recentEpisode) {
+        return {
+          entityType: 'episode',
+          libraryItem: this.libraryItem,
+          episode: this.recentEpisode,
+          mediaProgress: this.userProgress
+        }
+      }
+      return {
+        libraryItem: this.libraryItem,
+        mediaProgress: this.userProgress,
+        seriesId: this.series?.id || null
+      }
+    },
+    peekContext() {
+      return { canSelect: true }
+    },
+    peekCoverSrc() {
+      return this.bookCoverSrc
+    },
     async clickCard(e) {
+      // Swallow the synthetic click the platform fires after a committed hold,
+      // or opening Peek would immediately navigate away behind it.
+      if (this.onPressClick()) {
+        e.stopPropagation()
+        e.preventDefault()
+        return
+      }
+      if (this.$hapticsTap) this.$hapticsTap()
       if (this.isSelectionMode) {
         e.stopPropagation()
         e.preventDefault()
@@ -522,9 +573,9 @@ export default {
           else if (this.collapsedSeries) router.push(`/bookshelf/series/${this.collapsedSeries.id}`)
           else if (this.localLibraryItem) {
             // Pass local library item id to server page to allow falling back to offline page
-            router.push(`/item/${this.libraryItemId}?localLibraryItemId=${this.localLibraryItemId}`)
+            this.navigateWithCoverContinuity(`/item/${this.libraryItemId}?localLibraryItemId=${this.localLibraryItemId}`, this.libraryItemId)
           } else {
-            router.push(`/item/${this.libraryItemId}`)
+            this.navigateWithCoverContinuity(`/item/${this.libraryItemId}`, this.libraryItemId)
           }
         }
       }
@@ -588,6 +639,10 @@ export default {
           this.showCoverBg = false
         }
       }
+    },
+    imageError() {
+      if (!this.$refs.cover || this.$refs.cover.src.endsWith(this.placeholderUrl)) return
+      this.$refs.cover.src = this.placeholderUrl
     }
   },
   mounted() {
@@ -603,12 +658,16 @@ export default {
 </script>
 
 <style scoped>
-.rail-item {
-  border: 1px solid rgb(var(--color-fg) / 0.28);
-  border-radius: 2px;
-  box-shadow: none;
-  overflow: hidden;
-}
+/*
+ * Rail cards previously carried their own border and :active scale. Both now
+ * come from .ns-cover-surface, which is driven by the press state machine —
+ * :active fires on any touch, including the start of a scroll.
+ *
+ * Deliberately no `overflow: hidden`. This class is applied by the very same
+ * flag that turns titles on, and the title block hangs below the cover — so
+ * clipping here silently hid every title in alt view. The artwork is already
+ * clipped by the inner layer that owns it.
+ */
 
 .rail-progress {
   pointer-events: none;

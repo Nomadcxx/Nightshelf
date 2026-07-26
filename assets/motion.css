@@ -1,0 +1,245 @@
+/*
+ * NightShelf motion and Nightglass depth tokens.
+ *
+ * Rules this file exists to enforce:
+ *  - animate transform and opacity only;
+ *  - never animate width/height/padding/margin/top/left/border-width;
+ *  - never animate blur, filter, or backdrop-filter — those values stay static
+ *    and the surface's opacity is what moves;
+ *  - no `transition: all`.
+ *
+ * Motion answers one of four questions: did the app receive my input, what
+ * object am I acting on, where did this come from or go, is it still working.
+ * Anything that answers none of them does not belong here.
+ */
+
+:root {
+  /* --- durations -------------------------------------------------------- */
+  --motion-instant: 90ms; /* press acknowledgement */
+  --motion-fast: 140ms; /* small state restoration */
+  --motion-ui: 220ms; /* panels, fades, local state changes */
+  --motion-sheet: 300ms; /* Peek panel entrance/exit */
+  --motion-spatial: 420ms; /* book lift, route continuity */
+  --hold-commit: 420ms; /* long-press threshold; mirrors libraryPressGesture.js */
+
+  /* --- easing ----------------------------------------------------------- */
+  --ease-night-out: cubic-bezier(0.16, 1, 0.3, 1); /* enter / lift */
+  --ease-night-in: cubic-bezier(0.7, 0, 0.84, 0); /* exit */
+  --ease-night-move: cubic-bezier(0.65, 0, 0.35, 1); /* reposition */
+
+  /* --- press geometry --------------------------------------------------- */
+  --press-scale: 0.985;
+  --lift-scale: 1.035;
+  --lift-offset-y: -6px;
+  --hover-offset-y: -2px;
+
+  /* --- radii ------------------------------------------------------------ */
+  --radius-cover: 14px; /* library covers */
+  --radius-cover-lg: 22px; /* large detail covers */
+  --radius-surface: 18px; /* floating glass panels */
+  --radius-rail: 18px; /* floating glass rail cards */
+
+  /* --- shelf density ------------------------------------------------------ */
+  /* One place to tune how tightly the shelf packs. The library's items-per-row
+     is derived from --shelf-gap, so changing it here changes layout maths too;
+     it used to be a bare 24 hard-coded inside that calculation. */
+  --shelf-gap: 7px;
+  --shelf-edge: 14px; /* page gutter either side of a rail */
+
+  /* --- Nightglass depth ------------------------------------------------- */
+  /* Canvas is opaque and never blurred. Shelf glass is one low-blur plane per
+     visible row. Floating glass is player, drawer, Peek and modals. Book
+     artwork itself never receives glass. Tune on device, not on desktop. */
+  --glass-shelf-blur: 14px;
+  --glass-shelf-saturate: 125%;
+  --glass-shelf-tint: rgba(18, 20, 38, 0.6);
+  --glass-float-blur: 24px;
+  --glass-float-saturate: 125%;
+  --glass-float-tint: rgba(14, 16, 32, 0.73);
+
+  /* Tight ambient elevation for book objects — not a coloured glow. */
+  --cover-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), 0 8px 20px rgba(0, 0, 0, 0.35);
+  --cover-shadow-lifted: 0 10px 28px rgba(0, 0, 0, 0.55), 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* --- depth roles --------------------------------------------------------- */
+
+.ns-glass-shelf {
+  background-color: var(--glass-shelf-tint);
+  backdrop-filter: blur(var(--glass-shelf-blur)) saturate(var(--glass-shelf-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-shelf-blur)) saturate(var(--glass-shelf-saturate));
+}
+
+.ns-glass-float {
+  background-color: var(--glass-float-tint);
+  backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-float-blur)) saturate(var(--glass-float-saturate));
+  border-radius: var(--radius-surface);
+}
+
+/* --- the book object ----------------------------------------------------- */
+
+/*
+ * Deliberately does NOT set overflow. Cards hang their title and author block
+ * below the cover, and this stylesheet loads after Tailwind — so an `overflow:
+ * hidden` here silently beat the card's own `overflow-visible` and clipped the
+ * titles away, leaving reserved space with nothing in it. Clipping belongs to
+ * whichever element actually wraps artwork (.ns-cover-art, or the card's own
+ * inner layer), not to the shared surface.
+ */
+.ns-cover-surface {
+  border-radius: var(--radius-cover);
+  box-shadow: var(--cover-shadow);
+  transform: translateZ(0);
+  transition: transform var(--motion-instant) var(--ease-night-out);
+  -webkit-touch-callout: none;
+}
+
+.ns-cover-surface.is-pressed {
+  transform: scale(var(--press-scale));
+}
+
+/* Compositing hints are granted only for the duration of a gesture. */
+.ns-cover-surface.is-active {
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* Excluding the pressed state matters: this rule is declared after
+     `.is-pressed` and carries equal specificity, so without :not() a hovering
+     pointer would nudge the card instead of pressing it. */
+  .ns-cover-surface:hover:not(.is-pressed) {
+    transform: translateY(var(--hover-offset-y));
+  }
+}
+
+.ns-cover-surface:focus-visible {
+  outline: 2px solid #a48cf2;
+  outline-offset: 2px;
+  /* Focus rings appear immediately — never animated. */
+  transition: none;
+}
+
+/* --- lift and overlay ---------------------------------------------------- */
+
+.ns-lift-clone {
+  position: fixed;
+  will-change: transform, opacity;
+  transition: transform var(--motion-spatial) var(--ease-night-out), opacity var(--motion-ui) var(--ease-night-out);
+}
+
+.ns-scrim {
+  opacity: 0;
+  transition: opacity var(--motion-ui) var(--ease-night-out);
+}
+.ns-scrim.is-open {
+  opacity: 1;
+}
+
+.ns-sheet {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: transform var(--motion-sheet) var(--ease-night-out), opacity var(--motion-sheet) var(--ease-night-out);
+}
+.ns-sheet.is-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+.ns-sheet.is-closing {
+  transition-timing-function: var(--ease-night-in);
+}
+
+/* --- cover image decode fade -------------------------------------------- */
+/* Applied once when an image decodes. Virtualised reuse of an already-loaded
+   URL must not re-apply this, or scrolling turns into constant shimmer. */
+
+.ns-image-fade {
+  opacity: 0;
+  transition: opacity var(--motion-ui) var(--ease-night-out);
+}
+.ns-image-fade.is-decoded {
+  opacity: 1;
+}
+
+/* --- view container crossfade ------------------------------------------- */
+/* One crossfade for the whole container on mode change — never a transition
+   group over hundreds of cards. */
+
+.ns-view-fade-enter-active,
+.ns-view-fade-leave-active {
+  transition: opacity var(--motion-ui) var(--ease-night-move);
+}
+.ns-view-fade-enter,
+.ns-view-fade-leave-to {
+  opacity: 0;
+}
+
+/* --- shared-cover route continuity --------------------------------------- */
+/*
+ * The cover morphs between shelf and detail; everything else crossfades. The
+ * JS path already refuses to name anything in reduced mode, but the rules below
+ * are a second guard in case a name is left over from an interrupted
+ * navigation — a stuck name must never animate.
+ */
+
+::view-transition-group(*) {
+  animation-duration: var(--motion-spatial);
+  animation-timing-function: var(--ease-night-out);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-ui);
+  animation-timing-function: var(--ease-night-move);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}
+
+/* --- reduced motion ------------------------------------------------------ */
+/*
+ * Two independent signals, and either one reduces:
+ *   [data-motion="reduced"] — resolved app preference (see utils/motionPreference.js)
+ *   prefers-reduced-motion  — the operating system
+ * Reduced mode removes spatial transformation. It never removes functionality:
+ * long press, Peek and every action remain available.
+ */
+
+[data-motion='reduced'] .ns-cover-surface,
+[data-motion='reduced'] .ns-cover-surface.is-pressed,
+[data-motion='reduced'] .ns-lift-clone,
+[data-motion='reduced'] .ns-sheet {
+  transform: none;
+}
+
+[data-motion='reduced'] .ns-cover-surface,
+[data-motion='reduced'] .ns-lift-clone,
+[data-motion='reduced'] .ns-scrim,
+[data-motion='reduced'] .ns-sheet,
+[data-motion='reduced'] .ns-image-fade {
+  transition-duration: 150ms;
+  transition-property: opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ns-cover-surface,
+  .ns-cover-surface.is-pressed,
+  .ns-lift-clone,
+  .ns-sheet {
+    transform: none;
+  }
+
+  .ns-cover-surface,
+  .ns-lift-clone,
+  .ns-scrim,
+  .ns-sheet,
+  .ns-image-fade {
+    transition-duration: 150ms;
+    transition-property: opacity;
+  }
+}

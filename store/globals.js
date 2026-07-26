@@ -1,8 +1,14 @@
+import { normalizeMotionPreference, resolveMotionMode } from '@/utils/motionPreference'
+
 export const state = () => ({
   isModalOpen: false,
   itemDownloads: [],
   bookshelfListView: false,
   libraryViewMode: 'rails',
+  // App preference: SYSTEM | FULL | REDUCED. Persisted via localStore.
+  motionPreference: 'SYSTEM',
+  // Latest reading of the OS `prefers-reduced-motion` media query.
+  osPrefersReducedMotion: false,
   series: null,
   localMediaProgress: [],
   lastSearch: null,
@@ -15,10 +21,18 @@ export const state = () => ({
   localFolderSelectData: null,
   hapticFeedback: 'LIGHT',
   showRSSFeedOpenCloseModal: false,
-  rssFeedEntity: null
+  rssFeedEntity: null,
+  // Long-press Peek. Held globally rather than on the card because a virtualised
+  // shelf can recycle the card that opened it while the overlay is still up.
+  peekSession: null
 })
 
 export const getters = {
+  // Single source of truth for whether spatial motion runs: 'full' or 'reduced'.
+  // Components and the root data-motion attribute both read this, so the app
+  // preference and the OS request can never disagree in different places.
+  motionMode: (state) => resolveMotionMode(state.motionPreference, state.osPrefersReducedMotion),
+  prefersReducedMotion: (state) => resolveMotionMode(state.motionPreference, state.osPrefersReducedMotion) === 'reduced',
   getDownloadItem:
     (state) =>
     (libraryItemId, episodeId = null) => {
@@ -60,7 +74,7 @@ export const getters = {
   getLibraryItemCoverSrcById:
     (state, getters, rootState, rootGetters) =>
     (libraryItemId, placeholder = null) => {
-      if (!placeholder) placeholder = `${rootState.routerBasePath}/book_placeholder.jpg`
+      if (!placeholder) placeholder = `${rootState.routerBasePath}/book_placeholder_nightshelf.svg`
       if (!libraryItemId) return placeholder
       const serverAddress = rootGetters['user/getServerAddress']
       if (!serverAddress) return placeholder
@@ -99,6 +113,12 @@ export const actions = {
 export const mutations = {
   setIsModalOpen(state, val) {
     state.isModalOpen = val
+  },
+  setPeekSession(state, session) {
+    state.peekSession = session || null
+  },
+  clearPeekSession(state) {
+    state.peekSession = null
   },
   addUpdateItemDownload(state, downloadItem) {
     var index = state.itemDownloads.findIndex((i) => i.id == downloadItem.id)
@@ -140,7 +160,13 @@ export const mutations = {
     state.bookshelfListView = val
   },
   setLibraryViewMode(state, val) {
-    state.libraryViewMode = val === 'grid' ? 'grid' : 'rails'
+    state.libraryViewMode = ['rails', 'grid', 'compact'].includes(val) ? val : 'rails'
+  },
+  setMotionPreference(state, val) {
+    state.motionPreference = normalizeMotionPreference(val)
+  },
+  setOsPrefersReducedMotion(state, val) {
+    state.osPrefersReducedMotion = !!val
   },
   setSeries(state, val) {
     state.series = val

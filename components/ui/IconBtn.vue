@@ -1,5 +1,5 @@
 <template>
-  <button class="icon-btn rounded-md flex items-center justify-center h-9 w-9 relative" :disabled="disabled || loading" :class="className" :type="type" @mousedown.prevent @click="clickBtn">
+  <button class="icon-btn rounded-md flex items-center justify-center relative" :disabled="disabled || loading" :class="className" :type="type" :aria-label="ariaLabel || null" :title="ariaLabel || null" @mousedown.prevent @click="clickBtn">
     <div v-if="loading" class="text-fg absolute top-0 left-0 w-full h-full flex items-center justify-center text-opacity-100">
       <svg class="animate-spin" style="width: 24px; height: 24px" viewBox="0 0 24 24">
         <path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
@@ -31,7 +31,9 @@ export default {
     },
     outlined: Boolean,
     borderless: Boolean,
-    loading: Boolean
+    loading: Boolean,
+    large: Boolean,
+    ariaLabel: String
   },
   data() {
     return {}
@@ -41,7 +43,7 @@ export default {
       return Boolean(iconPaths[this.icon])
     },
     className() {
-      var classes = []
+      var classes = [this.large ? 'h-12 w-12' : 'h-9 w-9']
       if (!this.borderless) {
         classes.push(`bg-${this.bgColor} border border-gray-600`)
       }
@@ -80,7 +82,7 @@ button.icon-btn::before {
   width: 100%;
   height: 100%;
   background-color: rgba(255, 255, 255, 0);
-  transition: all 0.1s ease-in-out;
+  transition: background-color 0.1s ease-in-out;
 }
 button.icon-btn:hover:not(:disabled)::before {
   background-color: rgba(255, 255, 255, 0.1);

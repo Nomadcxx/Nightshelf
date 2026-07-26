@@ -1,8 +1,8 @@
 <template>
-  <div class="inline-flex">
-    <input v-model="input" type="range" :min="min" :max="max" :step="step" :style="{ width: inputWidth }" />
+  <div class="inline-flex min-h-12 items-center">
+    <input v-model="input" type="range" :min="min" :max="max" :step="step" :style="{ width: inputWidth, '--range-progress': `${progressPercent}%` }" />
 
-    <p class="text-xs ml-2">{{ input }}%</p>
+    <p class="min-w-12 ml-3 font-mono text-xs text-fg-muted">{{ input }}%</p>
   </div>
 </template>
 
@@ -29,6 +29,11 @@ export default {
       set(val) {
         this.$emit('input', val)
       }
+    },
+    progressPercent() {
+      const range = Number(this.max) - Number(this.min)
+      if (!range) return 0
+      return Math.min(100, Math.max(0, ((Number(this.input) - Number(this.min)) / range) * 100))
     }
   },
   methods: {},
@@ -42,6 +47,7 @@ input[type='range'] {
   appearance: none;
   background: transparent;
   cursor: pointer;
+  min-height: 48px;
 }
 input[type='range']:focus {
   outline: none;
@@ -49,18 +55,21 @@ input[type='range']:focus {
 
 /* chromium */
 input[type='range']::-webkit-slider-runnable-track {
-  background-color: rgb(var(--color-track) / 0.5);
-  border-radius: 9999px;
-  height: 0.75rem;
+  background: linear-gradient(90deg, #37f499 0%, #04d1f9 var(--range-progress), rgb(var(--color-track) / 0.55) var(--range-progress));
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 3px;
+  height: 0.4rem;
 }
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  margin-top: -0.25rem;
-  border-radius: 9999px;
-  background-color: rgb(var(--color-track-cursor));
+  margin-top: -0.42rem;
+  border: 1px solid rgb(var(--color-fg) / 0.8);
+  border-radius: 5px;
+  background: linear-gradient(135deg, #04d1f9, #a48cf2);
+  box-shadow: 0 0 10px rgb(4 209 249 / 0.5);
   height: 1.25rem;
-  width: 1.25rem;
+  width: 1rem;
 }
 input[type='range']:focus::-webkit-slider-thumb {
   border: 1px solid rgb(var(--color-track));
@@ -70,15 +79,16 @@ input[type='range']:focus::-webkit-slider-thumb {
 
 /* firefox */
 input[type='range']::-moz-range-track {
-  background-color: rgb(var(--color-track) / 0.5);
-  border-radius: 9999px;
-  height: 0.75rem;
+  background: rgb(var(--color-track) / 0.55);
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 3px;
+  height: 0.4rem;
 }
 input[type='range']::-moz-range-thumb {
-  border: none;
-  border-radius: 9999px;
-  margin-top: -0.25rem;
-  background-color: rgb(var(--color-track-cursor));
+  border: 1px solid rgb(var(--color-fg) / 0.8);
+  border-radius: 5px;
+  background: linear-gradient(135deg, #04d1f9, #a48cf2);
+  box-shadow: 0 0 10px rgb(4 209 249 / 0.5);
   height: 1.25rem;
   width: 1.25rem;
 }
