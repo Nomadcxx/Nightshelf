@@ -197,3 +197,15 @@ test('a throwing cleanup cannot break the caller', async () => {
     }
   })
 })
+
+test('a settled transition leaves no timer holding the event loop open', async () => {
+  // Regression: the timeout was previously unref'd so it would not keep a
+  // process alive, which let the loop drain while this promise was still
+  // pending. CI caught it as "Promise resolution is still pending but the
+  // event loop has already resolved". The timer is now cleared on settle.
+  const before = process.getActiveResourcesInfo ? process.getActiveResourcesInfo().filter((r) => r === 'Timeout').length : 0
+  const doc = { startViewTransition: (cb) => (cb(), { finished: Promise.resolve(), ready: Promise.resolve() }) }
+  await runViewTransition({ doc, apply: () => {}, cleanup: () => {}, timeoutMs: 60_000 })
+  const after = process.getActiveResourcesInfo ? process.getActiveResourcesInfo().filter((r) => r === 'Timeout').length : 0
+  assert.equal(after, before, 'the safety-net timer should be cleared once the transition settles')
+})

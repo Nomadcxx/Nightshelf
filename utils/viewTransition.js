@@ -129,11 +129,22 @@ export function runViewTransition({ doc, apply, cleanup, timeoutMs = VIEW_TRANSI
   }
 
   const settled = Promise.resolve(transition && transition.finished).catch(() => {})
-  const timer = new Promise((resolve) => {
-    const handle = setTimeout(resolve, timeoutMs)
-    // Don't hold a Node process (or test run) open waiting on the safety net.
-    if (handle && typeof handle.unref === 'function') handle.unref()
+
+  // The timer is cleared the moment the transition settles, rather than
+  // unref'd. Unref'ing let the event loop drain while this promise was still
+  // pending, so a transition that never settles resolved nothing at all.
+  let handle = null
+  const timed = new Promise((resolve) => {
+    handle = setTimeout(resolve, timeoutMs)
   })
 
-  return Promise.race([settled, timer]).then(runCleanup, runCleanup)
+  const finish = () => {
+    if (handle !== null) {
+      clearTimeout(handle)
+      handle = null
+    }
+    runCleanup()
+  }
+
+  return Promise.race([settled, timed]).then(finish, finish)
 }
