@@ -1,0 +1,58 @@
+name: Build
+
+# Adapted from upstream's build-apk workflow. The web layer is generated first,
+# Capacitor copies it into the Android project, then Gradle builds. Java 21 is a
+# hard requirement: Capacitor compiles against release 21 and JDK 17 fails.
+on:
+  push:
+    branches: [master]
+    paths-ignore: ['ios/**', 'docs/**', 'README.md']
+  pull_request:
+    paths-ignore: ['ios/**', 'docs/**', 'README.md']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Unit tests
+        run: node --test tests/*.test.js
+
+  apk:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - run: npm ci
+      - name: Generate web layer
+        run: ./node_modules/.bin/nuxt generate
+      - name: Sync to Android
+        run: npx cap sync android
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon
+        working-directory: android
+
+      - name: Name the artifact after the commit
+        working-directory: android/app/build/outputs/apk/debug
+        run: mv -v app-debug.apk "nightshelf-$(date +%Y%m%d)-$(git rev-parse --short HEAD)-debug.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nightshelf-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30
