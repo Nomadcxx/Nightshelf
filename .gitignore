@@ -104,3 +104,6 @@ skills-lock.json
 
 # Internal working notes: specs, plans, handovers, audits
 docs/superpowers/
+
+# Upstream CI, issue and PR templates: not applicable to this fork
+.github/
