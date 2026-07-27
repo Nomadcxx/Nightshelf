@@ -61,6 +61,17 @@ android {
         storePassword System.getenv('NIGHTSHELF_STORE_PASSWORD')
         keyAlias System.getenv('NIGHTSHELF_KEY_ALIAS')
         keyPassword System.getenv('NIGHTSHELF_KEY_PASSWORD')
+
+        // v1 is JAR signing, only needed below API 24, and minSdk is 24.
+        // v3 is the one that matters long term: it is what carries a rotation
+        // proof, so without it the signing key can never be replaced without
+        // every installed user uninstalling first. AGP leaves it off by default.
+        // v4 only produces a side-car .idsig for incremental adb installs and
+        // does nothing for a downloadable APK.
+        enableV1Signing false
+        enableV2Signing true
+        enableV3Signing true
+        enableV4Signing false
       }
     }
   }
