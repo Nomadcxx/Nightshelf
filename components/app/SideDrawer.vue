@@ -103,6 +103,9 @@ export default {
     username() {
       return this.user?.username || ''
     },
+    libraries() {
+      return this.$store.state.libraries.libraries || []
+    },
     navItems() {
       var items = [
         {
@@ -120,6 +123,17 @@ export default {
           }
         ].concat(items)
       } else {
+        // The libraries modal has always been rendered and fully wired, but
+        // nothing ever set `libraries.showModal`, so on a server with more than
+        // one library there was no way to change library short of reconnecting.
+        // Hidden at one library, where it would just be a dead entry.
+        if (this.libraries.length > 1) {
+          items.push({
+            icon: 'collections_bookmark',
+            text: this.$strings.HeaderLibraries,
+            action: 'switchLibrary'
+          })
+        }
         items.push({
           icon: 'person',
           text: this.$strings.HeaderAccount,
@@ -203,6 +217,9 @@ export default {
           return
         }
         AbsAudioPlayer.requestSession()
+      } else if (action === 'switchLibrary') {
+        this.show = false
+        this.$store.commit('libraries/setShowModal', true)
       } else if (action === 'openWebClient') {
         this.show = false
         let path = `/library/${this.$store.state.libraries.currentLibraryId}`

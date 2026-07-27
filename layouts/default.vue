@@ -275,12 +275,38 @@ export default {
     socketConnectionFailed(err) {
       this.$toast.error('Socket connection error: ' + err.message)
     },
+    /**
+     * On a first connection, ask which library to open.
+     *
+     * Without this the user silently lands in whichever library the server
+     * calls default, and on a server with several libraries that is a coin
+     * flip. The choice the modal records becomes the remembered default, so
+     * this only ever runs once.
+     *
+     * initLibraries also runs on reconnect and on mount, so the prompt is
+     * guarded twice: by the stored choice, and by a per-run flag so dismissing
+     * it does not make it reappear on the next network blip.
+     */
+    async offerLibraryChoice() {
+      if (this._askedLibraryChoice) return
+      this._askedLibraryChoice = true
+
+      const libraries = this.$store.state.libraries.libraries || []
+      if (libraries.length < 2) return
+
+      const lastLibraryId = await this.$localStore.getLastLibraryId()
+      if (lastLibraryId && libraries.some((library) => library.id === lastLibraryId)) return
+
+      this.$store.commit('libraries/setShowModal', true)
+    },
     async initLibraries() {
       if (this.inittingLibraries) {
         return
       }
       this.inittingLibraries = true
       await this.$store.dispatch('libraries/load')
+
+      await this.offerLibraryChoice()
 
       AbsLogger.info({ tag: 'default', message: `initLibraries loading library ${this.currentLibraryName}` })
       await this.$store.dispatch('libraries/fetch', this.currentLibraryId)
