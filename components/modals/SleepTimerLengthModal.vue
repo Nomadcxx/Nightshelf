@@ -2,7 +2,7 @@
   <modals-modal v-model="show" :width="200" height="100%">
     <template #outer>
       <div class="absolute top-8 left-4 z-40">
-        <p class="text-white text-2xl truncate">{{ $strings.HeaderSleepTimer }}</p>
+        <p class="text-fg text-2xl truncate">{{ $strings.HeaderSleepTimer }}</p>
       </div>
     </template>
 
@@ -13,7 +13,7 @@
         manualTimerModal = false
       "
     >
-      <div class="w-full overflow-x-hidden overflow-y-auto bg-primary rounded-lg border border-white border-opacity-20" style="max-height: 75%" @click.stop>
+      <div class="w-full overflow-x-hidden overflow-y-auto bg-primary rounded-lg border border-fg border-opacity-20" style="max-height: 75%" @click.stop>
         <div v-if="manualTimerModal" class="p-4">
           <div class="flex mb-4" @click="manualTimerModal = false">
             <ui-ph-icon name="arrow_back" :size="28" />

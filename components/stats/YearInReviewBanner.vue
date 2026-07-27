@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-bg rounded-md shadow-lg border border-white border-opacity-5 p-2 sm:p-4 mb-4">
+  <div class="bg-bg rounded-md shadow-lg border border-fg border-opacity-5 p-2 sm:p-4 mb-4">
     <!-- hack to get icon fonts loaded on init -->
     <div class="h-0 w-0 overflow-hidden opacity-0">
       <img src="/Logo.png" alt="" />
@@ -13,7 +13,7 @@
 
     <!-- your year in review -->
     <div v-if="showYearInReview">
-      <div class="w-full h-px bg-slate-200/10 my-4" />
+      <div class="w-full h-px bg-fg/10 my-4" />
 
       <div class="flex items-center justify-center mb-2 max-w-[800px] mx-auto">
         <!-- previous button -->
@@ -50,7 +50,7 @@
       </div>
 
       <!-- your server in review -->
-      <div v-if="isAdminOrUp" class="w-full max-w-[800px] mx-auto mb-2 mt-4 border-t pt-4 border-white/10">
+      <div v-if="isAdminOrUp" class="w-full max-w-[800px] mx-auto mb-2 mt-4 border-t pt-4 border-fg/10">
         <div class="flex items-center justify-center mb-2">
           <!-- previous button -->
           <ui-btn small :disabled="!yearInReviewServerVariant || processingYearInReviewServer" class="inline-flex items-center font-semibold" @click="yearInReviewServerVariant--">

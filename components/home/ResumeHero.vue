@@ -223,7 +223,7 @@ export default {
   padding: 0 16px;
   border-radius: 999px;
   background: rgb(var(--color-success));
-  color: #0d1018;
+  color: rgb(var(--color-bg));
   font-size: 0.78rem;
   font-weight: 650;
   display: inline-flex;

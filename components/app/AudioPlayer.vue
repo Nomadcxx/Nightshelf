@@ -1366,7 +1366,7 @@ export default {
   width: 3px;
   height: 18px;
   border-radius: 999px;
-  background: linear-gradient(180deg, transparent 0%, #37f499 18%, #04d1f9 50%, #a48cf2 82%, transparent 100%);
+  background: linear-gradient(180deg, transparent 0%, rgb(var(--color-success)) 18%, rgb(var(--color-info)) 50%, rgb(var(--color-accent)) 82%, transparent 100%);
   box-shadow: 0 0 7px rgb(4 209 249 / 0.72), 0 0 13px rgb(55 244 153 / 0.2);
 }
 

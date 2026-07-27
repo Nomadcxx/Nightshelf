@@ -41,7 +41,7 @@ export default {
   color: #fff;
 }
 .la-ball-spin-clockwise.la-dark {
-  color: #262626;
+  color: rgb(var(--color-fg-muted));
 }
 .la-ball-spin-clockwise > div {
   display: inline-block;

@@ -4,8 +4,8 @@
     <img v-else src="/book_placeholder_nightshelf.svg" class="w-10 h-16 object-contain" />
     <div class="pl-2 w-2/3">
       <p class="font-normal truncate text-sm">{{ download.audiobook.book.title }}</p>
-      <p class="font-normal truncate text-xs text-gray-400">{{ download.audiobook.book.author }}</p>
-      <p class="font-normal truncate text-xs text-gray-400">{{ $bytesPretty(download.size) }}</p>
+      <p class="font-normal truncate text-xs text-fg-muted">{{ download.audiobook.book.author }}</p>
+      <p class="font-normal truncate text-xs text-fg-muted">{{ $bytesPretty(download.size) }}</p>
     </div>
     <div class="flex-grow" />
     <div v-if="download.isIncomplete || download.isMissing" class="shadow-sm text-warning flex items-center justify-center rounded-full mr-4">

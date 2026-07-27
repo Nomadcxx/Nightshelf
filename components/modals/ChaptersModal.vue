@@ -2,7 +2,7 @@
   <modals-modal v-model="show" :width="400" max-width="95%" height="100%">
     <template #outer>
       <div v-if="currentChapter" class="absolute top-10 left-4 z-40 pt-1" style="max-width: 80%">
-        <p class="text-white text-lg truncate">{{ chapters.length }} {{ $strings.LabelChapters }}</p>
+        <p class="text-fg text-lg truncate">{{ chapters.length }} {{ $strings.LabelChapters }}</p>
       </div>
     </template>
 
@@ -31,7 +31,7 @@
               </div>
             </div>
 
-            <div v-show="chapter.id === currentChapterId" class="w-0.5 h-full absolute top-0 left-0 bg-yellow-400" />
+            <div v-show="chapter.id === currentChapterId" class="w-0.5 h-full absolute top-0 left-0 bg-warning" />
           </li>
         </ul>
       </div>

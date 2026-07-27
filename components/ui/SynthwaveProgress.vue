@@ -10,9 +10,12 @@
     <svg class="synthwave-progress__svg" viewBox="0 0 100 18" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <linearGradient :id="gradientId" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="#37f499" />
-          <stop offset="0.52" stop-color="#04d1f9" />
-          <stop offset="1" stop-color="#a48cf2" />
+          <!-- Stops carry classes rather than stop-color attributes: var() inside
+               an SVG presentation attribute is not reliably supported, whereas
+               the same custom property resolves normally from a stylesheet. -->
+          <stop offset="0" class="synthwave-progress__stop-a" />
+          <stop offset="0.52" class="synthwave-progress__stop-b" />
+          <stop offset="1" class="synthwave-progress__stop-c" />
         </linearGradient>
         <filter :id="glowId" x="-20%" y="-80%" width="140%" height="260%">
           <feGaussianBlur stdDeviation="1.15" result="blur" />
@@ -108,6 +111,16 @@ export default {
 </script>
 
 <style scoped>
+.synthwave-progress__stop-a {
+  stop-color: rgb(var(--color-success));
+}
+.synthwave-progress__stop-b {
+  stop-color: rgb(var(--color-info));
+}
+.synthwave-progress__stop-c {
+  stop-color: rgb(var(--color-accent));
+}
+
 .synthwave-progress {
   position: relative;
   width: 100%;

@@ -137,7 +137,7 @@ export default {
 }
 .prompt-field--focused {
   border-left: 2px solid rgb(var(--color-success));
-  box-shadow: 0 0 0 3px rgba(55, 244, 153, 0.15);
+  box-shadow: 0 0 0 3px rgb(var(--color-success) / 0.15);
 }
 input[type='time']::-webkit-calendar-picker-indicator {
   filter: invert(100%);

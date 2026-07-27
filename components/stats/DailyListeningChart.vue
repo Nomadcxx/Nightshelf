@@ -11,15 +11,15 @@
       </div>
 
       <template v-for="n in 7">
-        <div :key="n" class="absolute pointer-events-none left-0 h-px bg-white bg-opacity-10" :style="{ top: n * lineSpacing - lineSpacing / 2 + 'px', width: '360px', marginLeft: '24px' }" />
+        <div :key="n" class="absolute pointer-events-none left-0 h-px bg-fg bg-opacity-10" :style="{ top: n * lineSpacing - lineSpacing / 2 + 'px', width: '360px', marginLeft: '24px' }" />
 
         <div :key="`dot-${n}`" class="absolute z-10" :style="{ left: points[n - 1].x + 'px', bottom: points[n - 1].y + 'px' }">
-          <div class="h-2 w-2 bg-yellow-400 hover:bg-yellow-300 rounded-full transform duration-150 transition-transform hover:scale-125" />
+          <div class="h-2 w-2 bg-warning hover:bg-warning rounded-full transform duration-150 transition-transform hover:scale-125" />
         </div>
       </template>
 
       <template v-for="(line, index) in pointLines">
-        <div :key="`line-${index}`" class="absolute h-0.5 bg-yellow-400 origin-bottom-left pointer-events-none" :style="{ width: line.width + 'px', left: line.x + 'px', bottom: line.y + 'px', transform: `rotate(${line.angle}deg)` }" />
+        <div :key="`line-${index}`" class="absolute h-0.5 bg-warning origin-bottom-left pointer-events-none" :style="{ width: line.width + 'px', left: line.x + 'px', bottom: line.y + 'px', transform: `rotate(${line.angle}deg)` }" />
       </template>
 
       <div class="absolute -bottom-2 left-0 flex ml-6">

@@ -55,7 +55,7 @@ input[type='range']:focus {
 
 /* chromium */
 input[type='range']::-webkit-slider-runnable-track {
-  background: linear-gradient(90deg, #37f499 0%, #04d1f9 var(--range-progress), rgb(var(--color-track) / 0.55) var(--range-progress));
+  background: linear-gradient(90deg, rgb(var(--color-success)) 0%, rgb(var(--color-info)) var(--range-progress), rgb(var(--color-track) / 0.55) var(--range-progress));
   border: 1px solid rgb(var(--color-border));
   border-radius: 3px;
   height: 0.4rem;
@@ -66,7 +66,7 @@ input[type='range']::-webkit-slider-thumb {
   margin-top: -0.42rem;
   border: 1px solid rgb(var(--color-fg) / 0.8);
   border-radius: 5px;
-  background: linear-gradient(135deg, #04d1f9, #a48cf2);
+  background: linear-gradient(135deg, rgb(var(--color-info)), rgb(var(--color-accent)));
   box-shadow: 0 0 10px rgb(4 209 249 / 0.5);
   height: 1.25rem;
   width: 1rem;
@@ -87,7 +87,7 @@ input[type='range']::-moz-range-track {
 input[type='range']::-moz-range-thumb {
   border: 1px solid rgb(var(--color-fg) / 0.8);
   border-radius: 5px;
-  background: linear-gradient(135deg, #04d1f9, #a48cf2);
+  background: linear-gradient(135deg, rgb(var(--color-info)), rgb(var(--color-accent)));
   box-shadow: 0 0 10px rgb(4 209 249 / 0.5);
   height: 1.25rem;
   width: 1.25rem;

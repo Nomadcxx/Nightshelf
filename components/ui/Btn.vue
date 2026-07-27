@@ -43,7 +43,7 @@ export default {
       var list = []
       if (this.loading) list.push('text-opacity-0')
       if (this.color === 'success') {
-        list.push('text-white')
+        list.push('text-fg')
       }
       list.push(`bg-${this.color}`)
       if (this.small) {
@@ -84,11 +84,11 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0);
+  background-color: rgb(var(--color-fg) / 0);
   transition: background-color 0.1s ease-in-out;
 }
 .btn:hover:not(:disabled)::before {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgb(var(--color-fg) / 0.1);
 }
 button:disabled::before {
   background-color: rgba(0, 0, 0, 0.2);

@@ -216,6 +216,7 @@
 <script>
 import { Dialog } from '@capacitor/dialog'
 import jumpLabelMixin from '@/mixins/jumpLabel'
+import { THEMES, THEME_IDS } from '@/utils/themes'
 
 export default {
   mixins: [jumpLabelMixin],
@@ -411,20 +412,12 @@ export default {
       return this.getJumpLabel(this.settings.jumpBackwardsTime)
     },
     themeOptionItems() {
-      return [
-        {
-          text: this.$strings.LabelThemeNight || 'Night',
-          value: 'night'
-        },
-        {
-          text: this.$strings.LabelThemeTerminal || 'Terminal',
-          value: 'terminal'
-        },
-        {
-          text: this.$strings.LabelThemeBlack,
-          value: 'black'
-        }
-      ]
+      // Driven by the registry so a new theme appears here by existing, rather
+      // than by someone remembering to add it in a fourth place.
+      return THEME_IDS.map((id) => ({
+        text: this.$strings[THEMES[id].stringKey] || THEMES[id].label,
+        value: id
+      }))
     },
     libraryViewModeOptions() {
       return [

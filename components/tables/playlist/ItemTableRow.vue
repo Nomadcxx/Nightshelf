@@ -13,7 +13,7 @@
           </div>
         </div>
         <div class="w-8 min-w-8 flex justify-center">
-          <button v-if="showPlayBtn" class="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center" @click.stop.prevent="playClick">
+          <button v-if="showPlayBtn" class="w-8 h-8 rounded-full border border-fg/20 flex items-center justify-center" @click.stop.prevent="playClick">
             <span v-if="!playerIsStartingForThisMedia" class="material-symbols text-2xl fill" :class="streamIsPlaying ? '' : 'text-success'">{{ streamIsPlaying ? 'pause' : 'play_arrow' }}</span>
             <svg v-else class="animate-spin" style="width: 18px; height: 18px" viewBox="0 0 24 24">
               <path fill="currentColor" d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z" />
@@ -26,7 +26,7 @@
           </button>
         </div>
       </nuxt-link>
-      <div class="absolute bottom-0 left-0 h-0.5 shadow-sm z-10" :class="userIsFinished ? 'bg-success' : 'bg-yellow-400'" :style="{ width: progressPercent * 100 + '%' }"></div>
+      <div class="absolute bottom-0 left-0 h-0.5 shadow-sm z-10" :class="userIsFinished ? 'bg-success' : 'bg-warning'" :style="{ width: progressPercent * 100 + '%' }"></div>
     </div>
   </div>
 </template>

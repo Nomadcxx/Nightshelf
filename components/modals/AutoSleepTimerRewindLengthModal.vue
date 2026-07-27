@@ -2,7 +2,7 @@
   <modals-modal v-model="show" :width="200" height="100%">
     <template #outer>
       <div class="absolute top-11 left-4 z-40">
-        <p class="text-white text-2xl truncate capitalize">{{ $strings.LabelAutoRewindTime }}</p>
+        <p class="text-fg text-2xl truncate capitalize">{{ $strings.LabelAutoRewindTime }}</p>
       </div>
     </template>
 
@@ -13,7 +13,7 @@
         manualTimerModal = false
       "
     >
-      <div class="w-full overflow-x-hidden overflow-y-auto bg-primary rounded-lg border border-white border-opacity-20" style="max-height: 75%" @click.stop>
+      <div class="w-full overflow-x-hidden overflow-y-auto bg-primary rounded-lg border border-fg border-opacity-20" style="max-height: 75%" @click.stop>
         <div v-if="manualTimerModal" class="p-4">
           <div class="flex mb-4" @click="manualTimerModal = false">
             <ui-ph-icon name="arrow_back" :size="28" />
@@ -31,13 +31,13 @@
         </div>
         <ul v-else class="h-full w-full" role="listbox" aria-labelledby="listbox-label">
           <template v-for="timeout in timeouts">
-            <li :key="timeout" class="text-gray-50 select-none relative py-4 cursor-pointer hover:bg-black-400" role="option" @click="clickedOption(timeout)">
+            <li :key="timeout" class="text-fg select-none relative py-4 cursor-pointer hover:bg-bg-hover" role="option" @click="clickedOption(timeout)">
               <div class="flex items-center justify-center">
                 <span class="font-normal block truncate text-lg">{{ timeout }} min</span>
               </div>
             </li>
           </template>
-          <li class="text-gray-50 select-none relative py-4 cursor-pointer hover:bg-black-400" role="option" @click="manualTimerModal = true">
+          <li class="text-fg select-none relative py-4 cursor-pointer hover:bg-bg-hover" role="option" @click="manualTimerModal = true">
             <div class="flex items-center justify-center">
               <span class="font-normal block truncate text-lg text-center">{{ $strings.LabelCustomTime }}</span>
             </div>

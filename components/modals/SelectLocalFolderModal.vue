@@ -2,7 +2,7 @@
   <modals-modal v-model="show" :width="300" height="100%">
     <template #outer>
       <div class="absolute top-10 left-4 z-40" style="max-width: 80%">
-        <p class="text-white text-lg truncate">{{ $strings.HeaderSelectDownloadLocation }}</p>
+        <p class="text-fg text-lg truncate">{{ $strings.HeaderSelectDownloadLocation }}</p>
       </div>
     </template>
 

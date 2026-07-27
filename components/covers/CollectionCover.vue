@@ -7,13 +7,13 @@
       <img ref="cover" :src="fullCoverUrl" @error="imageError" @load="imageLoaded" class="w-full h-full absolute top-0 left-0" :class="showCoverBg ? 'object-contain' : 'object-cover'" />
     </div>
     <div v-else-if="books.length" class="flex justify-center h-full relative bg-primary bg-opacity-95 rounded-sm">
-      <div class="absolute top-0 left-0 w-full h-full bg-gray-400 bg-opacity-5" />
+      <div class="absolute top-0 left-0 w-full h-full bg-fg-muted bg-opacity-5" />
 
       <covers-book-cover :library-item="books[0]" :width="width / 2" :book-cover-aspect-ratio="bookCoverAspectRatio" flat />
       <covers-book-cover v-if="books.length > 1" :library-item="books[1]" :width="width / 2" :book-cover-aspect-ratio="bookCoverAspectRatio" flat />
     </div>
     <div v-else class="relative w-full h-full flex items-center justify-center p-2 bg-primary rounded-sm">
-      <div class="absolute top-0 left-0 w-full h-full bg-gray-400 bg-opacity-5" />
+      <div class="absolute top-0 left-0 w-full h-full bg-fg-muted bg-opacity-5" />
 
       <p class="text-fg-muted text-center" :style="{ fontSize: Math.min(1, sizeMultiplier) + 'rem' }">Empty Collection</p>
     </div>

@@ -45,7 +45,7 @@ export default {
     className() {
       var classes = [this.large ? 'h-12 w-12' : 'h-9 w-9']
       if (!this.borderless) {
-        classes.push(`bg-${this.bgColor} border border-gray-600`)
+        classes.push(`bg-${this.bgColor} border border-border`)
       }
       return classes.join(' ')
     },
@@ -81,11 +81,11 @@ button.icon-btn::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0);
+  background-color: rgb(var(--color-fg) / 0);
   transition: background-color 0.1s ease-in-out;
 }
 button.icon-btn:hover:not(:disabled)::before {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgb(var(--color-fg) / 0.1);
 }
 button.icon-btn:disabled::before {
   background-color: rgba(0, 0, 0, 0.2);

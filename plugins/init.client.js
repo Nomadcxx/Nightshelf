@@ -8,25 +8,16 @@ import { Clipboard } from '@capacitor/clipboard'
 import { Capacitor } from '@capacitor/core'
 import { formatDistance, format, addDays, isDate, setDefaultOptions } from 'date-fns'
 import * as locale from 'date-fns/locale'
+import { migrateTheme, themeStatusBar } from '@/utils/themes'
 
 Vue.directive('click-outside', vClickOutside.directive)
-
-const THEME_STATUS = {
-  night: '#212337',
-  black: '#171928',
-  terminal: '#212337'
-}
-
-function migrateTheme(theme) {
-  if (theme === 'dark' || theme === 'light' || !theme) return 'night'
-  if (['night', 'black', 'terminal'].includes(theme)) return theme
-  return 'night'
-}
 
 async function applyNativeChrome(theme) {
   try {
     await StatusBar.setStyle({ style: Style.Dark })
-    await StatusBar.setBackgroundColor({ color: THEME_STATUS[theme] || THEME_STATUS.night })
+    // Derived from the theme's own canvas, so a new theme cannot ship with the
+    // status bar still painted in the previous theme's colour.
+    await StatusBar.setBackgroundColor({ color: themeStatusBar(theme) })
   } catch (error) {
     // StatusBar is unsupported on the web.
   }

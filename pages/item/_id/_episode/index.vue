@@ -328,11 +328,11 @@ export default {
         .replace(timeMarkerLinkRegex, (match, href, displayTime) => {
           const time = displayTime.match(timeMarkerRegex)[0]
           const seekTimeInSeconds = convertToSeconds(time)
-          return `<span class="time-marker cursor-pointer text-blue-400 hover:text-blue-300" data-time="${seekTimeInSeconds}">${displayTime}</span>`
+          return `<span class="time-marker cursor-pointer text-info hover:text-info" data-time="${seekTimeInSeconds}">${displayTime}</span>`
         })
         .replace(timeMarkerRegex, (match) => {
           const seekTimeInSeconds = convertToSeconds(match)
-          return `<span class="time-marker cursor-pointer text-blue-400 hover:text-blue-300" data-time="${seekTimeInSeconds}">${match}</span>`
+          return `<span class="time-marker cursor-pointer text-info hover:text-info" data-time="${seekTimeInSeconds}">${match}</span>`
         })
     },
     async deleteLocalEpisode() {

@@ -13,7 +13,7 @@
     <transition name="menu">
       <ul v-show="showMenu" class="absolute z-10 -mt-px w-full bg-primary border border-border shadow-lg max-h-56 rounded-b-md py-1 ring-1 ring-bg ring-opacity-5 overflow-auto focus:outline-none text-sm" role="listbox">
         <template v-for="item in items">
-          <li :key="item.value" class="text-fg select-none relative py-2 cursor-pointer hover:bg-black-400" role="option" @click="clickedOption(item.value)">
+          <li :key="item.value" class="text-fg select-none relative py-2 cursor-pointer hover:bg-bg-hover" role="option" @click="clickedOption(item.value)">
             <div class="flex items-center">
               <span class="font-normal ml-3 block truncate font-sans text-sm">{{ item.text }}</span>
             </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full py-4 overflow-hidden relative border-b border-white border-opacity-10" @click.stop="goToEpisodePage">
+  <div class="w-full py-4 overflow-hidden relative border-b border-fg border-opacity-10" @click.stop="goToEpisodePage">
     <div v-if="episode" class="w-full px-1">
       <!-- Help debug for testing -->
       <!-- <template>
@@ -30,7 +30,7 @@
 
       <div class="flex items-center pt-2">
         <!-- Play/Pause Button -->
-        <div class="h-10 px-4 border border-border rounded-full flex items-center justify-center cursor-pointer" :class="userIsFinished ? 'text-white text-opacity-40' : ''" @click.stop="playClick">
+        <div class="h-10 px-4 border border-border rounded-full flex items-center justify-center cursor-pointer" :class="userIsFinished ? 'text-fg text-opacity-40' : ''" @click.stop="playClick">
           <span v-if="!playerIsStartingForThisMedia" class="material-symbols text-2xl fill leading-none" :class="streamIsPlaying ? '' : 'text-success'">
             {{ streamIsPlaying ? 'pause' : 'play_arrow' }}
           </span>
