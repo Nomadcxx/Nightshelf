@@ -9,7 +9,7 @@
 
   <p>A fork of the <a href="https://github.com/advplyr/audiobookshelf-app">Audiobookshelf Android app</a>, rebuilt for phones used at night.</p>
 
-  <p>Same server, same sync, same downloads. Denser shelves, three themes, and a long press that does something.</p>
+  <p>Same server, same sync, same downloads. Denser shelves, five themes, and a long press that does something.</p>
 
   <p>
     <a href="https://github.com/Nomadcxx/Nightshelf/releases">Releases</a>
@@ -28,15 +28,15 @@
 - **Four covers per row**: rails dropped from 205px to 104px, and the library grid solves for columns against screen width
 - **Shelf glass**: every rail sits on a blurred wash of its own leading cover, so the colour under the glass shifts as you scroll
 - **Long press**: hold a cover for 420ms and it lifts with that item's actions underneath
-- **Three themes**: Night, Terminal, Black OLED, switchable from Settings
+- **Five themes**: Night, Black OLED, Terminal, Graphite and Ember, switchable from Settings. Black OLED is genuinely `#000000`, so the pixels are off
 - **Motion control**: System, Full or Reduced, with Android's own reduced-motion request always winning
-- **Semantic haptics**: components ask for an intent rather than a strength
-- **Keyboard and TalkBack**: every card takes focus and answers to Enter or Space; the long-press panel traps focus and restores it on close
+- **Semantic haptics**: six named intents, so the mapping from meaning to intensity lives in one place rather than at each call site
+- **Keyboard and TalkBack**: shelf cards take focus and answer to Enter or Space; the long-press panel traps focus and restores it on close
 - **Android Auto**: four defects fixed, including one that truncated every library at 100 items
 
 ## Themes
 
-Same library, same scroll position, three themes.
+Same library, same scroll position. Three of the five below; Graphite and Ember are pending a fresh capture.
 
 | Night | Terminal | Black OLED |
 |:--:|:--:|:--:|

@@ -28,11 +28,39 @@ export default {
     this._pressCapturedEl = null
     this._pressCapturedPointerId = null
   },
+  mounted() {
+    // Some cards are not themselves the focus target. Search results render
+    // inside a <nuxt-link>, so the browser focuses the <a> and the Menu key
+    // raises `contextmenu` there. That event bubbles up, away from this card,
+    // so the root's own @contextmenu never fires and Peek is unreachable by
+    // keyboard even though the handler is wired.
+    //
+    // Cards that carry their own tabindex are already the focus target and
+    // need none of this.
+    this._pressFocusHost = null
+    const el = this.$el
+    if (!el || typeof el.closest !== 'function') return
+    if (el.hasAttribute && el.hasAttribute('tabindex')) return
+
+    const host = el.closest('a[href], button, [tabindex]')
+    if (!host || host === el) return
+
+    // Only `contextmenu` is forwarded. Enter and Space on a link already
+    // navigate natively, and re-handling them here would fire the tap twice.
+    this._pressFocusHost = host
+    this._pressFocusHandler = (event) => this.onPressContextMenu(event)
+    host.addEventListener('contextmenu', this._pressFocusHandler)
+  },
   beforeDestroy() {
     // Virtualised cards are recycled aggressively; a leaked timer here would
     // commit a hold against an item the user is no longer touching.
     this.cancelPress('unmount')
     this._pressClickSuppressor = null
+    if (this._pressFocusHost && this._pressFocusHandler) {
+      this._pressFocusHost.removeEventListener('contextmenu', this._pressFocusHandler)
+    }
+    this._pressFocusHost = null
+    this._pressFocusHandler = null
   },
   methods: {
     _pressNow() {

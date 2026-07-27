@@ -299,7 +299,7 @@ export default {
         this.show = false
         return
       }
-      await this.$hapticsImpact()
+      await this.$hapticsSelectionChange()
       this.selected = val
       this.show = false
       this.$nextTick(() => this.$emit('change', val))

@@ -121,7 +121,7 @@ export default {
         })
     },
     async clickBookmark(bm) {
-      await this.$hapticsImpact()
+      await this.$hapticsSelectionChange()
       this.$emit('select', bm)
     },
     submitUpdateBookmark(updatedBookmark) {

@@ -68,12 +68,18 @@ export default ({ store }, inject) => {
   const strength = () => store.state.globals.hapticFeedback
   const enabled = () => strength() !== 'OFF'
 
+  // The generic pre-NightShelf feedback: "something happened", at whatever
+  // strength the user chose. Prefer one of the semantic intents below for new
+  // code — this one carries no meaning for the mapping to act on.
+  //
+  // Wrapped like the others: without safeHaptic a device with no vibrator, or a
+  // revoked permission, rejects into whatever action triggered the feedback.
   inject('hapticsImpact', () => {
     const hapticFeedback = strength()
     if (hapticFeedback === 'OFF') return
-    if (hapticFeedback === 'LIGHT') return hapticsImpactLight()
-    if (hapticFeedback === 'MEDIUM') return hapticsImpactMedium()
-    return hapticsImpactHeavy()
+    if (hapticFeedback === 'LIGHT') return safeHaptic(hapticsImpactLight)
+    if (hapticFeedback === 'MEDIUM') return safeHaptic(hapticsImpactMedium)
+    return safeHaptic(hapticsImpactHeavy)
   })
 
   // Semantic haptics: components request a *meaning*, never a raw strength, so

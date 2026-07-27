@@ -123,7 +123,7 @@ export default {
         })
     },
     async clickPlaylist(playlist) {
-      await this.$hapticsImpact()
+      await this.$hapticsSelectionChange()
       if (playlist.isItemIncluded) {
         this.removeFromPlaylist(playlist)
       } else {

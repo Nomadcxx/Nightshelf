@@ -94,12 +94,12 @@ export default {
   },
   methods: {
     async clickedChapterOption() {
-      await this.$hapticsImpact()
+      await this.$hapticsSelectionChange()
       this.show = false
       this.$nextTick(() => this.$emit('change', { time: this.currentEndOfChapterTime * 1000, isChapterTime: true }))
     },
     async clickedOption(timeoutMin) {
-      await this.$hapticsImpact()
+      await this.$hapticsSelectionChange()
       const timeout = timeoutMin * 1000 * 60
       this.show = false
       this.manualTimerModal = false
