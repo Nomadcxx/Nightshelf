@@ -86,7 +86,7 @@ Touching any launcher or notification artwork means running `./scripts/sync-debu
 
 ## Status
 
-Beta, running daily against a 1,928-item library on a Pixel 8 Pro. Not there yet: release signing, iOS, and any store listing.
+Beta, running daily against a 1,928-item library on a Pixel 8 Pro. Not there yet: iOS, and any store listing.
 
 ## Licence
 

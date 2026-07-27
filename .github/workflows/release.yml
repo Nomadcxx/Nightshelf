@@ -5,15 +5,17 @@ name: Release
 #
 #   git tag v0.13.0-beta && git push --tags
 #
-# Signing: with no secrets configured this publishes a debug-signed APK, which
-# installs fine for sideloading but cannot be updated from a later release-signed
-# build. Once a keystore exists, add these repository secrets and the release job
-# switches to assembleRelease automatically:
+# Signing runs off four repository secrets:
 #
 #   NIGHTSHELF_KEYSTORE_BASE64   base64 of the .keystore file
 #   NIGHTSHELF_STORE_PASSWORD
 #   NIGHTSHELF_KEY_ALIAS
 #   NIGHTSHELF_KEY_PASSWORD
+#
+# The debug fallback below exists only so a fork with no keystore of its own
+# still produces something installable. Never publish from that path here: an
+# APK signed with a different key cannot upgrade one signed with this key, so
+# anyone who installed a debug-signed release has to uninstall to move off it.
 on:
   push:
     tags: ['v*']
@@ -61,7 +63,10 @@ jobs:
         if: steps.keystore.outputs.signed == 'true'
         working-directory: android
         env:
-          NIGHTSHELF_KEYSTORE: app/release.keystore
+          # Absolute. Gradle resolves a relative `file()` against the app module
+          # directory, not the workspace, so a relative path lands in the wrong
+          # place and the build fails looking for a keystore that is right there.
+          NIGHTSHELF_KEYSTORE: ${{ github.workspace }}/android/app/release.keystore
           NIGHTSHELF_STORE_PASSWORD: ${{ secrets.NIGHTSHELF_STORE_PASSWORD }}
           NIGHTSHELF_KEY_ALIAS: ${{ secrets.NIGHTSHELF_KEY_ALIAS }}
           NIGHTSHELF_KEY_PASSWORD: ${{ secrets.NIGHTSHELF_KEY_PASSWORD }}

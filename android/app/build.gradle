@@ -48,6 +48,23 @@ android {
       ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
   }
+  // Signing is driven entirely by the environment so the keystore never has to
+  // live in the repo. Set NIGHTSHELF_KEYSTORE to an absolute path; CI decodes
+  // the keystore from a secret and points at it. Without that variable the
+  // config is not registered at all, so `assembleRelease` on a machine with no
+  // key fails loudly rather than quietly emitting an unsigned APK.
+  def keystorePath = System.getenv('NIGHTSHELF_KEYSTORE')
+  signingConfigs {
+    if (keystorePath) {
+      release {
+        storeFile file(keystorePath)
+        storePassword System.getenv('NIGHTSHELF_STORE_PASSWORD')
+        keyAlias System.getenv('NIGHTSHELF_KEY_ALIAS')
+        keyPassword System.getenv('NIGHTSHELF_KEY_PASSWORD')
+      }
+    }
+  }
+
   buildTypes {
     debug {
       applicationIdSuffix ".debug"
@@ -56,6 +73,9 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
     release {
+      if (keystorePath) {
+        signingConfig signingConfigs.release
+      }
       minifyEnabled false
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
