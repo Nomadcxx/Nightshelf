@@ -19,7 +19,7 @@
 
       <nuxt-link to="/bookshelf" class="min-w-0 leading-none mr-1">
         <p class="font-sans font-semibold text-base text-fg truncate">Night<span class="text-accent">shelf</span></p>
-        <p class="font-mono uppercase tracking-widest text-xxs text-success mt-0.5 truncate">{{ monoStatus }}</p>
+        <p class="font-mono uppercase tracking-widest text-xxs text-chrome mt-0.5 truncate">{{ monoStatus }}</p>
       </nuxt-link>
 
       <button

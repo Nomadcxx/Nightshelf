@@ -108,7 +108,11 @@ export default {
       return this.currentLibraryMediaType === 'podcast'
     },
     displayedShelves() {
-      return this.shelves
+      // The hero consumes the first item of the continue shelf, so with exactly
+      // one thing in progress that shelf is left with nothing. Rendering it
+      // anyway produces a heading over empty space, which reads as a failed
+      // load rather than as an empty state.
+      return this.shelves.filter((shelf) => this.shelfEntities(shelf).length > 0)
     },
     /**
      * The shelf the hero is drawn from — the server's own "continue listening"

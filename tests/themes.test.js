@@ -70,7 +70,7 @@ test('body text meets WCAG AA on every theme', () => {
 test('interactive boundaries and status colours meet the 3:1 minimum', () => {
   for (const id of THEME_IDS) {
     const c = THEMES[id].colors
-    for (const token of ['border-strong', 'accent', 'danger', 'success', 'warning', 'info']) {
+    for (const token of ['border-strong', 'accent', 'chrome', 'danger', 'success', 'warning', 'info']) {
       const ratio = contrast(c[token], c.bg)
       assert.ok(ratio >= 3, `${id}: ${token} on bg is ${ratio.toFixed(2)}:1`)
     }

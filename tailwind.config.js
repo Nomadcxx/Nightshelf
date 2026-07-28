@@ -21,6 +21,7 @@ module.exports = {
         track: 'rgb(var(--color-track) / <alpha-value>)',
         'track-buffered': 'rgb(var(--color-track-buffered) / <alpha-value>)',
         accent: 'rgb(var(--color-accent) / <alpha-value>)',
+        chrome: 'rgb(var(--color-chrome) / <alpha-value>)',
         error: 'rgb(var(--color-danger) / <alpha-value>)',
         info: 'rgb(var(--color-info) / <alpha-value>)',
         success: 'rgb(var(--color-success) / <alpha-value>)',

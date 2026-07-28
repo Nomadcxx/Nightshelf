@@ -1,6 +1,6 @@
 <template>
   <div class="w-full flex bg-bg border-y border-border">
-    <div class="flex-none min-h-12 px-3 flex items-center border-r border-border bg-secondary font-mono text-xs uppercase tracking-[0.16em] text-success" aria-hidden="true">
+    <div class="flex-none min-h-12 px-3 flex items-center border-r border-border bg-secondary font-mono text-xs uppercase tracking-[0.16em] text-chrome" aria-hidden="true">
       {{ prompt }}&gt;
     </div>
     <div class="min-w-0 flex flex-1 overflow-x-auto scrollbar-hide" role="group" :aria-label="ariaLabel">
@@ -9,7 +9,7 @@
         :key="item.value"
         type="button"
         class="relative flex-none min-h-12 max-w-[14rem] px-4 border-r border-border flex items-center font-mono text-xs uppercase tracking-[0.12em] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
-        :class="item.value === value ? 'bg-success/10 text-success' : 'text-fg text-opacity-70'"
+        :class="item.value === value ? 'bg-chrome/10 text-chrome' : 'text-fg text-opacity-70'"
         :aria-pressed="item.value === value ? 'true' : 'false'"
         :title="item.label"
         @click="$emit('select', item.value)"

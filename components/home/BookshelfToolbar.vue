@@ -4,7 +4,7 @@
       <div id="bookshelf-toolbar" class="absolute top-0 left-0 w-full h-full z-20 flex items-center px-2">
         <div class="flex items-center w-full text-sm">
           <p v-show="!selectedSeriesName" class="font-mono text-xs uppercase tracking-[0.14em] text-fg">
-            <span class="text-success">{{ $formatNumber(totalEntities) }}</span>
+            <span class="text-chrome">{{ $formatNumber(totalEntities) }}</span>
             <span class="text-fg-muted"> // </span>
             <span>{{ entityTitle }}</span>
           </p>

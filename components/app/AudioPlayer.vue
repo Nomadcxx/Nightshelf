@@ -23,11 +23,11 @@
 
     <div v-if="playerSettings.useChapterTrack && playerSettings.useTotalTrack && showFullscreen" class="absolute total-track w-full z-30 px-6">
       <div class="flex items-center gap-2 font-mono text-fg" style="font-size: 0.75rem">
-        <span class="text-success">[</span>
+        <span class="text-chrome">[</span>
         <p>{{ currentTimePretty }}</p>
         <div class="flex-grow" />
         <p>{{ totalTimeRemainingPretty }}</p>
-        <span class="text-success">]</span>
+        <span class="text-chrome">]</span>
       </div>
       <div class="w-full mt-1">
         <div class="h-4 w-full relative">
@@ -102,11 +102,11 @@
 
       <div id="playerTrack" class="absolute left-0 w-full px-6">
         <div class="flex pointer-events-none items-center gap-1.5">
-          <span v-if="showFullscreen" class="font-mono text-success" style="font-size: 0.75rem">[</span>
+          <span v-if="showFullscreen" class="font-mono text-chrome" style="font-size: 0.75rem">[</span>
           <p class="font-mono text-fg" style="font-size: 0.75rem" ref="currentTimestamp">0:00</p>
           <div class="flex-grow" />
           <p class="font-mono text-fg" style="font-size: 0.75rem">{{ timeRemainingPretty }}</p>
-          <span v-if="showFullscreen" class="font-mono text-success" style="font-size: 0.75rem">]</span>
+          <span v-if="showFullscreen" class="font-mono text-chrome" style="font-size: 0.75rem">]</span>
         </div>
         <div ref="track" class="h-4 w-full relative" :class="{ 'animate-pulse': showLoadingState }" @click.stop>
           <ui-synthwave-progress :progress="trackProgress" :buffered="trackBufferedProgress" :playing="isProgressAnimating" :variant="showFullscreen ? 'full' : 'mini'" />

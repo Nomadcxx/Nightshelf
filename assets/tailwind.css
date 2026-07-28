@@ -22,6 +22,7 @@
     --color-track-cursor: 55 244 153;
     --color-track-buffered: 112 129 208;
     --color-accent: 164 140 242;
+    --color-chrome: 55 244 153;
     --color-info: 4 209 249;
     --color-success: 55 244 153;
     --color-warning: 247 198 127;
@@ -48,6 +49,7 @@
     --color-track-cursor: 51 245 160;
     --color-track-buffered: 112 124 182;
     --color-accent: 178 151 252;
+    --color-chrome: 51 245 160;
     --color-info: 55 210 242;
     --color-success: 51 245 160;
     --color-warning: 252 190 98;
@@ -74,6 +76,7 @@
     --color-track-cursor: 51 245 160;
     --color-track-buffered: 35 147 130;
     --color-accent: 51 245 160;
+    --color-chrome: 51 245 160;
     --color-info: 80 221 213;
     --color-success: 51 245 160;
     --color-warning: 244 195 82;
@@ -100,6 +103,7 @@
     --color-track-cursor: 95 225 158;
     --color-track-buffered: 82 136 162;
     --color-accent: 93 190 233;
+    --color-chrome: 93 190 233;
     --color-info: 55 210 242;
     --color-success: 95 225 158;
     --color-warning: 252 190 98;
@@ -126,6 +130,7 @@
     --color-track-cursor: 150 217 135;
     --color-track-buffered: 167 120 81;
     --color-accent: 246 167 84;
+    --color-chrome: 246 167 84;
     --color-info: 97 206 212;
     --color-success: 150 217 135;
     --color-warning: 254 200 75;

@@ -36,16 +36,23 @@
 
 ## Themes
 
-Same library, same scroll position. Three of the five below; Graphite and Ember are pending a fresh capture.
+Same library, same scroll position, five themes.
 
-| Night | Terminal | Black OLED |
+| Night | Black OLED | Terminal |
 |:--:|:--:|:--:|
-| <img src="docs/screenshots/theme-night.png" width="240" alt="Library grid in the Night theme" /> | <img src="docs/screenshots/theme-terminal.png" width="240" alt="Library grid in the Terminal theme" /> | <img src="docs/screenshots/theme-black.png" width="240" alt="Library grid in the Black OLED theme" /> |
-| Navy ground, lilac accent | Phosphor rules and progress | Deeper ground for OLED |
+| <img src="docs/screenshots/theme-night.png" width="240" alt="Library grid in the Night theme" /> | <img src="docs/screenshots/theme-black.png" width="240" alt="Library grid in the Black OLED theme" /> | <img src="docs/screenshots/theme-terminal.png" width="240" alt="Library grid in the Terminal theme" /> |
+| Navy ground, lilac accent | `#000000`, so the pixels are off | Phosphor green on a CRT ground |
 
-| Long press | Settings | Drawer |
+| Graphite | Ember | Long press |
 |:--:|:--:|:--:|
-| <img src="docs/screenshots/peek.png" width="240" alt="Long-press panel showing the actions for a book" /> | <img src="docs/screenshots/settings.png" width="240" alt="Settings screen" /> | <img src="docs/screenshots/drawer.png" width="240" alt="Navigation drawer" /> |
+| <img src="docs/screenshots/theme-graphite.png" width="240" alt="Library grid in the Graphite theme" /> | <img src="docs/screenshots/theme-ember.png" width="240" alt="Library grid in the Ember theme" /> | <img src="docs/screenshots/peek.png" width="240" alt="Long-press panel showing the actions for a book" /> |
+| Neutral dark, steel accent | Warm ground, minimal blue light | Hold a cover for its actions |
+
+| Home | Player | Drawer |
+|:--:|:--:|:--:|
+| <img src="docs/screenshots/home.png" width="240" alt="Home screen with the resume hero" /> | <img src="docs/screenshots/player.png" width="240" alt="Full player with waveform progress" /> | <img src="docs/screenshots/drawer.png" width="240" alt="Navigation drawer" /> |
+
+<sub>Screenshots use a public-domain LibriVox library so nothing personal or commercial appears in them.</sub>
 
 ## Installation
 
