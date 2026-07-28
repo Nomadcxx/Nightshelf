@@ -24,22 +24,11 @@
 
 ## Screenshots
 
-<a href="docs/screenshots/home.png"><img src="docs/screenshots/home.png" width="23%" alt="Home screen with the resume hero" /></a>
-<a href="docs/screenshots/rails.png"><img src="docs/screenshots/rails.png" width="23%" alt="Library shelves, each carrying a wash from its leading cover" /></a>
-<a href="docs/screenshots/peek.png"><img src="docs/screenshots/peek.png" width="23%" alt="Long-press panel showing a book's actions" /></a>
-<a href="docs/screenshots/player.png"><img src="docs/screenshots/player.png" width="23%" alt="Full player with waveform progress" /></a>
-
-<sub>Home · Shelves · Long press · Player &nbsp;·&nbsp; tap any shot to enlarge</sub>
+<a href="docs/screens.png"><img src="docs/screens.png" alt="Home, shelves, the long-press panel and the player" /></a>
 
 ## Themes
 
-<a href="docs/screenshots/theme-night.png"><img src="docs/screenshots/theme-night.png" width="19%" alt="Library in the Night theme" /></a>
-<a href="docs/screenshots/theme-black.png"><img src="docs/screenshots/theme-black.png" width="19%" alt="Library in the Black OLED theme" /></a>
-<a href="docs/screenshots/theme-terminal.png"><img src="docs/screenshots/theme-terminal.png" width="19%" alt="Library in the Terminal theme" /></a>
-<a href="docs/screenshots/theme-graphite.png"><img src="docs/screenshots/theme-graphite.png" width="19%" alt="Library in the Graphite theme" /></a>
-<a href="docs/screenshots/theme-ember.png"><img src="docs/screenshots/theme-ember.png" width="19%" alt="Library in the Ember theme" /></a>
-
-<sub>Night · Black OLED · Terminal · Graphite · Ember</sub>
+<a href="docs/themes.png"><img src="docs/themes.png" alt="The same shelf in Night, Black OLED, Terminal, Graphite and Ember" /></a>
 
 Same shelf, same scroll position. Black OLED is genuinely `#000000`, so the pixels are off rather than dark. Screenshots use a public-domain LibriVox library.
 

@@ -18,3 +18,16 @@ repo root is the locked system; read it before changing colour or glass.
 ## Commits
 
 No AI or assistant attribution, and no `Co-authored-by` trailers.
+
+## Screenshots
+
+`docs/screens.png` and `docs/themes.png` are composed, not captured. The
+sources live in `docs/screenshots/`; regenerate with:
+
+```bash
+python3 scripts/compose-screenshots.py
+```
+
+The compositor trims the status bar and navigation bar from every capture.
+Left in, one strip shows four different clock times and battery levels, which
+reads as four snapshots rather than one asset.
