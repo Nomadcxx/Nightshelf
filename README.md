@@ -22,37 +22,70 @@
 
 ---
 
-## Features
+## In use
 
-- **Resume hero**: whatever you are part-way through sits at the top of Home with time remaining and one control
-- **Four covers per row**: rails dropped from 205px to 104px, and the library grid solves for columns against screen width
-- **Shelf glass**: every rail sits on a blurred wash of its own leading cover, so the colour under the glass shifts as you scroll
-- **Long press**: hold a cover for 420ms and it lifts with that item's actions underneath
-- **Five themes**: Night, Black OLED, Terminal, Graphite and Ember, switchable from Settings. Black OLED is genuinely `#000000`, so the pixels are off
+<img src="docs/screenshots/home.png" width="720" alt="Home screen: the resume hero above Continue Listening" />
+
+Whatever you are part-way through sits at the top, with time remaining and one control.
+
+<table>
+<tr>
+<td width="45%"><img src="docs/screenshots/rails.png" alt="Library in rails view, each shelf carrying a wash from its own leading cover" /></td>
+<td>
+
+**Shelf glass**
+
+Every rail sits on a blurred wash of its own leading cover, so the colour under the glass shifts as you scroll. Four covers to a row — rails came down from 205px to 104px, and the grid solves for columns against screen width.
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td>
+
+**Long press**
+
+Hold a cover for 420ms. It lifts, and that item's actions appear underneath: resume, mark finished, discard progress, add to a playlist. No menu button, no navigation.
+
+</td>
+<td width="45%"><img src="docs/screenshots/peek.png" alt="Long-press panel showing the actions for a book" /></td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="45%"><img src="docs/screenshots/player.png" alt="Full player with waveform progress" /></td>
+<td>
+
+**The player**
+
+Chapter, waveform progress, speed, sleep timer and the chapter list, without leaving the screen.
+
+</td>
+</tr>
+</table>
+
+## Five themes
+
+Same shelf, same scroll position. One variable.
+
+| Night | Black OLED | Terminal | Graphite | Ember |
+|:--:|:--:|:--:|:--:|:--:|
+| <img src="docs/screenshots/theme-night.png" width="150" alt="Library in the Night theme" /> | <img src="docs/screenshots/theme-black.png" width="150" alt="Library in the Black OLED theme" /> | <img src="docs/screenshots/theme-terminal.png" width="150" alt="Library in the Terminal theme" /> | <img src="docs/screenshots/theme-graphite.png" width="150" alt="Library in the Graphite theme" /> | <img src="docs/screenshots/theme-ember.png" width="150" alt="Library in the Ember theme" /> |
+| Navy, lilac | `#000000` | Phosphor CRT | Neutral, steel | Warm, low blue |
+
+Black OLED is genuinely `#000000`, so the pixels are off rather than dark.
+
+<sub>Screenshots use a public-domain LibriVox library, so nothing personal or commercial appears in them.</sub>
+
+## What the pictures do not show
+
 - **Motion control**: System, Full or Reduced, with Android's own reduced-motion request always winning
 - **Semantic haptics**: six named intents, so the mapping from meaning to intensity lives in one place rather than at each call site
 - **Keyboard and TalkBack**: shelf cards take focus and answer to Enter or Space; the long-press panel traps focus and restores it on close
 - **Android Auto**: four defects fixed, including one that truncated every library at 100 items
-
-## Themes
-
-Same library, same scroll position, five themes.
-
-| Night | Black OLED | Terminal |
-|:--:|:--:|:--:|
-| <img src="docs/screenshots/theme-night.png" width="240" alt="Library grid in the Night theme" /> | <img src="docs/screenshots/theme-black.png" width="240" alt="Library grid in the Black OLED theme" /> | <img src="docs/screenshots/theme-terminal.png" width="240" alt="Library grid in the Terminal theme" /> |
-| Navy ground, lilac accent | `#000000`, so the pixels are off | Phosphor green on a CRT ground |
-
-| Graphite | Ember | Long press |
-|:--:|:--:|:--:|
-| <img src="docs/screenshots/theme-graphite.png" width="240" alt="Library grid in the Graphite theme" /> | <img src="docs/screenshots/theme-ember.png" width="240" alt="Library grid in the Ember theme" /> | <img src="docs/screenshots/peek.png" width="240" alt="Long-press panel showing the actions for a book" /> |
-| Neutral dark, steel accent | Warm ground, minimal blue light | Hold a cover for its actions |
-
-| Home | Player | Drawer |
-|:--:|:--:|:--:|
-| <img src="docs/screenshots/home.png" width="240" alt="Home screen with the resume hero" /> | <img src="docs/screenshots/player.png" width="240" alt="Full player with waveform progress" /> | <img src="docs/screenshots/drawer.png" width="240" alt="Navigation drawer" /> |
-
-<sub>Screenshots use a public-domain LibriVox library so nothing personal or commercial appears in them.</sub>
 
 ## Installation
 
