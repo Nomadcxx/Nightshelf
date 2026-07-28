@@ -24,21 +24,24 @@
 
 ## Screenshots
 
-| Home | Shelves | Long press | Player | Drawer |
-|:--:|:--:|:--:|:--:|:--:|
-| <img src="docs/screenshots/home.png" width="150" alt="Home screen with the resume hero" /> | <img src="docs/screenshots/rails.png" width="150" alt="Library rails, each carrying a wash from its leading cover" /> | <img src="docs/screenshots/peek.png" width="150" alt="Long-press panel showing a book's actions" /> | <img src="docs/screenshots/player.png" width="150" alt="Full player with waveform progress" /> | <img src="docs/screenshots/drawer.png" width="150" alt="Navigation drawer" /> |
-| Resume hero | Glass per rail | Hold 420ms | Waveform progress | Libraries and settings |
+<a href="docs/screenshots/home.png"><img src="docs/screenshots/home.png" width="23%" alt="Home screen with the resume hero" /></a>
+<a href="docs/screenshots/rails.png"><img src="docs/screenshots/rails.png" width="23%" alt="Library shelves, each carrying a wash from its leading cover" /></a>
+<a href="docs/screenshots/peek.png"><img src="docs/screenshots/peek.png" width="23%" alt="Long-press panel showing a book's actions" /></a>
+<a href="docs/screenshots/player.png"><img src="docs/screenshots/player.png" width="23%" alt="Full player with waveform progress" /></a>
+
+<sub>Home · Shelves · Long press · Player &nbsp;·&nbsp; tap any shot to enlarge</sub>
 
 ## Themes
 
-| Night | Black OLED | Terminal | Graphite | Ember |
-|:--:|:--:|:--:|:--:|:--:|
-| <img src="docs/screenshots/theme-night.png" width="150" alt="Library in the Night theme" /> | <img src="docs/screenshots/theme-black.png" width="150" alt="Library in the Black OLED theme" /> | <img src="docs/screenshots/theme-terminal.png" width="150" alt="Library in the Terminal theme" /> | <img src="docs/screenshots/theme-graphite.png" width="150" alt="Library in the Graphite theme" /> | <img src="docs/screenshots/theme-ember.png" width="150" alt="Library in the Ember theme" /> |
-| Navy, lilac | `#000000` | Phosphor CRT | Neutral, steel | Warm, low blue |
+<a href="docs/screenshots/theme-night.png"><img src="docs/screenshots/theme-night.png" width="19%" alt="Library in the Night theme" /></a>
+<a href="docs/screenshots/theme-black.png"><img src="docs/screenshots/theme-black.png" width="19%" alt="Library in the Black OLED theme" /></a>
+<a href="docs/screenshots/theme-terminal.png"><img src="docs/screenshots/theme-terminal.png" width="19%" alt="Library in the Terminal theme" /></a>
+<a href="docs/screenshots/theme-graphite.png"><img src="docs/screenshots/theme-graphite.png" width="19%" alt="Library in the Graphite theme" /></a>
+<a href="docs/screenshots/theme-ember.png"><img src="docs/screenshots/theme-ember.png" width="19%" alt="Library in the Ember theme" /></a>
 
-Same shelf, same scroll position. Black OLED is genuinely `#000000`, so the pixels are off rather than dark.
+<sub>Night · Black OLED · Terminal · Graphite · Ember</sub>
 
-<sub>A public-domain LibriVox library, so nothing personal or commercial appears in these.</sub>
+Same shelf, same scroll position. Black OLED is genuinely `#000000`, so the pixels are off rather than dark. Screenshots use a public-domain LibriVox library.
 
 ## Features
 
@@ -47,6 +50,7 @@ Same shelf, same scroll position. Black OLED is genuinely `#000000`, so the pixe
 - **Four covers per row**: rails came down from 205px to 104px, and the grid solves for columns against screen width
 - **Long press**: hold a cover for 420ms and it lifts, with that item's actions underneath
 - **Five themes**, switchable from Settings
+- **Library switching**: pick a library from the drawer, or on first connect. Upstream renders the picker but never opens it
 - **Motion control**: System, Full or Reduced, with Android's own reduced-motion request always winning
 - **Semantic haptics**: six named intents, so meaning maps to intensity in one place rather than at each call site
 - **Keyboard and TalkBack**: shelf cards take focus and answer to Enter or Space; the long-press panel traps focus and restores it on close
@@ -87,8 +91,7 @@ Tests run without a browser or a device:
 node --test tests/*.test.js
 ```
 
-Touching any launcher or notification artwork means running `./scripts/sync-debug-mipmaps.sh` afterwards, because Android merges `src/debug/res/` over `src/main/res/` and a stale debug mipmap replaces the real icon silently.
-
+Working on it? [CONTRIBUTING.md](CONTRIBUTING.md) has the traps that are not obvious from the code.
 ## Status
 
 Beta, running daily against a 1,928-item library on a Pixel 8 Pro. Not there yet: iOS, and any store listing.
