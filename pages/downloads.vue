@@ -2,6 +2,10 @@
   <div class="w-full h-full py-6 px-4 overflow-y-auto">
     <p class="mb-2 text-base text-fg">{{ $strings.HeaderDownloads }} ({{ localLibraryItems.length }})</p>
 
+    <!-- Local-only view: the list comes from the device database, so offline and
+         error do not apply here. Empty is the one state worth stating. -->
+    <ui-state-message v-if="!localLibraryItems.length" state="empty" title-key="MessageNoDownloads" body-key="MessageNoDownloadsHint" />
+
     <div class="w-full">
       <template v-for="(mediaItem, num) in localLibraryItems">
         <div :key="mediaItem.id" class="w-full">

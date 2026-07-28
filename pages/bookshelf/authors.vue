@@ -1,6 +1,8 @@
 <template>
   <div>
     <div id="bookshelf" class="w-full h-full p-4 overflow-y-auto">
+      <ui-state-message v-if="viewState !== 'ready'" :state="viewState" @retry="init" />
+
       <div class="flex flex-wrap justify-center">
         <template v-for="author in authors">
           <cards-author-card :key="author.id" :author="author" :width="cardWidth" :height="cardHeight" class="p-2" />
@@ -11,10 +13,13 @@
 </template>
 
 <script>
+import { resolveViewState } from '@/utils/appStates'
+
 export default {
   data() {
     return {
       loading: true,
+      loadError: null,
       authors: [],
       loadedLibraryId: null,
       cardWidth: 200
@@ -26,6 +31,14 @@ export default {
     },
     cardHeight() {
       return this.cardWidth * 1.25
+    },
+    viewState() {
+      return resolveViewState({
+        isLoading: this.loading,
+        error: this.loadError,
+        isOffline: !this.$store.state.networkConnected,
+        itemCount: this.authors.length
+      })
     }
   },
   methods: {
@@ -34,15 +47,20 @@ export default {
       if (!this.currentLibraryId) {
         return
       }
+      this.loading = true
+      this.loadError = null
       this.loadedLibraryId = this.currentLibraryId
+      // The failure was previously swallowed into an empty array, so a server
+      // that could not be reached looked exactly like a library with no
+      // authors in it. Keep the empty list, but remember why it is empty.
       this.authors = await this.$nativeHttp
         .get(`/api/libraries/${this.currentLibraryId}/authors`)
         .then((response) => response.authors)
         .catch((error) => {
           console.error('Failed to load authors', error)
+          this.loadError = error
           return []
         })
-      console.log('Loaded authors', this.authors)
       this.$eventBus.$emit('bookshelf-total-entities', this.authors.length)
       this.loading = false
     },

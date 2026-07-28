@@ -2,6 +2,8 @@
   <div class="w-full p-4">
     <h1 class="text-xl mb-2 font-semibold">{{ $strings.HeaderLatestEpisodes }}</h1>
 
+    <ui-state-message v-if="viewState !== 'ready'" :state="viewState" @retry="loadRecentEpisodes()" />
+
     <template v-for="episode in recentEpisodes">
       <tables-podcast-latest-episode-row :episode="episode" :local-episode="localEpisodeMap[episode.id]" :library-item-id="episode.libraryItemId" :local-library-item-id="localEpisodeMap[episode.id]?.localLibraryItemId" :key="episode.id" @addToPlaylist="addEpisodeToPlaylist" />
     </template>
@@ -9,10 +11,13 @@
 </template>
 
 <script>
+import { resolveViewState } from '@/utils/appStates'
+
 export default {
   data() {
     return {
       processing: false,
+      loadError: null,
       recentEpisodes: [],
       totalEpisodes: 0,
       currentPage: 0,
@@ -24,6 +29,14 @@ export default {
   computed: {
     currentLibraryId() {
       return this.$store.state.libraries.currentLibraryId
+    },
+    viewState() {
+      return resolveViewState({
+        isLoading: this.processing,
+        error: this.loadError,
+        isOffline: !this.$store.state.networkConnected,
+        itemCount: this.recentEpisodes.length
+      })
     },
     localEpisodes() {
       const episodes = []
@@ -68,7 +81,13 @@ export default {
         return null
       })
       this.processing = false
-      console.log('Episodes', episodePayload)
+      // The catch above resolves to null, and this line then dereferenced it —
+      // so any failed request threw a TypeError instead of showing the error.
+      if (!episodePayload) {
+        this.loadError = true
+        return
+      }
+      this.loadError = null
       this.recentEpisodes = episodePayload.episodes || []
       this.totalEpisodes = episodePayload.total
       this.currentPage = page
