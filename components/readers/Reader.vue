@@ -7,14 +7,11 @@
           <span class="material-symbols text-3xl text-fg">chevron_left</span>
         </button>
         <div class="flex-grow" />
-        <button v-if="isComic || isEpub" type="button" class="inline-flex mx-2" @click.stop="clickTOCBtn">
+        <button v-if="isEpub" type="button" class="inline-flex mx-2" @click.stop="clickTOCBtn">
           <span class="material-symbols text-2xl text-fg">format_list_bulleted</span>
         </button>
         <button v-if="isEpub" type="button" class="inline-flex mx-2" @click.stop="clickSettingsBtn">
           <span class="material-symbols text-2xl text-fg">settings</span>
-        </button>
-        <button v-if="comicHasMetadata" type="button" class="inline-flex mx-2" @click.stop="clickMetadataBtn">
-          <span class="material-symbols text-2xl text-fg">more</span>
         </button>
       </div>
 
@@ -22,7 +19,7 @@
     </div>
 
     <!-- ereader -->
-    <component v-if="readerComponentName" ref="readerComponent" :is="readerComponentName" :url="ebookUrl" :library-item="selectedLibraryItem" :is-local="isLocal" :keep-progress="keepProgress" :showing-toolbar="showingToolbar" @touchstart="touchstart" @touchend="touchend" @loaded="readerLoaded" @hook:mounted="readerMounted" />
+    <component v-if="readerComponentName" ref="readerComponent" :is="readerComponentName" :url="ebookUrl" :library-item="selectedLibraryItem" :is-local="isLocal" :keep-progress="keepProgress" :showing-toolbar="showingToolbar" @touchstart="touchstart" @touchend="touchend" @hook:mounted="readerMounted" />
 
     <!-- table of contents modal -->
     <modals-fullscreen-modal v-model="showTOCModal" :theme="ereaderTheme">
@@ -142,7 +139,6 @@ export default {
       showingToolbar: false,
       showTOCModal: false,
       showSettingsModal: false,
-      comicHasMetadata: false,
       chapters: [],
       isInittingWatchVolume: false,
       ereaderSettings: {
@@ -162,7 +158,6 @@ export default {
     show: {
       handler(newVal) {
         if (newVal) {
-          this.comicHasMetadata = false
           this.registerListeners()
           this.hideToolbar()
         } else {
@@ -274,10 +269,12 @@ export default {
         }
       ]
     },
+    // No comic reader. CBZ and CBR unpacking needs a prebuilt libarchive
+    // WebAssembly blob, which F-Droid's scanner rejects and which cannot be
+    // built from source without an emscripten toolchain.
     readerComponentName() {
       if (this.ebookType === 'epub') return 'readers-epub-reader'
       else if (this.ebookType === 'mobi') return 'readers-mobi-reader'
-      else if (this.ebookType === 'comic') return 'readers-comic-reader'
       else if (this.ebookType === 'pdf') return 'readers-pdf-reader'
       return null
     },
@@ -301,7 +298,6 @@ export default {
       if (this.isMobi) return 'mobi'
       else if (this.isEpub) return 'epub'
       else if (this.isPdf) return 'pdf'
-      else if (this.isComic) return 'comic'
       return null
     },
     isEpub() {
@@ -312,9 +308,6 @@ export default {
     },
     isPdf() {
       return this.ebookFormat == 'pdf'
-    },
-    isComic() {
-      return this.ebookFormat == 'cbz' || this.ebookFormat == 'cbr'
     },
     isLocal() {
       return !!this.ebookFile?.isLocal || !!this.ebookFile?.localFileId
@@ -360,22 +353,10 @@ export default {
         this.loadEreaderSettings()
       }
     },
-    readerLoaded(data) {
-      if (this.isComic) {
-        this.comicHasMetadata = data.hasMetadata
-      }
-    },
-    clickMetadataBtn() {
-      this.$refs.readerComponent?.clickShowInfoMenu()
-    },
     clickTOCBtn() {
       this.hideToolbar()
-      if (this.isComic) {
-        this.$refs.readerComponent?.clickShowPageMenu?.()
-      } else {
-        this.chapters = this.$refs.readerComponent?.chapters || []
-        this.showTOCModal = true
-      }
+      this.chapters = this.$refs.readerComponent?.chapters || []
+      this.showTOCModal = true
     },
     clickSettingsBtn() {
       this.hideToolbar()

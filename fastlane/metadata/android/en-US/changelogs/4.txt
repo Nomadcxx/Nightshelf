@@ -1,0 +1,8 @@
+Prepared for the main F-Droid repository, which builds from source and
+allows no prebuilt binaries.
+
+Removes comic book reading. Unpacking CBZ and CBR needed a prebuilt
+libarchive WebAssembly blob that cannot be built from source. Epub, mobi
+and PDF reading are unaffected.
+
+Drops a Gradle plugin that downloaded a JDK mid-build.

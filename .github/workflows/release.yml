@@ -41,6 +41,15 @@ jobs:
       - run: npm ci
       - name: Unit tests
         run: node --test tests/*.test.js
+
+      # F-Droid reads fastlane/ and the version from the tag it builds, and it
+      # picks up new tags on its own once the app is listed. A tag missing a
+      # changelog therefore produces a live listing with an empty release note,
+      # and a package.json out of step with build.gradle makes the app report a
+      # version it is not. Both are only fixable by tagging again, so they are
+      # caught here rather than after publishing.
+      - name: Release metadata preflight
+        run: python3 scripts/fdroid-metadata.py --check
       - name: Generate web layer
         run: ./node_modules/.bin/nuxt generate
       - name: Sync to Android
