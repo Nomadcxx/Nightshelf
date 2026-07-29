@@ -1,0 +1,8 @@
+First public build.
+
+Five themes on one registry, with Black OLED at a true #000000.
+Library switching from the drawer, and a prompt on first connect.
+Denser shelves: four covers per row instead of two.
+Long press a cover for its actions.
+Empty screens now say why they are empty.
+Peek is reachable by keyboard on search results.

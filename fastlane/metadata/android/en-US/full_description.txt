@@ -1,0 +1,29 @@
+NightShelf is a fork of the Audiobookshelf Android app, rebuilt around one assumption: the phone is in a dark room, in one hand, and you want to be back inside the book in as few taps as possible.
+
+It needs your own Audiobookshelf server. NightShelf hosts nothing, sells nothing, and has no account of its own.
+
+<b>What differs from the app it forks</b>
+
+<ul>
+<li><b>Resume hero.</b> Whatever you are part-way through sits at the top of Home, with the time remaining and one control.</li>
+<li><b>Four covers per row.</b> Rails came down from 205px to 104px, and the grid solves for columns against the screen width instead of assuming a phone size.</li>
+<li><b>Long press.</b> Hold a cover for 420ms and it lifts off the shelf, with that item's actions underneath.</li>
+<li><b>Five themes.</b> Night, Black OLED, Terminal, Graphite and Ember. Black OLED is genuinely #000000, so the pixels are off rather than dark.</li>
+<li><b>Shelf glass.</b> Every rail sits on a blurred wash of its own leading cover, so the colour shifts as you scroll.</li>
+<li><b>Library switching</b> from the drawer, or on first connect.</li>
+<li><b>Motion control.</b> System, Full or Reduced, with Android's own reduced-motion request always winning.</li>
+<li><b>Keyboard and TalkBack.</b> Shelf cards take focus and answer to Enter or Space; the long-press panel traps focus and restores it on close.</li>
+<li><b>Android Auto fixes,</b> including one that truncated every library at 100 items.</li>
+</ul>
+
+Everything the original does still works: the same server, the same sync, the same downloads, the same offline playback.
+
+It installs alongside the official app rather than replacing it. The package names differ, so you can keep both and compare.
+
+<b>Credit</b>
+
+Audiobookshelf and its Android app are the work of advplyr and the Audiobookshelf contributors. NightShelf modifies that work under GPL-3.0, keeps the licence and notices, and records every change in its commit history. Audiobookshelf neither endorses nor supports this fork.
+
+<b>Non-free components</b>
+
+Google Cast support is inherited from upstream and links Google's proprietary Cast framework, which also pulls in parts of Google Play services. That is the only non-free component in the build. NightShelf itself has no analytics, no crash reporting, no advertising and no account system, and talks to no server other than the one you point it at.

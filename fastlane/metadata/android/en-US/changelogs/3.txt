@@ -1,0 +1,5 @@
+Targets Android 16 (API 36) and lays out edge to edge under it.
+
+Adds the F-Droid metadata this listing is built from.
+Drops an unused Google Services build plugin.
+No behaviour changes to playback, sync or downloads.
