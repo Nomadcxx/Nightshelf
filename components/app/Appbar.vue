@@ -47,25 +47,15 @@
 </template>
 
 <script>
-import { AbsAudioPlayer } from '@/plugins/capacitor'
 import { statusLabel } from '@/utils/appbarStatus'
 
 export default {
   data() {
     return {
-      onCastAvailableUpdateListener: null,
       theme: 'night'
     }
   },
   computed: {
-    isCastAvailable: {
-      get() {
-        return this.$store.state.isCastAvailable
-      },
-      set(val) {
-        this.$store.commit('setCastAvailable', val)
-      }
-    },
     currentLibrary() {
       return this.$store.getters['libraries/getCurrentLibrary']
     },
@@ -103,9 +93,6 @@ export default {
     back() {
       window.history.back()
     },
-    onCastAvailableUpdate(data) {
-      this.isCastAvailable = data && data.value
-    },
     async refreshTheme() {
       const stored = await this.$localStore?.getTheme()
       this.theme = stored || document.documentElement.dataset.theme || 'night'
@@ -126,15 +113,10 @@ export default {
       this.theme = document.documentElement.dataset.theme || this.theme
     })
     this._themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
-    AbsAudioPlayer.getIsCastAvailable().then((data) => {
-      this.isCastAvailable = data && data.value
-    })
-    this.onCastAvailableUpdateListener = await AbsAudioPlayer.addListener('onCastAvailableUpdate', this.onCastAvailableUpdate)
   },
   beforeDestroy() {
     window.removeEventListener('nightshelf-theme-change', this._onThemeChange)
     this._themeObserver?.disconnect()
-    this.onCastAvailableUpdateListener?.remove()
   }
 }
 </script>

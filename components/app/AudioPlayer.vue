@@ -11,9 +11,6 @@
           {{ isDirectPlayMethod ? $strings.LabelPlaybackDirect : isLocalPlayMethod ? $strings.LabelPlaybackLocal : $strings.LabelPlaybackTranscode }}
         </p>
         <div class="ml-auto flex items-center gap-1">
-          <button v-show="showCastBtn" type="button" :aria-label="$strings.ButtonCast" class="nightglass-full-header__control h-12 w-12 flex items-center justify-center text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click="castClick">
-            <ui-ph-icon :name="isCasting ? 'cast_connected' : 'cast'" :size="26" />
-          </button>
           <button type="button" :aria-label="$strings.ButtonMoreOptions" class="nightglass-full-header__control h-12 w-12 flex items-center justify-center text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" @click="showMoreMenuDialog = true">
             <ui-ph-icon name="more_vert" :size="26" />
           </button>
@@ -332,12 +329,6 @@ export default {
     trackCursorLeft() {
       return this.trackProgress * this.trackWidth - 14
     },
-    showCastBtn() {
-      return this.$store.state.isCastAvailable
-    },
-    isCasting() {
-      return this.mediaPlayer === 'cast-player'
-    },
     mediaPlayer() {
       return this.playbackSession?.mediaPlayer || null
     },
@@ -480,14 +471,6 @@ export default {
       await this.$hapticsImpact()
       this.seek(chapter.start)
       this.showChapterModal = false
-    },
-    async castClick() {
-      await this.$hapticsImpact()
-      if (this.isLocalPlayMethod) {
-        this.$eventBus.$emit('cast-local-item')
-        return
-      }
-      AbsAudioPlayer.requestSession()
     },
     clickContainer() {
       this.expandToFullscreen()

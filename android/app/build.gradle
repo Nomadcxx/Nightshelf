@@ -102,7 +102,6 @@ repositories {
 
 configurations.configureEach {
   resolutionStrategy {
-    force("com.google.android.gms:play-services-base:18.0.1")
     force("androidx.appcompat:appcompat:$androidxAppCompatVersion")
     force("androidx.core:core-ktx:$androidx_core_ktx_version")
     force("androidx.media:media:$androidx_media_version")
@@ -129,18 +128,19 @@ dependencies {
 
   implementation "androidx.media:media:$androidx_media_version"
 
-  // Exo Player
+  // Exo Player. No extension-cast: it is the only route by which Google's
+  // proprietary Cast framework, and with it Play services, enters the build.
+  // Dropping it is what makes this app entirely free software and so eligible
+  // for the main F-Droid repository.
   if (findProject(':exoplayer-library-core') != null) {
     implementation project(':exoplayer-library-core')
     implementation project(':exoplayer-library-ui')
     implementation project(':exoplayer-extension-mediasession')
-    implementation project(':exoplayer-extension-cast')
     implementation project(':exoplayer-hls')
   } else {
     implementation "com.google.android.exoplayer:exoplayer-core:$exoplayer_version"
     implementation "com.google.android.exoplayer:exoplayer-ui:$exoplayer_version"
     implementation "com.google.android.exoplayer:extension-mediasession:$exoplayer_version"
-    implementation "com.google.android.exoplayer:extension-cast:$exoplayer_version"
     implementation "com.google.android.exoplayer:exoplayer-hls:$exoplayer_version"
   }
 

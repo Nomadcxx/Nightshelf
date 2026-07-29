@@ -166,11 +166,6 @@ class AbsAudioPlayerWeb extends WebPlugin {
     }
   }
 
-  // PluginMethod
-  async getIsCastAvailable() {
-    return false
-  }
-
   initializePlayer() {
     if (document.getElementById('audio-player')) {
       document.getElementById('audio-player').remove()

@@ -7,7 +7,6 @@ import com.audiobookshelf.app.MainActivity
 import com.audiobookshelf.app.data.*
 import com.audiobookshelf.app.device.DeviceManager
 import com.audiobookshelf.app.media.MediaEventManager
-import com.audiobookshelf.app.player.CastManager
 import com.audiobookshelf.app.player.PlayerListener
 import com.audiobookshelf.app.player.PlayerNotificationService
 import com.audiobookshelf.app.server.ApiHandler
@@ -15,10 +14,6 @@ import com.fasterxml.jackson.core.json.JsonReadFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.getcapacitor.*
 import com.getcapacitor.annotation.CapacitorPlugin
-import com.google.android.gms.cast.CastDevice
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import org.json.JSONObject
 
 @CapacitorPlugin(name = "AbsAudioPlayer")
 class AbsAudioPlayer : Plugin() {
@@ -27,11 +22,8 @@ class AbsAudioPlayer : Plugin() {
 
   private lateinit var mainActivity: MainActivity
   private lateinit var apiHandler:ApiHandler
-  var castManager:CastManager? = null
 
   lateinit var playerNotificationService: PlayerNotificationService
-
-  private var isCastAvailable:Boolean = false
 
   // Track foreground state to avoid flooding WebView with events while backgrounded
   private var isInForeground: Boolean = true
@@ -39,12 +31,6 @@ class AbsAudioPlayer : Plugin() {
   override fun load() {
     mainActivity = (activity as MainActivity)
     apiHandler = ApiHandler(mainActivity)
-
-    try {
-      initCastManager()
-    } catch(e:Exception) {
-      Log.e(tag, "initCastManager exception ${e.printStackTrace()}")
-    }
 
     val foregroundServiceReady : () -> Unit = {
       playerNotificationService = mainActivity.foregroundService
@@ -89,10 +75,6 @@ class AbsAudioPlayer : Plugin() {
 
         override fun onPlaybackFailed(errorMessage: String) {
           emit("onPlaybackFailed", errorMessage)
-        }
-
-        override fun onMediaPlayerChanged(mediaPlayer:String) {
-          emit("onMediaPlayerChanged", mediaPlayer)
         }
 
         override fun onProgressSyncFailing() {
@@ -146,61 +128,6 @@ class AbsAudioPlayer : Plugin() {
         }
       }, 100)
     }
-  }
-
-  private fun initCastManager() {
-    val googleApi = GoogleApiAvailability.getInstance()
-    val statusCode = googleApi.isGooglePlayServicesAvailable(mainActivity)
-
-    if (statusCode != ConnectionResult.SUCCESS) {
-        if (statusCode == ConnectionResult.SERVICE_MISSING) {
-          Log.w(tag, "initCastManager: Google Api Missing")
-        } else if (statusCode == ConnectionResult.SERVICE_DISABLED) {
-          Log.w(tag, "initCastManager: Google Api Disabled")
-        } else if (statusCode == ConnectionResult.SERVICE_INVALID) {
-          Log.w(tag, "initCastManager: Google Api Invalid")
-        } else if (statusCode == ConnectionResult.SERVICE_UPDATING) {
-          Log.w(tag, "initCastManager: Google Api Updating")
-        } else if (statusCode == ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED) {
-          Log.w(tag, "initCastManager: Google Api Update Required")
-        }
-        return
-    }
-
-    val connListener = object: CastManager.ChromecastListener() {
-      override fun onReceiverAvailableUpdate(available: Boolean) {
-        Log.d(tag, "ChromecastListener: CAST Receiver Update Available $available")
-        isCastAvailable = available
-        emit("onCastAvailableUpdate", available)
-      }
-
-      override fun onSessionRejoin(jsonSession: JSONObject?) {
-        Log.d(tag, "ChromecastListener: CAST onSessionRejoin")
-      }
-
-      override fun onMediaLoaded(jsonMedia: JSONObject?) {
-        Log.d(tag, "ChromecastListener: CAST onMediaLoaded")
-      }
-
-      override fun onMediaUpdate(jsonMedia: JSONObject?) {
-        Log.d(tag, "ChromecastListener: CAST onMediaUpdate")
-      }
-
-      override fun onSessionUpdate(jsonSession: JSONObject?) {
-        Log.d(tag, "ChromecastListener: CAST onSessionUpdate")
-      }
-
-      override fun onSessionEnd(jsonSession: JSONObject?) {
-        Log.d(tag, "ChromecastListener: CAST onSessionEnd")
-      }
-
-      override fun onMessageReceived(p0: CastDevice, p1: String, p2: String) {
-        Log.d(tag, "ChromecastListener: CAST onMessageReceived")
-      }
-    }
-
-    castManager = CastManager(mainActivity)
-    castManager?.startRouteScan(connListener)
   }
 
   @PluginMethod
@@ -423,34 +350,4 @@ class AbsAudioPlayer : Plugin() {
     call.resolve()
   }
 
-  @PluginMethod
-  fun requestSession(call: PluginCall) {
-    // Need to make sure the player service has been started
-    Log.d(tag, "CAST REQUEST SESSION PLUGIN")
-    call.resolve()
-    if (castManager == null) {
-      Log.e(tag, "Cast Manager not initialized")
-      return
-    }
-    castManager?.requestSession(playerNotificationService, object : CastManager.RequestSessionCallback() {
-      override fun onError(errorCode: Int) {
-        Log.e(tag, "CAST REQUEST SESSION CALLBACK ERROR $errorCode")
-      }
-
-      override fun onCancel() {
-        Log.d(tag, "CAST REQUEST SESSION ON CANCEL")
-      }
-
-      override fun onJoin(jsonSession: JSONObject?) {
-        Log.d(tag, "CAST REQUEST SESSION ON JOIN")
-      }
-    })
-  }
-
-  @PluginMethod
-  fun getIsCastAvailable(call: PluginCall) {
-    val jsobj = JSObject()
-    jsobj.put("value", isCastAvailable)
-    call.resolve(jsobj)
-  }
 }

@@ -1,0 +1,9 @@
+<!-- Vendored rather than taken from androidx.mediarouter, which only reached
+     this app as a transitive dependency of the Cast framework. Two icons are
+     not worth a library, and the library is not worth the Cast framework.
+     Matches the vendored exo_icon_* drawables in size and tint. -->
+<vector android:height="24dp" android:tint="#FFFFFF"
+    android:viewportHeight="24" android:viewportWidth="24"
+    android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
+    <path android:fillColor="@android:color/white" android:pathData="M8,5v14l11,-7z"/>
+</vector>

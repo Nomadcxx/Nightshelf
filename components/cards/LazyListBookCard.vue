@@ -269,9 +269,6 @@ export default {
       const mediaId = this.store.state.playerStartingPlaybackMediaId
       return mediaId === this.libraryItemId
     },
-    isCasting() {
-      return this.store.state.isCasting
-    },
     showReadButton() {
       return !this.isSelectionMode && !this.showPlayButton && this.hasEbook
     },
@@ -388,10 +385,8 @@ export default {
         // Audiobook
         let libraryItemId = this.libraryItemId
 
-        // When casting use server library item
-        if (this.localLibraryItem && !this.isCasting) {
-          libraryItemId = this.localLibraryItem.id
-        } else if (this.hasLocal) {
+        // Prefer the downloaded copy whenever there is one
+        if (this.localLibraryItem) {
           libraryItemId = this.localLibraryItem.id
         }
 

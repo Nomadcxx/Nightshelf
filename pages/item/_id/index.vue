@@ -512,9 +512,6 @@ export default {
     episodes() {
       return this.media.episodes || []
     },
-    isCasting() {
-      return this.$store.state.isCasting
-    },
     coverWidth() {
       let width = Math.min(270, Math.max(175, this.windowWidth * 0.64))
       if (width * this.bookCoverAspectRatio > 300) width = 300 / this.bookCoverAspectRatio
@@ -597,10 +594,7 @@ export default {
 
         this.episodeStartingPlayback = serverEpisodeId
         this.$store.commit('setPlayerIsStartingPlayback', serverEpisodeId)
-        if (serverEpisodeId && this.serverLibraryItemId && this.isCasting) {
-          // If casting and connected to server for local library item then send server library item id
-          this.$eventBus.$emit('play-item', { libraryItemId: this.serverLibraryItemId, episodeId: serverEpisodeId })
-        } else if (localEpisode) {
+        if (localEpisode) {
           this.$eventBus.$emit('play-item', { libraryItemId: this.localLibraryItem.id, episodeId: localEpisode.id, serverLibraryItemId: this.serverLibraryItemId, serverEpisodeId })
         } else {
           this.$eventBus.$emit('play-item', { libraryItemId: this.libraryItemId, episodeId })
@@ -609,10 +603,8 @@ export default {
         // Audiobook
         let libraryItemId = this.libraryItemId
 
-        // When casting use server library item
-        if (this.hasLocal && this.serverLibraryItemId && this.isCasting) {
-          libraryItemId = this.serverLibraryItemId
-        } else if (this.hasLocal) {
+        // Prefer the downloaded copy whenever there is one
+        if (this.hasLocal) {
           libraryItemId = this.localLibraryItem.id
         }
 

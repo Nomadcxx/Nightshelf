@@ -144,13 +144,6 @@ export default {
           text: this.$strings.ButtonUserStats,
           to: '/stats'
         })
-        if (this.isCastAvailable) {
-          items.push({
-            icon: this.isCasting ? 'cast_connected' : 'cast',
-            text: 'Cast',
-            action: 'cast'
-          })
-        }
       }
 
       if (this.$platform !== 'ios') {
@@ -193,12 +186,6 @@ export default {
       }
 
       return items
-    },
-    isCastAvailable() {
-      return this.$store.state.isCastAvailable
-    },
-    isCasting() {
-      return this.$store.state.isCasting
     }
   },
   methods: {
@@ -210,13 +197,6 @@ export default {
       if (action === 'logout') {
         await this.logout()
         this.$router.push('/connect')
-      } else if (action === 'cast') {
-        this.show = false
-        if (this.$store.getters['getIsCurrentSessionLocal']) {
-          this.$eventBus.$emit('cast-local-item')
-          return
-        }
-        AbsAudioPlayer.requestSession()
       } else if (action === 'switchLibrary') {
         this.show = false
         this.$store.commit('libraries/setShowModal', true)

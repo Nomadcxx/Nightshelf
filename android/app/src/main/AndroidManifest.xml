@@ -46,12 +46,12 @@
         <meta-data
             android:name="com.google.android.gms.car.notification.SmallIcon"
             android:resource="@drawable/ic_notification" />
+        <!-- These two are name strings Android Auto looks for, not a dependency
+             on any Google library. Android Auto itself is served through
+             androidx.media's MediaBrowserService. -->
         <meta-data
             android:name="com.google.android.gms.car.application"
-            android:resource="@xml/automotive_app_desc" /> <!-- Support for Cast -->
-        <meta-data
-            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="com.audiobookshelf.app.CastOptionsProvider" />
+            android:resource="@xml/automotive_app_desc" />
 
         <activity
             android:name=".MainActivity"

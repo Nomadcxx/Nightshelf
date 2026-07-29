@@ -99,7 +99,7 @@
           android:layout_height="match_parent"
           android:layout_weight="1"
           android:layout_margin="6dp"
-          android:src="@drawable/ic_media_play_dark" />
+          android:src="@drawable/widget_icon_play" />
 
         <ImageView
           android:id="@+id/widgetFastForwardButton"

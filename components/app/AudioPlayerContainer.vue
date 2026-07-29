@@ -10,7 +10,6 @@
 
 <script>
 import { AbsAudioPlayer, AbsLogger } from '@/plugins/capacitor'
-import { Dialog } from '@capacitor/dialog'
 import CellularPermissionHelpers from '@/mixins/cellularPermissionHelpers'
 
 export default {
@@ -33,11 +32,9 @@ export default {
       onLocalMediaProgressUpdateListener: null,
       onSleepTimerEndedListener: null,
       onSleepTimerSetListener: null,
-      onMediaPlayerChangedListener: null,
       sleepInterval: null,
       currentEndOfChapterTime: 0,
-      serverLibraryItemId: null,
-      serverEpisodeId: null
+      serverLibraryItemId: null
     }
   },
   mixins: [CellularPermissionHelpers],
@@ -164,34 +161,6 @@ export default {
         this.$refs.audioPlayer.closePlayback()
       }
     },
-    castLocalItem() {
-      if (!this.serverLibraryItemId) {
-        this.$toast.error(`Cannot cast locally downloaded media`)
-      } else {
-        // Change to server library item
-        this.playServerLibraryItemAndCast(this.serverLibraryItemId, this.serverEpisodeId)
-      }
-    },
-    playServerLibraryItemAndCast(libraryItemId, episodeId) {
-      var playbackRate = 1
-      if (this.$refs.audioPlayer) {
-        playbackRate = this.$refs.audioPlayer.currentPlaybackRate || 1
-      }
-      AbsAudioPlayer.prepareLibraryItem({ libraryItemId, episodeId, playWhenReady: false, playbackRate })
-        .then((data) => {
-          if (data.error) {
-            const errorMsg = data.error || 'Failed to play'
-            this.$toast.error(errorMsg)
-          } else {
-            console.log('Library item play response', JSON.stringify(data))
-            AbsAudioPlayer.requestSession()
-          }
-        })
-        .catch((error) => {
-          console.error('Failed', error)
-          this.$toast.error('Failed to play')
-        })
-    },
     async playLibraryItem(payload) {
       await AbsLogger.info({ tag: 'AudioPlayerContainer', message: `playLibraryItem: Received play request for library item ${payload.libraryItemId} ${payload.episodeId ? `episode ${payload.episodeId}` : ''}` })
       const libraryItemId = payload.libraryItemId
@@ -208,21 +177,9 @@ export default {
         }
       }
 
-      // When playing local library item and can also play this item from the server
-      //   then store the server library item id so it can be used if a cast is made
+      // When playing a local library item that also exists on the server, keep
+      // the server id: bookmarks are a server concept and are looked up by it.
       const serverLibraryItemId = payload.serverLibraryItemId || null
-      const serverEpisodeId = payload.serverEpisodeId || null
-
-      if (isLocal && this.$store.state.isCasting) {
-        const { value } = await Dialog.confirm({
-          title: 'Warning',
-          message: `Cannot cast downloaded media items. Confirm to close cast and play on your device.`
-        })
-        if (!value) {
-          this.$store.commit('setPlayerDoneStartingPlayback')
-          return
-        }
-      }
 
       // if already playing this item then jump to start time
       if (this.$store.getters['getIsMediaStreaming'](libraryItemId, episodeId)) {
@@ -238,7 +195,6 @@ export default {
       }
 
       this.serverLibraryItemId = null
-      this.serverEpisodeId = null
 
       let playbackRate = 1
       if (this.$refs.audioPlayer) {
@@ -260,11 +216,6 @@ export default {
             } else {
               this.serverLibraryItemId = serverLibraryItemId
             }
-            if (episodeId && !episodeId.startsWith('local')) {
-              this.serverEpisodeId = episodeId
-            } else {
-              this.serverEpisodeId = serverEpisodeId
-            }
           }
         })
         .catch((error) => {
@@ -283,9 +234,6 @@ export default {
     onLocalMediaProgressUpdate(localMediaProgress) {
       console.log('Got local media progress update', localMediaProgress.progress, JSON.stringify(localMediaProgress))
       this.$store.commit('globals/updateLocalMediaProgress', localMediaProgress)
-    },
-    onMediaPlayerChanged(data) {
-      this.$store.commit('setMediaPlayer', data.value)
     },
     onReady() {
       // The UI is reporting elsewhere we are ready
@@ -439,7 +387,6 @@ export default {
     this.onLocalMediaProgressUpdateListener = await AbsAudioPlayer.addListener('onLocalMediaProgressUpdate', this.onLocalMediaProgressUpdate)
     this.onSleepTimerEndedListener = await AbsAudioPlayer.addListener('onSleepTimerEnded', this.onSleepTimerEnded)
     this.onSleepTimerSetListener = await AbsAudioPlayer.addListener('onSleepTimerSet', this.onSleepTimerSet)
-    this.onMediaPlayerChangedListener = await AbsAudioPlayer.addListener('onMediaPlayerChanged', this.onMediaPlayerChanged)
 
     this.playbackSpeed = this.$store.getters['user/getUserSetting']('playbackRate')
     console.log(`[AudioPlayerContainer] Init Playback Speed: ${this.playbackSpeed}`)
@@ -448,7 +395,6 @@ export default {
     this.$eventBus.$on('play-item', this.playLibraryItem)
     this.$eventBus.$on('pause-item', this.pauseItem)
     this.$eventBus.$on('close-stream', this.closeStreamOnly)
-    this.$eventBus.$on('cast-local-item', this.castLocalItem)
     this.$eventBus.$on('user-settings', this.settingsUpdated)
     this.$eventBus.$on('playback-time-update', this.playbackTimeUpdate)
     this.$eventBus.$on('device-focus-update', this.deviceFocused)
@@ -458,13 +404,11 @@ export default {
     this.onLocalMediaProgressUpdateListener?.remove()
     this.onSleepTimerEndedListener?.remove()
     this.onSleepTimerSetListener?.remove()
-    this.onMediaPlayerChangedListener?.remove()
 
     this.$eventBus.$off('abs-ui-ready', this.onReady)
     this.$eventBus.$off('play-item', this.playLibraryItem)
     this.$eventBus.$off('pause-item', this.pauseItem)
     this.$eventBus.$off('close-stream', this.closeStreamOnly)
-    this.$eventBus.$off('cast-local-item', this.castLocalItem)
     this.$eventBus.$off('user-settings', this.settingsUpdated)
     this.$eventBus.$off('playback-time-update', this.playbackTimeUpdate)
     this.$eventBus.$off('device-focus-update', this.deviceFocused)
