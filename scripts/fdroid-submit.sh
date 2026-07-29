@@ -41,9 +41,23 @@ need_fdroiddata() {
   [ -d "$FDROIDDATA/metadata" ] || die \
 "No fdroiddata checkout at $FDROIDDATA
 
-  git clone --depth=1 https://gitlab.com/fdroid/fdroiddata.git $FDROIDDATA
+  git clone https://gitlab.com/fdroid/fdroiddata.git $FDROIDDATA
 
 Set FDROIDDATA to point somewhere else."
+}
+
+# A shallow clone is fine for validate and build and fatal for submit. Their CI
+# sets GIT_DEPTH 5000 because it diffs the merge request against master, and its
+# jobs are gated on `rules: changes: paths:`. A branch pushed from a --depth=1
+# clone has a grafted root sharing no ancestry with master, so GitLab cannot
+# work out which paths changed, no job rule matches, and the pipeline dies with
+# zero jobs before it starts. That looks like a broken submission and is not.
+need_full_history() {
+  [ "$(git -C "$FDROIDDATA" rev-parse --is-shallow-repository)" = false ] || die \
+"$FDROIDDATA is a shallow clone, so a branch pushed from it would produce a
+failed pipeline with no jobs. Fetch the rest of the history first:
+
+  git -C $FDROIDDATA fetch --unshallow origin"
 }
 
 # Falls back to whatever credential helper already handles gitlab.com, so a
@@ -180,7 +194,7 @@ api() {
 }
 
 cmd_submit() {
-  need_token; need_fdroiddata
+  need_token; need_fdroiddata; need_full_history
   have jq || die "jq is needed to read GitLab's responses."
   cmd_validate
 
@@ -241,7 +255,7 @@ cmd_submit() {
 # For when the available credential can push but not call the API. Does the
 # repository half and leaves the two clicks to a browser.
 cmd_push() {
-  need_fdroiddata
+  need_fdroiddata; need_full_history
   have git || die "git is missing."
   cmd_validate
   local token user
