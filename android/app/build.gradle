@@ -19,7 +19,17 @@ kotlin {
     "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
   ]
 
-  jvmToolchain(17)
+  // jvmTarget rather than jvmToolchain(17). Both produce Java 17 bytecode, to
+  // match the sourceCompatibility Capacitor generates, but a toolchain demands
+  // a JDK 17 *installation* and will go and fetch one if Gradle cannot find it.
+  // That is what dragged in the foojay resolver, which downloads a JDK from a
+  // third-party API mid-build and which F-Droid rejects. Their buildserver has
+  // only JDK 21, and Debian trixie has no openjdk-17 package to install, so a
+  // toolchain cannot be satisfied there at all. A JDK 21 compiling to target 17
+  // needs nothing extra and emits the same bytecode.
+  compilerOptions {
+    jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+  }
 }
 
 android {

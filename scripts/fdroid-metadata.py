@@ -96,8 +96,6 @@ Builds:
     commit: {tag}
     subdir: android/app
     sudo:
-      - apt-get update
-      - apt-get install -y openjdk-17-jdk-headless
       - curl -Lo node.tar.gz https://nodejs.org/dist/v{NODE}/node-v{NODE}-linux-x64.tar.gz
       - echo "{NODE_SHA256} node.tar.gz"
         | sha256sum -c -
