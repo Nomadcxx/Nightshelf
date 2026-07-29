@@ -46,8 +46,6 @@ Same shelf, same scroll position. Black OLED is genuinely `#000000`, so the pixe
 - **Keyboard and TalkBack**: shelf cards take focus and answer to Enter or Space; the long-press panel traps focus and restores it on close
 - **Android Auto**: four defects fixed, including one that truncated every library at 100 items
 
-<a id="install"></a>
-
 ## Install
 
 You need an Audiobookshelf server. NightShelf hosts nothing and sells nothing.
