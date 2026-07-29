@@ -213,9 +213,12 @@ cmd_submit() {
   git -c user.email=noreply@localhost -c user.name="$user" \
     commit -q -m "New App: $PACKAGE" || echo "    nothing new to commit"
   # Token goes in the URL for this one push and is not stored as a remote.
-  git push -q -f \
+  # git echoes the remote URL in its progress and hint output, token and all,
+  # so that is filtered rather than shown. It ends up in terminal scrollback,
+  # CI logs and pasted output otherwise.
+  git push -f \
     "https://oauth2:$FDROID_GITLAB_TOKEN@gitlab.com/$user/fdroiddata.git" \
-    "$branch"
+    "$branch" 2>&1 | sed "s|$FDROID_GITLAB_TOKEN|***|g"
 
   echo "==> opening the merge request"
   local target_id target_branch body url
@@ -253,8 +256,10 @@ cmd_push() {
   git add "metadata/$PACKAGE.yml"
   git -c user.email=noreply@localhost -c user.name="$user" \
     commit -q -m "New App: $PACKAGE" || echo "    nothing new to commit"
-  git push -q -f \
-    "https://oauth2:$token@gitlab.com/$user/fdroiddata.git" "$PACKAGE" || die \
+  # Filtered: git prints the remote URL, token included, in its own output.
+  git push -f \
+    "https://oauth2:$token@gitlab.com/$user/fdroiddata.git" "$PACKAGE" 2>&1 \
+    | sed "s|$token|***|g" || die \
 "Push failed. Fork https://gitlab.com/fdroid/fdroiddata to $user first, then
 rerun this."
 

@@ -144,12 +144,20 @@ def main():
     rendered = render(version_name, version_code, tag)
 
     if '--check' in sys.argv:
+        # The commit field names the tag being released, which cannot exist in
+        # the commit that tag points at. Comparing it would demand the
+        # impossible, and did: the v0.1.3-beta release run failed on exactly
+        # that. Everything else has to match.
+        def without_commit(text):
+            return re.sub(r'^\s*commit:.*$', '', text, flags=re.M)
+
         current = OUT.read_text() if OUT.exists() else ''
-        if current != rendered:
-            sys.exit(f'{OUT.relative_to(ROOT)} is stale. '
-                     f'Run ./scripts/fdroid-metadata.py')
+        if without_commit(current) != without_commit(rendered):
+            sys.exit(f'{OUT.relative_to(ROOT)} is stale, ignoring the commit '
+                     f'field. Run ./scripts/fdroid-metadata.py')
         print(f'  {OUT.relative_to(ROOT)} is current '
-              f'({version_name}, code {version_code}, tag {tag})')
+              f'({version_name}, code {version_code}); changelog and '
+              f'package.json agree')
         return
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
