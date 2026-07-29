@@ -6,7 +6,7 @@
     <img src="https://img.shields.io/badge/Android-7.0%2B-7CFFB2?style=for-the-badge&logo=android&logoColor=black" alt="Android 7.0+" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/licence-GPL--3.0-7CFFB2?style=for-the-badge" alt="GPL-3.0" /></a>
     <img src="https://img.shields.io/badge/100%25-FOSS-7CFFB2?style=for-the-badge" alt="100% free and open source" />
-    <a href="#install"><img src="https://img.shields.io/badge/F--Droid-submitted-1976D2?style=for-the-badge&logo=fdroid&logoColor=white" alt="F-Droid" /></a>
+    <a href="#install"><img src="https://img.shields.io/badge/F--Droid-pending-1976D2?style=for-the-badge&logo=fdroid&logoColor=white" alt="F-Droid submission pending" /></a>
   </p>
 
   <p>A fork of the <a href="https://github.com/advplyr/audiobookshelf-app">Audiobookshelf Android app</a>, rebuilt for phones used at night.</p>
@@ -59,7 +59,7 @@ It installs alongside the official app rather than replacing it. Different packa
      https://gitlab.com/fdroid/fdroiddata is merged:
      [![](https://img.shields.io/f-droid/v/com.nightshelf.app)](https://f-droid.org/packages/com.nightshelf.app) -->
 
-> Submitted to the main F-Droid repository. The metadata is in [`fastlane/`](fastlane/metadata/android/en-US) and the submission is written up in [`docs/fdroid/`](docs/fdroid/fdroid-request.md).
+> Not listed yet. The metadata F-Droid builds a listing from is in [`fastlane/`](fastlane/metadata/android/en-US), and the merge request is drafted in [`docs/fdroid/`](docs/fdroid/fdroid-request.md).
 
 F-Droid builds every app from source on its own servers and refuses proprietary dependencies. NightShelf has none, so it qualifies. Upstream does not: it links Google's proprietary Cast framework, which is why you will find it on IzzyOnDroid under a non-free-components flag instead. [Removing Cast](docs/fdroid/fdroid-request.md#what-was-removed) is what separates the two.
 
