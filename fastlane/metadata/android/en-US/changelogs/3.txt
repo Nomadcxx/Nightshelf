@@ -1,5 +1,7 @@
-Targets Android 16 (API 36) and lays out edge to edge under it.
+Removes Google Cast, the last proprietary dependency. NightShelf is now
+entirely free software, and 1.7 MB smaller. The cost: no Chromecast.
+Android Auto is unaffected.
 
+Targets Android 16 (API 36) and lays out edge to edge under it.
 Adds the F-Droid metadata this listing is built from.
-Drops an unused Google Services build plugin.
-No behaviour changes to playback, sync or downloads.
+Nothing else about playback, sync or downloads changes.

@@ -5,7 +5,8 @@
     <img src="https://img.shields.io/badge/status-beta-A48CF2?style=for-the-badge" alt="beta" />
     <img src="https://img.shields.io/badge/Android-7.0%2B-7CFFB2?style=for-the-badge&logo=android&logoColor=black" alt="Android 7.0+" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/licence-GPL--3.0-7CFFB2?style=for-the-badge" alt="GPL-3.0" /></a>
-    <a href="#install"><img src="https://img.shields.io/badge/F--Droid-IzzyOnDroid-1976D2?style=for-the-badge&logo=fdroid&logoColor=white" alt="IzzyOnDroid" /></a>
+    <img src="https://img.shields.io/badge/100%25-FOSS-7CFFB2?style=for-the-badge" alt="100% free and open source" />
+    <a href="#install"><img src="https://img.shields.io/badge/F--Droid-submitted-1976D2?style=for-the-badge&logo=fdroid&logoColor=white" alt="F-Droid" /></a>
   </p>
 
   <p>A fork of the <a href="https://github.com/advplyr/audiobookshelf-app">Audiobookshelf Android app</a>, rebuilt for phones used at night.</p>
@@ -54,19 +55,13 @@ It installs alongside the official app rather than replacing it. Different packa
 
 ### F-Droid
 
-NightShelf is packaged for [**IzzyOnDroid**](https://apt.izzysoft.de/fdroid/), a third-party F-Droid repository. Add it to your F-Droid client once and NightShelf updates with everything else:
+<!-- Swap this for the live badge and listing link once the merge request at
+     https://gitlab.com/fdroid/fdroiddata is merged:
+     [![](https://img.shields.io/f-droid/v/com.nightshelf.app)](https://f-droid.org/packages/com.nightshelf.app) -->
 
-```
-https://apt.izzysoft.de/fdroid/repo
-```
+> Submitted to the main F-Droid repository. The metadata is in [`fastlane/`](fastlane/metadata/android/en-US) and the submission is written up in [`docs/fdroid/`](docs/fdroid/fdroid-request.md).
 
-<!-- Swap this for the live badge and listing link the moment the request at
-     https://codeberg.org/IzzyOnDroid/repodata/issues is accepted:
-     [![](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.nightshelf.app)](https://apt.izzysoft.de/packages/com.nightshelf.app) -->
-
-> Listing pending. The request is drafted in [`docs/fdroid/izzyondroid-request.md`](docs/fdroid/izzyondroid-request.md) and goes in once a release is tagged with the metadata attached.
-
-Not the main F-Droid repository, and neither is the app this forks. F-Droid builds everything from source on its own servers and will not link Google's proprietary Cast framework, which NightShelf inherits from upstream. IzzyOnDroid takes the signed APK instead and flags the dependency.
+F-Droid builds every app from source on its own servers and refuses proprietary dependencies. NightShelf has none, so it qualifies. Upstream does not: it links Google's proprietary Cast framework, which is why you will find it on IzzyOnDroid under a non-free-components flag instead. [Removing Cast](docs/fdroid/fdroid-request.md#what-was-removed) is what separates the two.
 
 ### APK
 
@@ -109,4 +104,6 @@ Beta, running daily against a 1,928-item library on a Pixel 8 Pro. Not there yet
 
 GPL-3.0, inherited from Audiobookshelf. Upstream copyright belongs to [advplyr and the Audiobookshelf contributors](https://github.com/advplyr/audiobookshelf-app/graphs/contributors); this fork modifies that work, keeps the licence and notices, and records every change in the commit history. Audiobookshelf neither endorses nor supports it.
 
-Free software, with one asterisk worth stating plainly: Google Cast is inherited from upstream and links Google's proprietary Cast framework, which pulls in parts of Play services. That is the only non-free component. There is no analytics, no crash reporting, no advertising, no account system and no self-update, and the app talks to no server other than the one you point it at.
+Every dependency is under a free licence. Google Cast was the exception NightShelf inherited from upstream, and it is gone. The app carries no analytics, no crash reporting, no advertising, no account system and no self-update, and it talks to the server you point it at and nothing else.
+
+You lose Chromecast, which is a real cost if you used it. Playback is otherwise unchanged, and Android Auto still works because it runs through `androidx.media`.
