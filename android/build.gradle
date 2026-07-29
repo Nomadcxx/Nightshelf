@@ -8,7 +8,10 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-      classpath 'com.google.gms:google-services:4.4.2'
+      // No google-services plugin here on purpose. Upstream carries the
+      // classpath, but nothing applies the plugin and there is no
+      // google-services.json, so it only ever added a Firebase signal for
+      // F-Droid's scanners to find and flag.
       classpath 'com.android.tools.build:gradle:8.8.2'
       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
