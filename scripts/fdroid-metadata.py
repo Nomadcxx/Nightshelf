@@ -70,6 +70,12 @@ def latest_tag():
 def render(version_name, version_code, tag):
     """Emit exactly what `fdroid rewritemeta` produces.
 
+    AutoName has to equal what `fdroid checkupdates` derives from the app's
+    manifest label, which is the app_name string resource: "Nightshelf", with a
+    lowercase s, unlike the "NightShelf" used everywhere else. Their CI runs
+    checkupdates and fails on any diff it produces, so a mismatch here is a red
+    pipeline. The name users see comes from fastlane title.txt, not from this.
+
     Field order, the scalar-versus-list choices and the line fold in prebuild
     are all F-Droid's canonical form, not preferences. Matching it byte for
     byte means `fdroid-submit.sh validate` can assert the file survives
@@ -85,7 +91,7 @@ SourceCode: {REPO}
 IssueTracker: {REPO}/issues
 Changelog: {REPO}/releases
 
-AutoName: NightShelf
+AutoName: Nightshelf
 
 RepoType: git
 Repo: {REPO}.git
