@@ -14,7 +14,7 @@
 ## Suggested
 
 * [ ] External repos are added as git submodules instead of srclibs <!--Not applicable: no srclibs and no external repos. Everything comes from npm and Maven Central.-->
-* [ ] Enable [Reproducible Builds](https://f-droid.org/docs/Reproducible_Builds) <!--No, I don't want this. The build runs `nuxt generate` before Gradle and I have not shown that stage to be byte-reproducible, so I would rather not hold up the submission on it.-->
+* [x] Enable [Reproducible Builds](https://f-droid.org/docs/Reproducible_Builds) <!--Binaries and AllowedAPKSigningKeys are set. Verified: your buildserver output and the published APK are identical across all 1234 entries outside META-INF. See "Reproducible build" below.-->
 * [ ] Multiple apks for native code <!--Not applicable: no native code of our own, and the universal APK is 16 MB.-->
 
 ---------------------
@@ -59,6 +59,32 @@ public-domain LibriVox library rather than copied from upstream. Upstream
 authorship, the GPL-3.0 licence and the notices are kept, every change is in the
 commit history, and the description states that Audiobookshelf neither endorses
 nor supports the fork.
+
+### Reproducible build
+
+`Binaries` and `AllowedAPKSigningKeys` are set. Building this commit in your
+buildserver image and comparing entry by entry against the APK published on the
+release page: 1234 entries each, none missing on either side, none differing
+outside `META-INF/`.
+
+Getting there took two fixes, both in 0.1.4-beta:
+
+* Nuxt names its JavaScript chunks after a content hash that depends on the
+  absolute directory the build ran in. Building the same tree at two paths in
+  your image renamed 70 of 114 chunks while their contents stayed identical.
+  Chunks are named after themselves now. Nothing is lost: they are read from
+  inside the APK over `file://`, so there is no HTTP cache to bust.
+* Auto-imported components are discovered with globby, which returns filesystem
+  order, and that order is baked into the vendor bundle as the registration
+  sequence. It is sorted now. Two git checkouts happened to agree, which is why
+  this only appeared once a build ran against a copied tree, but it was not
+  something to leave in place.
+
+Everything else already matched, dex and resources included, on the first
+comparison.
+
+The release workflow is pinned to node 20.19.2, the version Debian trixie
+ships, so the published APK is built with the same toolchain yours installs.
 
 ### Build notes
 

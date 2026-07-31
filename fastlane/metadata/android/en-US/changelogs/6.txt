@@ -1,0 +1,5 @@
+Stops the Android build tools stamping a block of Google Play dependency
+metadata into the APK signature. It was a proprietary-format blob nothing
+here reads, and F-Droid rejects any extra signing block.
+
+No change to how the app behaves.

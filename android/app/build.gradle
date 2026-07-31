@@ -46,8 +46,8 @@ android {
     applicationId "com.nightshelf.app"
     minSdkVersion rootProject.ext.minSdkVersion
     targetSdkVersion rootProject.ext.targetSdkVersion
-    versionCode 5
-    versionName "0.1.4-beta"
+    versionCode 6
+    versionName "0.1.5-beta"
     testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     manifestPlaceholders = [
       "appAuthRedirectScheme": "com.audiobookshelf.app"
@@ -58,6 +58,15 @@ android {
       ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
   }
+  // AGP stamps a "Dependency metadata" block into the APK signing block: a
+  // Google-signed, proprietary-format blob listing the libraries the build
+  // used, meant for Play Console. F-Droid's scanner rejects any extra signing
+  // block outright, and nothing on their side or ours reads it.
+  dependenciesInfo {
+    includeInApk false
+    includeInBundle false
+  }
+
   // Signing is driven entirely by the environment so the keystore never has to
   // live in the repo. Set NIGHTSHELF_KEYSTORE to an absolute path; CI decodes
   // the keystore from a secret and points at it. Without that variable the
