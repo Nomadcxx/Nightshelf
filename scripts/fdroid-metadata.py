@@ -33,11 +33,11 @@ PACKAGE = 'com.nightshelf.app'
 REPO = 'https://github.com/Nomadcxx/Nightshelf'
 
 # The buildserver image ships JDK 21 but no Node at all, so the recipe installs
-# it. Taken from nodejs.org with a checksum rather than from apt, whose nodejs
-# is too old to run `npm ci` against this lockfile. Bump both together, and get
-# the digest from https://nodejs.org/dist/v<version>/SHASUMS256.txt
-NODE = '20.18.1'
-NODE_SHA256 = '259e5a8bf2e15ecece65bd2a47153262eda71c0b2c9700d5e703ce4951572784'
+# it from Debian. The image is trixie, which carries nodejs 20.19 and npm 9.2;
+# npm 9 reads this repo's lockfileVersion 3 lockfile, so `npm ci` is happy. An
+# earlier revision downloaded a tarball from nodejs.org with a pinned checksum,
+# which F-Droid asked us not to do: apt is already trusted by the image, and a
+# third-party download is one more thing for them to audit.
 
 
 def gradle_value(pattern):
@@ -48,8 +48,19 @@ def gradle_value(pattern):
     return match.group(1)
 
 
-def latest_tag():
-    """The tag F-Droid builds from. Falls back to the version name.
+def git(*args):
+    return subprocess.run(args, cwd=ROOT, capture_output=True, text=True,
+                          check=True).stdout.strip()
+
+
+def build_commit():
+    """The full commit hash F-Droid builds from.
+
+    A hash and not a tag, at F-Droid's request: a tag can be moved after review
+    and a hash cannot, so the thing they audited is the thing they build. It
+    also has to be the commit rather than the tag object, since annotated tags
+    resolve to their own hash under rev-parse and F-Droid needs a revision git
+    will check out as a tree.
 
     NIGHTSHELF_FDROID_COMMIT overrides it with any commit-ish, which is how a
     recipe gets verified through `fdroid build` before a tag exists. F-Droid
@@ -58,16 +69,15 @@ def latest_tag():
     """
     override = os.environ.get('NIGHTSHELF_FDROID_COMMIT')
     if override:
-        return override
+        return git('git', 'rev-list', '-n1', override)
     try:
-        return subprocess.run(
-            ['git', 'describe', '--tags', '--abbrev=0'],
-            cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+        tag = git('git', 'describe', '--tags', '--abbrev=0')
     except subprocess.CalledProcessError:
         return None
+    return git('git', 'rev-list', '-n1', tag)
 
 
-def render(version_name, version_code, tag):
+def render(version_name, version_code, commit):
     """Emit exactly what `fdroid rewritemeta` produces.
 
     AutoName has to equal what `fdroid checkupdates` derives from the app's
@@ -99,13 +109,11 @@ Repo: {REPO}.git
 Builds:
   - versionName: {version_name}
     versionCode: {version_code}
-    commit: {tag}
+    commit: {commit}
     subdir: android/app
     sudo:
-      - curl -Lo node.tar.gz https://nodejs.org/dist/v{NODE}/node-v{NODE}-linux-x64.tar.gz
-      - echo "{NODE_SHA256} node.tar.gz"
-        | sha256sum -c -
-      - tar xzf node.tar.gz --strip-components=1 -C /usr/local/
+      - apt-get update
+      - apt-get install -y npm
     init:
       - cd ../..
       - npm ci
@@ -128,7 +136,7 @@ CurrentVersionCode: {version_code}
 def main():
     version_name = gradle_value(r'versionName\s+"([^"]+)"')
     version_code = gradle_value(r'versionCode\s+(\d+)')
-    tag = latest_tag() or f'v{version_name}'
+    commit = build_commit() or f'v{version_name}'
 
     # package.json drives the version string the drawer shows. It drifted from
     # build.gradle once already, so the app reported 0.1.1-beta while the APK
@@ -147,11 +155,11 @@ def main():
                  f'changelog from the tag it builds, so version code '
                  f'{version_code} needs one before release')
 
-    rendered = render(version_name, version_code, tag)
+    rendered = render(version_name, version_code, commit)
 
     if '--check' in sys.argv:
-        # The commit field names the tag being released, which cannot exist in
-        # the commit that tag points at. Comparing it would demand the
+        # The commit field names the revision being released, which cannot be
+        # known inside the commit it points at. Comparing it would demand the
         # impossible, and did: the v0.1.3-beta release run failed on exactly
         # that. Everything else has to match.
         def without_commit(text):
@@ -169,7 +177,7 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(rendered)
     print(f'  {OUT.relative_to(ROOT)}  {version_name}  '
-          f'code {version_code}  tag {tag}')
+          f'code {version_code}  commit {commit}')
 
 
 if __name__ == '__main__':
