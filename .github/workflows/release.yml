@@ -31,7 +31,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Pinned to the version Debian trixie ships, which is what F-Droid's
+          # buildserver installs. The APK released here has to match the one
+          # they build from source, so the toolchain that produces it should
+          # not drift with whatever the runner happens to have.
+          node-version: 20.19.2
           cache: npm
       - uses: actions/setup-java@v4
         with:

@@ -1,0 +1,9 @@
+Makes the build reproducible, so the APK F-Droid builds from source can be
+checked against the one released here and shipped under the same signature.
+
+Two things stopped that. Nuxt named its JavaScript chunks after a content
+hash that turned out to depend on the directory the build ran in, and
+auto-imported components were registered in whatever order the filesystem
+listed them.
+
+No change to how the app behaves.

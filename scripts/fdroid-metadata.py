@@ -32,6 +32,15 @@ FASTLANE = ROOT / 'fastlane' / 'metadata' / 'android' / 'en-US'
 PACKAGE = 'com.nightshelf.app'
 REPO = 'https://github.com/Nomadcxx/Nightshelf'
 
+# SHA-256 of the release signing certificate, from
+#   apksigner verify --print-certs <apk>
+# Binaries plus this is what makes the build reproducible in F-Droid's sense:
+# they build from source, compare against the APK released here, and ship ours
+# under this signature if the two match. It is not a secret. It also cannot
+# change without every installed user having to uninstall first, so losing the
+# keystore ends the app.
+SIGNING_KEY = 'dc0cb43a701f85bfd81654aeb0dec815ca860a044f13a5fc84f21485356bf550'
+
 # The buildserver image ships JDK 21 but no Node at all, so the recipe installs
 # it from Debian. The image is trixie, which carries nodejs 20.19 and npm 9.2;
 # npm 9 reads this repo's lockfileVersion 3 lockfile, so `npm ci` is happy. An
@@ -105,6 +114,7 @@ AutoName: Nightshelf
 
 RepoType: git
 Repo: {REPO}.git
+Binaries: {REPO}/releases/download/v%v/nightshelf-v%v.apk
 
 Builds:
   - versionName: {version_name}
@@ -125,6 +135,8 @@ Builds:
       - npx cap sync android
     scandelete:
       - node_modules
+
+AllowedAPKSigningKeys: {SIGNING_KEY}
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
