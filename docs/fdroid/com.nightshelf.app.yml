@@ -15,7 +15,7 @@ Binaries: https://github.com/Nomadcxx/Nightshelf/releases/download/v%v/nightshel
 Builds:
   - versionName: 0.1.5-beta
     versionCode: 6
-    commit: 1e37e7fb88599d74b69dc8de7985e46ad346bee6
+    commit: 44db0a0ebfc4e266bd00856b60174b21da8c95d3
     subdir: android/app
     sudo:
       - apt-get update
